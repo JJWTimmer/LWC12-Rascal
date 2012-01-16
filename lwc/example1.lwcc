@@ -1,0 +1,84 @@
+
+MIN_GAS=50
+MAX_GAS=150
+BURNER_RAMPUP = 5
+VALVE_SWITCH = 5
+RADIATOR_MARGIN = 2
+WATER_MARGIN = 5
+
+# 
+# Controls in diagram
+# Temperatuur sensor
+#
+
+DESIRED_RADIATOR_TEMP = 20
+DESIRED_WATER_TEMP = 60
+
+# Burner
+#  - bool: ignite
+#  - int: gas_level
+#
+# Thermostat
+#  - int: temperature
+#
+# Boiler
+#  - int: temperature
+#
+# (Vacuum|Regular) Pump
+#  - bool: run
+#
+
+condition roomTempLow: Thermostat.temperature < DESIRED_RADIATOR_TEMP - RADIATOR_MARGIN
+condition roomTempHigh: Thermostat.temperature > DESIRED_RADIATOR_TEMP
+condition boilerTempLow: Boiler.temperature < DESIRED_WATER_TEMP - WATER_MARGIN
+condition boilerTempHigh: Boiler.temperature > DESIRED_WATER_TEMP
+condition heatNeeded: roomTempLow or boilerTempLow
+
+
+state OFF: 
+	if heatNeeded 
+		goto IGNITE
+
+state IGNITE:
+	if Burner B1.ignite goto DISPATCH
+	
+	Burner.ignite = true
+	Burner.gas_level = MIN_GAS
+	Pump.run = true
+	goto DISPATCH
+	
+state DISPATCH:
+	if roomTempHigh and boilerTempLow goto BOILER
+	if roomTempLow and boilerTempHigh goto RADIATOR
+	if roomTempHigh and boilerTempHigh goto RUNNING 	
+	goto BOTH
+	
+state RAMPUP:
+	
+	Burner.ignite = true
+	gas = gas 
+	Burner.gas_level += BURNER_RAMPUP
+	Pump.run = true
+		
+	goto DISPATCH
+
+state RADIATOR:
+	Valve.state = radiators
+	goto RAMPUP
+	
+state BOILER:
+	Valve.state = boiler
+	goto RAMPUP
+	
+state BOTH:
+	Valve.state = radiators, boiler
+	goto RAMPUP
+	
+state RUNNING:
+	
+	Valve.state = radiators, boiler
+	Burner.gas_level = MIN_GAS
+	
+	# Idle, idle idle
+	goto DISPATCH
+	

@@ -1,26 +1,30 @@
-KleinTypeRadiator is Radiator
-  - power: 240 watt
-
-LargePipe is Pipe
-  - diameter: 20 mm
-
 Boiler B1
-    - Capacity: 5 Liter
+    - Capacity: 5 Liter;
+    
+Radiator R1;
 
-Radiator R1
+CentralHeatingUnit C1;
 
-CentralHeatingUnit C1 
-
-Controlled Valve V1
+Controlled Valve V1;
 
 Controlled Discrete Valve V2
-    - connections: a, b, c
+    - connections: a, b, c;
+    
+Gas Source S1;
 
-Gas Source S1
+/* Comments here!
+	And here
+	
+		More here ** // 
+ */
 
-Pipe P1 connects B1.heatingout with J1
+Pipe P1 connects B1.heatingout /*oops! comment*/ with J1.test
     - diameter: 20 mm
-    - length: 100 mm
+    - length: 100 mm;
 
-LargePipe P2 connects J1 with C1.input
-    - length: 200 mm
+LargePipe P2 connects J1.test with C1.input
+    - length: 200 mm;
+    
+    
+MisterBoo is Radiator
+	- aapje: leuk;

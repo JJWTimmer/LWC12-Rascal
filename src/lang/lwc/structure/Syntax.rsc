@@ -1,46 +1,55 @@
 module lang::lwc::structure::Syntax
 
+lexical LAYOUT = whitespace: [\t-\n\r\ ] | Comment ;
 
-layout WhiteSpace =
-            WhitespaceAndComment*
-            !>> [#\ \t\n\r]
-            ;
+layout LAYOUTLIST = LAYOUT* !>> [\t-\n\r\ ] !>> "/*" ;
 
-lexical Newline = [\r\n];
+lexical Comment = @Foldable @category="Comment"  "/*" CommentChar* "*/" ;
 
-lexical WhitespaceAndComment 
-  = [\ \t\r\n]
-//  | @category="comment" "#" ![\n]* "\n"
-  ;
+lexical CommentChar = ![*] | Asterisk ;
 
-lexical Identifier = [a-zA-Z_][a-zA-Z0-9_]* !>> [a-zA-Z0-9_];
+lexical Asterisk = [*] !>> [/] ;
+
+keyword Reserved = "is"
+				 | "connects"
+				 | "with"
+				 ;
+
+lexical Identifier = [a-zA-Z_][a-zA-Z0-9_]* !>> [a-zA-Z0-9_] \ Reserved;
+
 lexical Int = "-"? [0-9]+;
 
-syntax Value = Identifier | Value | Metric;
-syntax Metric = Int Unit?;
-syntax ValueList = ValueList "," Value | Value;
+syntax Value = Identifier | Int | Metric | IdList;
 
-start syntax Main = Statement+;
+syntax Metric = Int Unit;
 
-syntax Statement 
-	= Element
-	| Alias
-	| Pipe
-	;
+syntax Unit = Identifier;
 
-syntax Element = Modifier* ElementType Identifier Properties;
-keyword ElementType = "Boiler" | "Valve" | "Radiator" | "CentralHeatingUnit" | "Pump" | "Pipe";
+syntax IdList = IdList "," Identifier
+				 | Identifier
+				 ;
+
+start syntax Structure = Statement+;
+
+syntax Statement = Element
+				 | AliasElem
+				 | Pipe
+				 ;
+
+syntax Element = @Foldable Modifier* ElementName Identifier Property* ";";
+
+syntax ElementName = @category="Identifier" Identifier;
 
 syntax Modifier = Identifier;
 
-syntax Alias = Identifier "is" ElementType Properties;
+syntax AliasElem = @Foldable Identifier "is" ElementName Property* ";";
 
-syntax Pipe = ElementType Identifier "connects" Connection "with" Connection Properties*;
+syntax Pipe = @Foldable ElementName Identifier "connects" ConnectionPoint "with" ConnectionPoint Property* ";";
 
-syntax Connection = Identifier ("." Identifier)?;
+syntax ConnectionPoint = ElementName "." ConnectionPointName;
+
+syntax ConnectionPointName = Identifier;
 	
-syntax Properties = Property*;
-syntax Property = "-" Identifier ":" ValueList;
+syntax Property = "-" PropertyName ":" Value;
 
-keyword Unit = "watt" | "mm";
-
+syntax PropertyName = @category="Constant" Identifier;

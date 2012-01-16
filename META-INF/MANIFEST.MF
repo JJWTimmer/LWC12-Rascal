@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: lwc-uva
+Bundle-SymbolicName: lwc_uva
+Bundle-Version: 1.0.0.qualifier
+Require-Bundle: org.eclipse.imp.pdb.values,
+ rascal

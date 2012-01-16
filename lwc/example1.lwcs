@@ -1,21 +1,11 @@
-
-#
-# Aliassen
-#
-
-
 KleinTypeRadiator is Radiator
-  - power: 240watt
+  - power: 240 watt
 
 LargePipe is Pipe
-  - diameter: 20mm
-  
-#
-# Elementen
-#
+  - diameter: 20 mm
 
 Boiler B1
-    - Capacity: x Liter
+    - Capacity: 5 Liter
 
 Radiator R1
 
@@ -26,26 +16,11 @@ Controlled Valve V1
 Controlled Discrete Valve V2
     - connections: a, b, c
 
-Valve V2
-    controlled: true
-    connections: 3
-    type: discrete
-    
-
-# (Regular/Vacuum/Venturi) Pump P1
-
-# (Controlled|Manual) (3-Way) (Discrete/Pin) Valve Identifier
-   
 Gas Source S1
 
-# (Gas|Liquid) (Exhaust|Source) Identifier
-
-# Optionally constrained
-(X-Way) Joint J1
-
-Pipe P1 connects B1.heating-out with J1
-    - diameter: 20mm
-    - length: xx mm
+Pipe P1 connects B1.heatingout with J1
+    - diameter: 20 mm
+    - length: 100 mm
 
 LargePipe P2 connects J1 with C1.input
-    - length: xx mm
+    - length: 200 mm

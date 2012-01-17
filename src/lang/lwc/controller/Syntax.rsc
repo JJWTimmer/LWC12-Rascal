@@ -47,7 +47,7 @@ syntax Assignable = variable: Variable | property: Property;
 //bij gebruik van implode wordt de operator weggegooid toch? Maar willen we die 
 //info niet eigenlijk behouden?
 syntax Assignment
-	= Assignable ("=" | "+=" | "-=" | "*=") Expression;
+	= Assignable ( "=" | "+=" | "-=" | "*=") operator Expression;
 	
 syntax IfStatement
 	= "if" Expression ":" Statement;
@@ -56,7 +56,7 @@ syntax Goto
 	= "goto" StateName;
 	
 syntax Expression 
-	= Primary
+	= prim: Primary
 	| paren: "(" Expression ")"
 	| not: "not" Expression
 	> left (

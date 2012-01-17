@@ -62,7 +62,7 @@ syntax Expression
 	> left (
          mul: Expression "*" Expression |
          div: Expression "/" Expression |
-         mod: Expression "%" Expression
+         modulo: Expression "%" Expression
     )
     > left (
          add: Expression "+" Expression |

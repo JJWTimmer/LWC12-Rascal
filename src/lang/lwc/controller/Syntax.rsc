@@ -21,8 +21,8 @@ syntax Primary
 	| Property
 	;
 	
-syntax Variable = @category="Identifier" Identifier;
-syntax Property = @category="Identifier" Identifier "." Identifier;
+syntax Variable = Identifier;
+syntax Property = Identifier "." Identifier;
 syntax StateName = @category="Variable" Identifier;
 
 start syntax Controller = TopStatements*;

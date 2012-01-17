@@ -10,7 +10,7 @@ layout LAYOUTLIST = Layout* !>> [\ \t\n\r];
 
 keyword Keyword = "if" | "state" | "condition" | "goto" | "and" | "or" | "not";
 
-lexical Identifier 	= ([a-zA-Z_][a-zA-Z0-9_]* !>> [a-zA-Z0-9_]) \ Keyword;
+lexical Identifier 	= id: ([a-zA-Z_][a-zA-Z0-9_]* !>> [a-zA-Z0-9_]) \ Keyword;
 lexical Int 		= @category="Constant" "-"? [0-9]+ !>> [0-9];
 lexical Boolean 	= @category="Identifier" "true" | "false";
 
@@ -24,14 +24,14 @@ syntax Variable = @category="Identifier" Identifier;
 syntax Property = @category="Identifier" Identifier "." Identifier;
 syntax StateName = @category="Variable" Identifier;
 
-start syntax Controller = TopStatements*;
+start syntax Controller = controller: TopStatement*;
 
-syntax TopStatements 
-	= State
+syntax TopStatement 
+	= state: State
 	/*
-	| Condition
+	| condition: Condition
 	/*
-	| Declaration 
+	| declaration: Declaration 
 	*/
 	;
 	
@@ -40,12 +40,14 @@ syntax Condition = "condition" Identifier ":" Expression;
 syntax Declaration = Identifier "=" Primary;
 
 syntax Statement 
-	= Assignment
-	| IfStatement
-	| Goto;
+	= assignment: Assignment
+	| ifstatement: IfStatement
+	| goto: Goto;
 	
-syntax Assignable = Variable | Property;
+syntax Assignable = variable: Variable | property: Property;
 
+//bij gebruik van implode wordt de operator weggegooid toch? Maar willen we die 
+//info niet eigenlijk behouden?
 syntax Assignment
 	= Assignable ("=" | "+=" | "-=" | "*=") Expression;
 	
@@ -57,31 +59,31 @@ syntax Goto
 	
 syntax Expression 
 	= Primary
-	| "(" Expression ")"
-	| "not" Expression
+	| paren: "(" Expression ")"
+	| not: "not" Expression
 	> left (
-         Expression "*" Expression |
-         Expression "/" Expression |
-         Expression "%" Expression
+         mul: Expression "*" Expression |
+         div: Expression "/" Expression |
+         mod: Expression "%" Expression
     )
     > left (
-         Expression "+" Expression |
-         Expression "-" Expression
+         add: Expression "+" Expression |
+         sub: Expression "-" Expression
     )
     > left (
          Expression "\<\<" Expression |
          Expression "\>\>" Expression
     )
     > left (
-         Expression "\<" Expression |
-         Expression "\>" Expression |
-         Expression "\<=" Expression |
-         Expression "\>=" Expression
+         lt:  Expression "\<" Expression |
+         gt:  Expression "\>" Expression |
+         slt: Expression "\<=" Expression |
+         sgt: Expression "\>=" Expression
     ) 
     > left(
-		Expression "==" Expression |
-		Expression "!=" Expression
+		eq:  Expression "==" Expression |
+		neq: Expression "!=" Expression
 	)
-	> left Expression "and" Expression
-	> left Expression "or" Expression
+	> left and: Expression "and" Expression
+	> left or:  Expression "or" Expression
 	;

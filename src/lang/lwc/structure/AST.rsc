@@ -14,7 +14,8 @@ data Property = property(PropName name, Value val);
 data PropName = propertyname(str name);
 
 data Value = id(str name)
-		   | integer(int val)
+		   | ident(Value v)
+		   | integer(bool negative, int val)
 		   | metric(bool negative, int val, str unit)
 		   | idlist(Value lst, Value v)
 		   ;
@@ -25,4 +26,4 @@ data ConnectionPoint = connectionpoint(Value id, Value connectionpoint)
 
 data ElementName = elementname(Value id);
 
-data Unit = unit(str name);
+data Unit = unit(Value name);

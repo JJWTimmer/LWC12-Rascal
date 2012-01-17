@@ -1,6 +1,9 @@
+Boiler B0
+	- Leegheid: 6;
+
 Boiler B1
     - Capacity: 5 Liter;
-    
+
 Radiator R1;
 
 CentralHeatingUnit C1;

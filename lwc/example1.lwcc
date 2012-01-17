@@ -1,4 +1,3 @@
-
 MIN_GAS=50
 MAX_GAS=150
 BURNER_RAMPUP = 5
@@ -34,13 +33,11 @@ condition boilerTempLow: Boiler.temperature < DESIRED_WATER_TEMP - WATER_MARGIN
 condition boilerTempHigh: Boiler.temperature > DESIRED_WATER_TEMP
 condition heatNeeded: roomTempLow or boilerTempLow
 
-
 state OFF: 
-	if heatNeeded 
-		goto IGNITE
+	if heatNeeded:goto IGNITE
 
 state IGNITE:
-	if Burner B1.ignite goto DISPATCH
+	if B1.ignite: goto DISPATCH
 	
 	Burner.ignite = true
 	Burner.gas_level = MIN_GAS
@@ -48,16 +45,16 @@ state IGNITE:
 	goto DISPATCH
 	
 state DISPATCH:
-	if roomTempHigh and boilerTempLow goto BOILER
-	if roomTempLow and boilerTempHigh goto RADIATOR
-	if roomTempHigh and boilerTempHigh goto RUNNING 	
+	if roomTempHigh and boilerTempLow: goto BOILER
+	if roomTempLow and boilerTempHigh: goto RADIATOR
+	if roomTempHigh and boilerTempHigh: goto RUNNING 	
 	goto BOTH
 	
 state RAMPUP:
 	
 	Burner.ignite = true
 	gas = gas 
-	Burner.gas_level += BURNER_RAMPUP
+	Burner.gas_level = Burner.gas_level + BURNER_RAMPUP
 	Pump.run = true
 		
 	goto DISPATCH
@@ -71,14 +68,14 @@ state BOILER:
 	goto RAMPUP
 	
 state BOTH:
-	Valve.state = radiators, boiler
+	Valve.state = 12 # [radiators, boiler]
 	goto RAMPUP
 	
 state RUNNING:
 	
-	Valve.state = radiators, boiler
+	Valve.state = 1 # radiators, boiler
 	Burner.gas_level = MIN_GAS
 	
 	# Idle, idle idle
 	goto DISPATCH
-	
+

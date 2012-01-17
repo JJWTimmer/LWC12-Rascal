@@ -76,10 +76,6 @@ syntax Expression
          sub: Expression "-" Expression
     )
     > left (
-         Expression "\<\<" Expression |
-         Expression "\>\>" Expression
-    )
-    > left (
          lt:  Expression "\<" Expression |
          gt:  Expression "\>" Expression |
          slt: Expression "\<=" Expression |

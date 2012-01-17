@@ -1,6 +1,6 @@
 module lang::lwc::structure::Syntax
 
-lexical LAYOUT = whitespace: [\t-\n\r\ ] | Comment ;
+lexical LAYOUT = [\t-\n\r\ ] | Comment ;
 
 layout LAYOUTLIST = LAYOUT* !>> [\t-\n\r\ ] !>> "/*" ;
 
@@ -19,10 +19,10 @@ lexical Identifier = id: ([a-zA-Z_][a-zA-Z0-9_]* !>> [a-zA-Z0-9_]) \ Reserved;
 
 lexical Int = integer: "-"?[0-9]+;
 
-syntax Value = id: Identifier
-			 | integer: Int
-			 | metric: Metric
-			 | idlist: IdList
+syntax Value = Identifier
+			 | Int
+			 | Metric
+			 | IdList
 			 ;
 
 syntax Metric = metric: Int Unit;

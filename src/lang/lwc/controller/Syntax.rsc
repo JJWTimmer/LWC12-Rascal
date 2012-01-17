@@ -4,16 +4,15 @@ lexical Comment = [#] ![\n]* [\n];
 
 lexical Layout 
 	= Whitespace: [\ \t\n\r] 
-	| @category="Comment" Comment: Comment;
+	| @category="Comment" comment: Comment;
 
 layout LAYOUTLIST = Layout* !>> [\ \t\n\r];
 
-keyword Keyword = "event" | "condition"
-                 ;
+keyword Keyword = "if" | "state" | "condition" | "goto" | "and" | "or" | "not";
 
-lexical Identifier = ([a-zA-Z_][a-zA-Z0-9_]* !>> [a-zA-Z0-9_]) \ Keyword;
-lexical Int = "-"?[1-9][0-9]*;
-lexical Boolean = "true" | "false";
+lexical Identifier 	= ([a-zA-Z_][a-zA-Z0-9_]* !>> [a-zA-Z0-9_]) \ Keyword;
+lexical Int 		= @category="Constant" "-"? [0-9]+ !>> [0-9];
+lexical Boolean 	= @category="Identifier" "true" | "false";
 
 syntax Primary 
 	= Int
@@ -21,18 +20,22 @@ syntax Primary
 	| Variable
 	| Property;
 	
-syntax Variable = Identifier;
-syntax Property = Identifier "." Identifier;
-	
+syntax Variable = @category="Identifier" Identifier;
+syntax Property = @category="Identifier" Identifier "." Identifier;
+syntax StateName = @category="Variable" Identifier;
+
 start syntax Controller = TopStatements*;
 
 syntax TopStatements 
 	= State
+	/*
 	| Condition
-	| Declaration
+	/*
+	| Declaration 
+	*/
 	;
 	
-syntax State = "state" Identifier ":" Statement*;
+syntax State = "state" StateName ":" Statement*;
 syntax Condition = "condition" Identifier ":" Expression;
 syntax Declaration = Identifier "=" Primary;
 
@@ -41,25 +44,26 @@ syntax Statement
 	| IfStatement
 	| Goto;
 	
+syntax Assignable = Variable | Property;
+
 syntax Assignment
-	= Variable "=" Expression
-	| Property "=" Expression;
+	= Assignable ("=" | "+=" | "-=" | "*=") Expression;
 	
 syntax IfStatement
 	= "if" Expression ":" Statement;
 
 syntax Goto 
-	= "goto" Identifier;
+	= "goto" StateName;
 	
 syntax Expression 
 	= Primary
 	| "(" Expression ")"
 	| "not" Expression
 	> left (
-         Expression lexp "*" Expression rexp |
+         Expression "*" Expression |
          Expression "/" Expression |
          Expression "%" Expression
-    ) 
+    )
     > left (
          Expression "+" Expression |
          Expression "-" Expression

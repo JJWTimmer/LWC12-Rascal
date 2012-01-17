@@ -8,9 +8,10 @@ lexical Layout
 
 layout LAYOUTLIST = Layout* !>> [\ \t\n\r];
 
-keyword Keyword = "if" | "state" | "condition" | "goto" | "and" | "or" | "not";
+keyword Keyword = "if" | "condition" | "goto" | "and" | "or" | "not" | "state";
 
 lexical Identifier 	= id: ([a-zA-Z_][a-zA-Z0-9_]* !>> [a-zA-Z0-9_]) \ Keyword;
+lexical ValveConnection = @category="Identifier" ":" Identifier;
 lexical Int 		= @category="Constant" "-"? [0-9]+ !>> [0-9];
 lexical Boolean 	= @category="Identifier" "true" | "false";
 
@@ -47,7 +48,7 @@ syntax Assignable = variable: Variable | property: Property;
 //bij gebruik van implode wordt de operator weggegooid toch? Maar willen we die 
 //info niet eigenlijk behouden?
 syntax Assignment
-	= Assignable ("=" | "+=" | "-=" | "*=") Expression;
+	= Assignable ("=" | "+=" | "-=" | "*=") Value;
 	
 syntax IfStatement
 	= "if" Expression ":" Statement;
@@ -55,6 +56,12 @@ syntax IfStatement
 syntax Goto 
 	= "goto" StateName;
 	
+syntax Value = Expression | ValveConfiguration;
+
+syntax ValveConfiguration 
+	= {  ValveConnection "," }+
+	;
+
 syntax Expression 
 	= Primary
 	| paren: "(" Expression ")"

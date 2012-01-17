@@ -18,7 +18,8 @@ syntax Primary
 	= Int
 	| Boolean
 	| Variable
-	| Property;
+	| Property
+	;
 	
 syntax Variable = @category="Identifier" Identifier;
 syntax Property = @category="Identifier" Identifier "." Identifier;
@@ -26,7 +27,7 @@ syntax StateName = @category="Variable" Identifier;
 
 start syntax Controller = TopStatements*;
 
-syntax TopStatements 
+syntax TopStatements
 	= State
 	| Condition
 	| Declaration 
@@ -34,7 +35,7 @@ syntax TopStatements
 	
 syntax State = "state" StateName ":" Statement*;
 syntax Condition = "condition" Identifier ":" Expression;
-syntax Declaration = Identifier "=" Primary;
+syntax Declaration = Variable "=" Primary;
 
 syntax Statement 
 	= Assignment

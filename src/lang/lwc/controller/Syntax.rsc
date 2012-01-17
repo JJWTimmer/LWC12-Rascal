@@ -28,11 +28,8 @@ start syntax Controller = TopStatements*;
 
 syntax TopStatements 
 	= State
-	/*
 	| Condition
-	/*
 	| Declaration 
-	*/
 	;
 	
 syntax State = "state" StateName ":" Statement*;

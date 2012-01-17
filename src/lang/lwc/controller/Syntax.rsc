@@ -27,7 +27,7 @@ syntax StateName = @category="Variable" Identifier;
 
 start syntax Controller = controller: TopStatement*;
 
-syntax TopStatements
+syntax TopStatement
 	= state: State
 	| condition: Condition
 	| declaration: Declaration 

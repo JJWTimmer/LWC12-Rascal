@@ -12,12 +12,6 @@ Controlled Discrete Valve V2
     
 Gas Source S1;
 
-/* Comments here!
-	And here
-	
-		More here ** // 
- */
-
 Pipe P1 connects B1.heatingout /*oops! comment*/ with J1.test
     - diameter: 20 mm
     - length: 100 mm;
@@ -25,6 +19,7 @@ Pipe P1 connects B1.heatingout /*oops! comment*/ with J1.test
 LargePipe P2 connects J1.test with C1.input
     - length: 200 mm;
     
-    
-MisterBoo is Radiator
-	- aapje: leuk;
+GroteRadiator is Radiator
+	- power: 200 watt;
+	
+Pipe P3 connects b1.heatingin with J2.test;

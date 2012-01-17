@@ -15,41 +15,45 @@ keyword Reserved = "is"
 				 | "with"
 				 ;
 
-lexical Identifier = [a-zA-Z_][a-zA-Z0-9_]* !>> [a-zA-Z0-9_] \ Reserved;
+lexical Identifier = id: ([a-zA-Z_][a-zA-Z0-9_]* !>> [a-zA-Z0-9_]) \ Reserved;
 
-lexical Int = "-"? [0-9]+;
+lexical Int = integer: "-"?[0-9]+;
 
-syntax Value = Identifier | Int | Metric | IdList;
+syntax Value = id: Identifier
+			 | integer: Int
+			 | metric: Metric
+			 | idlist: IdList
+			 ;
 
-syntax Metric = Int Unit;
+syntax Metric = metric: Int Unit;
 
-syntax Unit = Identifier;
+syntax Unit = unit: Identifier;
 
-syntax IdList = IdList "," Identifier
-				 | Identifier
-				 ;
+syntax IdList = idlist: IdList "," Identifier
+			  | Identifier
+			  ;
 
-start syntax Structure = Statement+;
+start syntax Structure = structure: Statement+;
 
 syntax Statement = Element
-				 | AliasElem
+				 | Alias
 				 | Pipe
 				 ;
 
-syntax Element = @Foldable Modifier* ElementName Identifier Property* ";";
+syntax Element = @Foldable element: Modifier* ElementName Identifier Property* ";";
 
-syntax ElementName = @category="Identifier" Identifier;
+syntax ElementName = @category="Identifier" elementname: Identifier;
 
-syntax Modifier = Identifier;
+syntax Modifier = modifier: Identifier;
 
-syntax AliasElem = @Foldable Identifier "is" ElementName Property* ";";
+syntax Alias = @Foldable aliaselem: Identifier "is" ElementName Property* ";";
 
-syntax Pipe = @Foldable ElementName Identifier "connects" ConnectionPoint "with" ConnectionPoint Property* ";";
+syntax Pipe = @Foldable pipe: ElementName Identifier "connects" ConnectionPoint "with" ConnectionPoint Property* ";";
 
-syntax ConnectionPoint = ElementName "." ConnectionPointName;
+syntax ConnectionPoint = connectionpoint: ElementName "." ConnectionPointName;
 
-syntax ConnectionPointName = Identifier;
-	
-syntax Property = "-" PropertyName ":" Value;
+syntax ConnectionPointName = connectionpointname: Identifier;
 
-syntax PropertyName = @category="Constant" Identifier;
+syntax Property = property: "-" PropertyName ":" Value;
+
+syntax PropertyName = @category="Constant" propertyname: Identifier;

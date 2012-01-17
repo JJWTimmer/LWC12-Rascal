@@ -9,7 +9,7 @@ import ParseTree;
 public void registerController() {
 
 	registerLanguage("LWC Controller Module", "lwcc", Controller(str input, loc origin) { 
-		return lang::lwc::controller::Parser::parse(input, origin);
+		return parse(input, origin);
 	});
 	
 	/*

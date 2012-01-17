@@ -4,80 +4,84 @@ lexical Comment = [#] ![\n]* [\n];
 
 lexical Layout 
 	= Whitespace: [\ \t\n\r] 
-	| @category="Comment" Comment: Comment;
+	| @category="Comment" comment: Comment;
 
 layout LAYOUTLIST = Layout* !>> [\ \t\n\r];
 
-keyword Keyword = "event" | "condition"
-                 ;
+keyword Keyword = "if" | "state" | "condition" | "goto" | "and" | "or" | "not";
 
-lexical Identifier = ([a-zA-Z_][a-zA-Z0-9_]* !>> [a-zA-Z0-9_]) \ Keyword;
-lexical Int = "-"?[1-9][0-9]*;
-lexical Boolean = "true" | "false";
+lexical Identifier 	= id: ([a-zA-Z_][a-zA-Z0-9_]* !>> [a-zA-Z0-9_]) \ Keyword;
+lexical Int 		= @category="Constant" "-"? [0-9]+ !>> [0-9];
+lexical Boolean 	= @category="Identifier" "true" | "false";
 
 syntax Primary 
 	= Int
 	| Boolean
 	| Variable
-	| Property;
+	| Property
+	;
 	
 syntax Variable = Identifier;
 syntax Property = Identifier "." Identifier;
-	
-start syntax Controller = TopStatements*;
+syntax StateName = @category="Variable" Identifier;
 
-syntax TopStatements 
-	= State
-	| Condition
-	| Declaration
+start syntax Controller = controller: TopStatement*;
+
+syntax TopStatements
+	= state: State
+	| condition: Condition
+	| declaration: Declaration 
 	;
 	
-syntax State = "state" Identifier ":" Statement*;
+syntax State = "state" StateName ":" Statement*;
 syntax Condition = "condition" Identifier ":" Expression;
-syntax Declaration = Identifier "=" Primary;
+syntax Declaration = Variable "=" Primary;
 
 syntax Statement 
-	= Assignment
-	| IfStatement
-	| Goto;
+	= assignment: Assignment
+	| ifstatement: IfStatement
+	| goto: Goto;
 	
+syntax Assignable = variable: Variable | property: Property;
+
+//bij gebruik van implode wordt de operator weggegooid toch? Maar willen we die 
+//info niet eigenlijk behouden?
 syntax Assignment
-	= Variable "=" Expression
-	| Property "=" Expression;
+	= Assignable ("=" | "+=" | "-=" | "*=") Expression;
 	
 syntax IfStatement
 	= "if" Expression ":" Statement;
 
 syntax Goto 
-	= "goto" Identifier;
+	= "goto" StateName;
 	
 syntax Expression 
 	= Primary
-	| "(" Expression ")"
-	| "not" Expression
+	| paren: "(" Expression ")"
+	| not: "not" Expression
 	> left (
-         Expression lexp "*" Expression rexp |
-         Expression "/" Expression |
-         Expression "%" Expression
-    ) 
+         mul: Expression "*" Expression |
+         div: Expression "/" Expression |
+         mod: Expression "%" Expression
+    )
     > left (
-         Expression "+" Expression |
-         Expression "-" Expression
+         add: Expression "+" Expression |
+         sub: Expression "-" Expression
     )
     > left (
          Expression "\<\<" Expression |
          Expression "\>\>" Expression
     )
     > left (
-         Expression "\<" Expression |
-         Expression "\>" Expression |
-         Expression "\<=" Expression |
-         Expression "\>=" Expression
+         lt:  Expression "\<" Expression |
+         gt:  Expression "\>" Expression |
+         slt: Expression "\<=" Expression |
+         sgt: Expression "\>=" Expression
     ) 
     > left(
-		Expression "==" Expression |
-		Expression "!=" Expression
+		eq:  Expression "==" Expression |
+		neq: Expression "!=" Expression
 	)
-	> left Expression "and" Expression
-	> left Expression "or" Expression
+	> left and: Expression "and" Expression
+	> left or:  Expression "or" Expression
 	;

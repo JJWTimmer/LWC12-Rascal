@@ -18,26 +18,24 @@ syntax Primary
 	= Int
 	| Boolean
 	| Variable
-	| Property;
+	| Property
+	;
 	
-syntax Variable = @category="Identifier" Identifier;
-syntax Property = @category="Identifier" Identifier "." Identifier;
+syntax Variable = Identifier;
+syntax Property = Identifier "." Identifier;
 syntax StateName = @category="Variable" Identifier;
 
 start syntax Controller = controller: TopStatement*;
 
-syntax TopStatement 
+syntax TopStatements
 	= state: State
-	/*
 	| condition: Condition
-	/*
 	| declaration: Declaration 
-	*/
 	;
 	
 syntax State = "state" StateName ":" Statement*;
 syntax Condition = "condition" Identifier ":" Expression;
-syntax Declaration = Identifier "=" Primary;
+syntax Declaration = Variable "=" Primary;
 
 syntax Statement 
 	= assignment: Assignment

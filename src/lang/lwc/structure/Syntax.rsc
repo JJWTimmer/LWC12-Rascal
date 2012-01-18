@@ -9,7 +9,7 @@ module lang::lwc::structure::Syntax
 lexical Comment = [#] ![\n]* [\n];
 
 lexical Layout 
-	= Whitespace: [\ \t\n\r] 
+	= [\ \t\n\r] 
 	| @category="Comment" Comment;
 
 layout LAYOUTLIST = Layout* !>> [\ \t\n\r];

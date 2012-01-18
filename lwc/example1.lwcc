@@ -60,22 +60,21 @@ state RAMPUP:
 	goto DISPATCH
 
 state RADIATOR:
-	Valve.state = radiators
+	Valve.states = radiators
 	goto RAMPUP
 	
 state BOILER:
-	Valve.state = boiler
+	Valve.states = boiler
 	goto RAMPUP
 	
 state BOTH:
-	Valve.state = 12 # [radiators, boiler]
+	Valve.states = 12 # [radiators, boiler]
 	goto RAMPUP
 	
 state RUNNING:
 	
-	Valve.state = 1 # radiators, boiler
+	Valve.states = 1 # radiators, boiler
 	Burner.gas_level = MIN_GAS
 	
 	# Idle, idle idle
 	goto DISPATCH
-

@@ -1,6 +1,7 @@
 module lang::lwc::structure::Plugin
 
 import lang::lwc::structure::Syntax;
+import lang::lwc::structure::Checker;
 
 import util::IDE;
 import ParseTree;
@@ -11,11 +12,5 @@ public void registerStructure() {
        return parse(#Structure, input, org);
 	});
     
-	/*
-	registerAnnotator("LWC Structure Module", Fighter(Fighter input) {
-		set[Message] msgs = toSet(check(implode(input)));lang::lwc::controller::Parser::parse
-		iprintln(msgs);
-		return input[@messages=msgs];
-	});
-	*/
+	registerAnnotator("LWC Structure Module", check);
 }

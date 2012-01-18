@@ -66,3 +66,6 @@ WaterPipe W8 connects R1.coldout with J1.fromradiator
 	- length: 4 m;
 WaterPipe W9 connects J1.tocentralheating with C1.coldin
 	- length: 0.5 m;
+
+#Sensors 
+TempMeter ts1 on C1.hotout;

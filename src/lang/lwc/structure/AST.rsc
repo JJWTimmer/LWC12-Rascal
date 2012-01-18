@@ -2,6 +2,8 @@ module lang::lwc::structure::AST
 /*
 	AST for LWC'12 Structure Language
 	Author: Jasper Timmer <jjwtimmer@gmail.com>
+	
+	TODO: Add interlock / variant / constraint nodes
 */
 
 data Structure = structure(list[Statement] body);
@@ -25,8 +27,8 @@ data Value = id(str name)
 		   | idlist(list[str] ids)
 		   ;
 
-data ConnectionPoint = connectionpoint(ElementName eid, ConnectionPointName connectionpoint)
-					 | singleconnection(ElementName eid);
+data ConnectionPoint = connectionpoint(str eid, ConnectionPointName connectionpoint)
+					 | singleconnection(str eid);
 
 data ConnectionPointName = connectionpointname(str id);
 

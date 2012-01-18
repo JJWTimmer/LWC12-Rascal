@@ -2,13 +2,15 @@ module lang::lwc::structure::Syntax
 /*
 	Syntax for LWC'12 Structure Language
 	Author: Jasper Timmer <jjwtimmer@gmail.com>
+	
+	TODO: Add interlock / variant / constraint syntax
 */
 
 lexical Comment = [#] ![\n]* [\n];
 
 lexical Layout 
 	= Whitespace: [\ \t\n\r] 
-	| @category="Comment" comment: Comment;
+	| @category="Comment" Comment;
 
 layout LAYOUTLIST = Layout* !>> [\ \t\n\r];
 
@@ -23,11 +25,11 @@ lexical Identifier = ([a-zA-Z_][a-zA-Z0-9_]* !>> [a-zA-Z0-9_]) \ Reserved;
 lexical Real = "-"? [0-9]+ "." [0-9]+;
 lexical Int = "-"? [0-9]+ !>> [.0-9];
 
-syntax Num = integer: Int
-			| realnum: Real
-			;
+syntax Num = @category="Constant" integer: Int
+		   | @category="Constant" realnum: Real
+		   ;
 
-syntax Value = id: Identifier
+syntax Value = @category="Variable" id: Identifier
 			 | Num
 			 | Metric
 			 | idlist: IdList
@@ -35,9 +37,9 @@ syntax Value = id: Identifier
 
 syntax Metric = metric: Num Unit;
 
-syntax Unit = unit: Identifier;
+syntax Unit = @category="Identifier" unit: Identifier;
 
-syntax IdList = {Identifier  ","}+;
+syntax IdList = @category="Constant" {Identifier  ","}+;
 
 start syntax Structure = structure: Statement+;
 
@@ -49,22 +51,22 @@ syntax Statement = Element
 
 syntax Element = @Foldable element: Modifier* ElementName Identifier Property* ";";
 
-syntax ElementName = @category="Identifier" elementname: Identifier;
+syntax ElementName = @category="Type" elementname: Identifier;
 
-syntax Modifier = modifier: Identifier;
+syntax Modifier = @category="Type" modifier: Identifier;
 
 syntax Alias = @Foldable aliaselem: Identifier "is" Modifier* ElementName Property* ";";
 
 syntax Pipe = @Foldable pipe: ElementName Identifier "connects" ConnectionPoint "with" ConnectionPoint Property* ";";
 
-syntax ConnectionPoint = connectionpoint: ElementName "." ConnectionPointName
-					   | singleconnection: ElementName
+syntax ConnectionPoint = connectionpoint: Identifier "." ConnectionPointName
+					   | singleconnection: Identifier
 					   ;
 
-syntax ConnectionPointName = connectionpointname: Identifier;
+syntax ConnectionPointName = @category="Identifier" connectionpointname: Identifier;
 
 syntax Property = property: "-" PropertyName ":" Value;
 
-syntax PropertyName = @category="Constant" propertyname: Identifier;
+syntax PropertyName = @category="Identifier" propertyname: Identifier;
 
-syntax MeasurementDevice = @Foldable sensor: Modifier* ElementName Identifier "on" ConnectionPoint ";";
+syntax MeasurementDevice = sensor: Modifier* ElementName Identifier "on" ConnectionPoint ";";

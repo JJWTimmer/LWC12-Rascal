@@ -1,28 +1,68 @@
-Boiler B0
-	- Leegheid: 6;
-
+#Elements
 Boiler B1
-    - Capacity: 5 Liter;
+	- capacity: 50 Liter;
+	
+Controlled Discrete Valve V1
+	- connections: pumpin, boilerout, radiatorout;
 
-Radiator R1;
+
+Radiator R1
+	- power: 600 watt;
+
+Regular Pump P1;
+
+Joint J1
+	- connections: fromboiler, fromradiator, tocentralheating;
 
 CentralHeatingUnit C1;
 
-Controlled Valve V1;
+#Aliasses
+WaterPipe is Pipe
+	- diamter: 22 mm;
+
+GasPipe is Pipe
+	- diameter: 15 mm;
+
+FlowMeter is Liquid Flow Sensor;
+TempMeter is Temperature Sensor;
+
+#Elements to outside
+
+##Gas
+Gas Source GasIn;
 
 Controlled Discrete Valve V2
-    - connections: a, b, c;
-    
-Gas Source S1;
+	- connections: gasin, gasout;
 
-Pipe P1 connects B1.heatingout /*oops! comment*/ with J1.test
-    - diameter: 20 mm
-    - length: 100 mm;
+GasPipe G1 connects GasIn with V2.gasin
+	- length: 2.5 m;
 
-LargePipe P2 connects J1.test with C1.input
-    - length: 200 mm;
-    
-GroteRadiator is Radiator
-	- power: 200 watt;
+GasPipe G2 connects V2.gasout with C1.gasin
+	- length: 0.5 m;
+
+##Water
+Liquid Source ColdWaterIn;
+
+Liquid Exhaust HotWaterOut;
+
+WaterPipe W1 connects ColdWaterIn with B1.outsidein
+	- length: 2 m;
 	
-Pipe P3 connects b1.heatingin with J2.test;
+WaterPipe W2 connects HotWaterOut with B1.outsideout
+	- length: 2 m;
+
+#Waterpipes
+WaterPipe W3 connects C1.hotout with P1.in
+	- length: 1 m;
+WaterPipe W4 connects P1.out with V1.hotin
+	- length: 1.5 m;
+WaterPipe W5 connects V1.boilerout with B1.hotin
+	- length: 0.8 m;
+WaterPipe W6 connects B1.coldout with J1.fromboiler
+	- length: 1.2 m;
+WaterPipe W7 connects V1.radiatorout with R1.hotin
+	- length: 3 m;
+WaterPipe W8 connects R1.coldout with J1.fromradiator
+	- length: 4 m;
+WaterPipe W9 connects J1.tocentralheating with C1.coldin
+	- length: 0.5 m;

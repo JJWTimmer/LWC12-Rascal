@@ -1,0 +1,1 @@
+module lang::lwc::structure::Outliner

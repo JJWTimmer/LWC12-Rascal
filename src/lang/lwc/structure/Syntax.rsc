@@ -32,21 +32,20 @@ syntax Num = @category="Constant" integer: Int
 syntax Value = @category="Variable" id: Identifier
 			 | Num
 			 | Metric
-			 | idlist: IdList
 			 ;
 
 syntax Metric = metric: Num Unit;
 
 syntax Unit = @category="Identifier" unit: Identifier;
 
-syntax IdList = @category="Constant" {Identifier  ","}+;
+syntax ValueList = valuelist: {Value  ","}+;
 
 start syntax Structure = structure: Statement+;
 
 syntax Statement = Element
 				 | Alias
 				 | Pipe
-				 | MeasurementDevice
+				 | Sensor
 				 ;
 
 syntax Element = @Foldable element: Modifier* ElementName Identifier Property* ";";
@@ -65,8 +64,8 @@ syntax ConnectionPoint = connectionpoint: Identifier "." ConnectionPointName
 
 syntax ConnectionPointName = @category="Identifier" connectionpointname: Identifier;
 
-syntax Property = property: "-" PropertyName ":" Value;
+syntax Property = property: "-" PropertyName ":" ValueList;
 
 syntax PropertyName = @category="Identifier" propertyname: Identifier;
 
-syntax MeasurementDevice = sensor: Modifier* ElementName Identifier "on" ConnectionPoint ";";
+syntax Sensor = sensor: Identifier "on" ConnectionPoint Property*";";

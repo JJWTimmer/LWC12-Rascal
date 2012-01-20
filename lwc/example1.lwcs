@@ -68,4 +68,6 @@ WaterPipe W9 connects J1.tocentralheating with C1.coldin
 	- length: 0.5 m;
 
 #Sensors 
-TempMeter ts1 on C1.hotout;
+ts1 on C1.hotout
+	- type: temperature
+	- subtype: controller;

@@ -11,12 +11,12 @@ data Structure = structure(list[Statement] body);
 data Statement = element(list[Modifier] modifiers, ElementName etype, str name, list[Property] properties)
 		  	   | aliaselem(str id, list[Modifier] modifiers, ElementName etype, list[Property] properties)
 		       | pipe(ElementName pid, str name, ConnectionPoint from, ConnectionPoint to, list[Property] properties)
-		       | sensor(list[Modifier] modifiers, ElementName etype, str name, ConnectionPoint on)
+		       | sensor(str name, ConnectionPoint on, list[Property] properties)
 		       ;
 
 data Modifier = modifier(str id);
 
-data Property = property(PropName name, Value val);
+data Property = property(PropName name, ValueList val);
 
 data PropName = propertyname(str name);
 
@@ -24,8 +24,10 @@ data Value = id(str name)
 		   | integer(int val)
 		   | realnum(real number)
 		   | metric(Value size, Unit unit)
-		   | idlist(list[str] ids)
 		   ;
+		   
+data ValueList = valuelist(list[Value] values);
+
 
 data ConnectionPoint = connectionpoint(str eid, ConnectionPointName connectionpoint)
 					 | singleconnection(str eid);
@@ -43,6 +45,7 @@ anno loc Modifier@location;
 anno loc Property@location;
 anno loc PropName@location;
 anno loc Value@location;
+anno loc ValueList@location;
 anno loc ConnectionPoint@location;
 anno loc ConnectionPointName@location;
 anno loc ElementName@location;

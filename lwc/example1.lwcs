@@ -23,9 +23,6 @@ WaterPipe is Pipe
 GasPipe is Pipe
 	- diameter: 15 mm;
 
-FlowMeter is Liquid Flow Sensor;
-TempMeter is Temperature Sensor;
-
 #Elements to outside
 
 ##Gas
@@ -67,7 +64,22 @@ WaterPipe W8 connects R1.coldout with J1.fromradiator
 WaterPipe W9 connects J1.tocentralheating with C1.coldin
 	- length: 0.5 m;
 
-#Sensors 
-ts1 on C1.hotout
-	- type: temperature
-	- subtype: controller;
+#Sensors
+F1 on W1
+	- state: liquid
+	- type: flow;
+	
+T2 on B1
+	- type: temperature;
+
+S3 on P1
+	- type: speed;
+
+T4 on C1.burner
+	- type: temperature;
+
+T5 on C1
+	- type: temperature;
+
+T6 on W3
+	- type: temperature;

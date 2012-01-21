@@ -2,8 +2,6 @@ module lang::lwc::structure::Syntax
 /*
 	Syntax for LWC'12 Structure Language
 	Author: Jasper Timmer <jjwtimmer@gmail.com>
-	
-	TODO: Add interlock / variant / constraint syntax
 */
 
 lexical Comment = [#] ![\n]* [\n];
@@ -18,54 +16,97 @@ keyword Reserved = "is"
 				 | "connects"
 				 | "with"
 				 | "on"
+				 | "constraint"
+				 | "true"
+				 | "false"
+				 | "and"
+				 | "or"
 				 ;
 
 lexical Identifier = ([a-zA-Z_][a-zA-Z0-9_]* !>> [a-zA-Z0-9_]) \ Reserved;
 
 lexical Real = "-"? [0-9]+ "." [0-9]+;
 lexical Int = "-"? [0-9]+ !>> [.0-9];
+syntax Boolean = @category="Constant" booltrue: "true"
+			   | @category="Constant" boolfalse: "false"
+			   ;
 
 syntax Num = @category="Constant" integer: Int
 		   | @category="Constant" realnum: Real
 		   ;
 
-syntax Value = @category="Variable" id: Identifier
+syntax Assignable = property: Identifier "." Property
+				  | variable: Identifier
+				  ;
+
+syntax Property = @category="Variable" propname: Identifier;
+
+syntax Value = Assignable
 			 | Num
 			 | Metric
+			 | Boolean
 			 ;
 
 syntax Metric = metric: Num Unit;
 
-syntax Unit = @category="Identifier" unit: Identifier;
+syntax Unit = @category="Constant" unit: Identifier;
 
 syntax ValueList = valuelist: {Value  ","}+;
 
+syntax Expression = val: Value
+				  | paren: "(" Expression ")"
+				  | not: "not" Expression
+				  > left (
+			      	mul: Expression "*" Expression |
+			      	div: Expression "/" Expression |
+			      	mdl: Expression "%" Expression
+			      )
+			      > left (
+			      	add: Expression "+" Expression |
+					sub: Expression "-" Expression
+			      )
+			      > left (
+			      	lt:  Expression "\<" Expression |
+			        gt:  Expression "\>" Expression |
+			        slt: Expression "\<=" Expression |
+			        sgt: Expression "\>=" Expression
+			      ) 
+			      > left(
+					eq:  Expression "==" Expression |
+					neq: Expression "!=" Expression
+				  )
+				  > left and: Expression "and" Expression
+				  > left or:  Expression "or" Expression
+				  ;
+
+syntax PossibleValues = ValueList
+					  | Expression
+					  ;				 
+				 
+syntax ElementName = @category="Type" elementname: Identifier;
+
+syntax Modifier = @category="Type" modifier: Identifier;
+
+syntax Asset = asset: "-" AssetName ":" ValueList;
+
+syntax AssetName = @category="Identifier" assetname: Identifier;
+
+//Start
 start syntax Structure = structure: Statement+;
 
 syntax Statement = Element
 				 | Alias
 				 | Pipe
 				 | Sensor
+				 | Constraint
 				 ;
 
-syntax Element = @Foldable element: Modifier* ElementName Identifier Property* ";";
+syntax Element = @Foldable element: Modifier* ElementName Identifier Asset* ";";
 
-syntax ElementName = @category="Type" elementname: Identifier;
+syntax Alias = @Foldable aliaselem: Identifier "is" Modifier* ElementName Asset* ";";
 
-syntax Modifier = @category="Type" modifier: Identifier;
+syntax Pipe = @Foldable pipe: ElementName Identifier "connects" Assignable "with" Assignable Asset* ";";
 
-syntax Alias = @Foldable aliaselem: Identifier "is" Modifier* ElementName Property* ";";
+syntax Sensor = @Foldable sensor: Identifier "on" Assignable Asset*";";
 
-syntax Pipe = @Foldable pipe: ElementName Identifier "connects" ConnectionPoint "with" ConnectionPoint Property* ";";
-
-syntax ConnectionPoint = connectionpoint: Identifier "." ConnectionPointName
-					   | singleconnection: Identifier
-					   ;
-
-syntax ConnectionPointName = @category="Identifier" connectionpointname: Identifier;
-
-syntax Property = property: "-" PropertyName ":" ValueList;
-
-syntax PropertyName = @category="Identifier" propertyname: Identifier;
-
-syntax Sensor = sensor: Identifier "on" ConnectionPoint Property*";";
+syntax Constraint = @Foldable constraint: "constraint" Identifier ":" Expression ";";

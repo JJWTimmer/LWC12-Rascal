@@ -5,7 +5,6 @@ Boiler B1
 Controlled Discrete Valve V1
 	- connections: pumpin, boilerout, radiatorout;
 
-
 Radiator R1
 	- power: 600 watt;
 
@@ -66,9 +65,8 @@ WaterPipe W9 connects J1.tocentralheating with C1.coldin
 
 #Sensors
 F1 on W1
-	- state: liquid
 	- type: flow;
-	
+
 T2 on B1
 	- type: temperature;
 
@@ -83,3 +81,14 @@ T5 on C1
 
 T6 on W3
 	- type: temperature;
+
+#Constraints
+constraint cs1:
+	W3.pressure < 2.0 bar;
+	
+constraint cs2:
+	#flow units always per minute
+	(G1.flow > 0 m3 and G1.flow < 0.1 m3) or G1.flow == 0;
+	
+constraint cs2:
+	(T5 + T6) < T2;

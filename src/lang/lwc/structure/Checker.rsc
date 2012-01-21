@@ -9,6 +9,7 @@ import lang::lwc::structure::Syntax;
 
 import Message;
 import ParseTree;
+import IO;
 
 anno set[Message] lang::lwc::structure::Syntax::Structure@messages;
 
@@ -22,10 +23,11 @@ public lang::lwc::structure::Syntax::Structure check(lang::lwc::structure::Synta
 	set[str] aliasnames = {};
 	set[str] pipenames = {};
 	set[str] sensornames = {};
+	set[str] constraintnames = {};
 	
 	top-down visit (ast) {
 		case E:element(_, _, str Name, _) : {
-			if (Name in elementnames || Name in aliasnames || Name in pipenames || Name in sensornames) {
+			if (Name in elementnames || Name in aliasnames || Name in pipenames || Name in sensornames || Name in constraintnames) {
 				Message msg = error("Duplicate name", E@location);
 				msgs += msg;
 			} else {
@@ -34,7 +36,7 @@ public lang::lwc::structure::Syntax::Structure check(lang::lwc::structure::Synta
 		}
 		
 		case P:pipe(_, str Name, _, _, _) : {
-			if (Name in elementnames || Name in aliasnames || Name in pipenames || Name in sensornames) {
+			if (Name in elementnames || Name in aliasnames || Name in pipenames || Name in sensornames || Name in constraintnames) {
 				Message msg = error("Duplicate name", P@location);
 				msgs += msg;
 			} else {
@@ -43,7 +45,7 @@ public lang::lwc::structure::Syntax::Structure check(lang::lwc::structure::Synta
 		}
 		
 		case A:aliaselem(str Name, _, _, _) : {
-			if (Name in elementnames || Name in aliasnames || Name in pipenames || Name in sensornames) {
+			if (Name in elementnames || Name in aliasnames || Name in pipenames || Name in sensornames || Name in constraintnames) {
 				Message msg = error("Duplicate name", A@location);
 				msgs += msg;
 			} else {
@@ -52,7 +54,7 @@ public lang::lwc::structure::Syntax::Structure check(lang::lwc::structure::Synta
 		}
 		
 		case S:sensor(_, _, str Name, _) : {
-			if (Name in elementnames || Name in aliasnames || Name in pipenames || Name in sensornames) {
+			if (Name in elementnames || Name in aliasnames || Name in pipenames || Name in sensornames || Name in constraintnames) {
 				Message msg = error("Duplicate name", S@location);
 				msgs += msg;
 			} else {
@@ -60,6 +62,14 @@ public lang::lwc::structure::Syntax::Structure check(lang::lwc::structure::Synta
 			}
 		}
 		
+		case C:constraint(str Name, _) : {
+			if (Name in elementnames || Name in aliasnames || Name in pipenames || Name in sensornames || Name in constraintnames) {
+				Message msg = error("Duplicate name", C@location);
+				msgs += msg;
+			} else {
+				constraintnames += Name;
+			}
+		}		
 		case E:elementname(str Name) : {
 			if (Name notin {"Pipe", "Joint", "Valve", "Radiator", "CentralHeatingUnit", "Boiler", "Source", "Exhaust", "Pump", "Sensor"} && Name notin aliasnames) {
 				Message msg = error("Invalid element\nShould be one of:\nPipe, Joint, Valve, Radiator, CentralHeatingUnit, Boiler, Source, Exhaust, Pump, Sensor\nOr an alias which should be declared before use.", E@location);
@@ -69,5 +79,7 @@ public lang::lwc::structure::Syntax::Structure check(lang::lwc::structure::Synta
 	}
 
 	tree@messages += msgs;
+	iprintln(msgs);
+	
 	return tree;
 }

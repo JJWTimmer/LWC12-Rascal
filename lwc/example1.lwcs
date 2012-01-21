@@ -66,7 +66,6 @@ WaterPipe W9 connects J1.tocentralheating with C1.coldin
 
 #Sensors
 F1 on W1
-	- state: liquid
 	- type: flow;
 	
 T2 on B1
@@ -83,3 +82,10 @@ T5 on C1
 
 T6 on W3
 	- type: temperature;
+
+#Constraints
+constrain W9 with
+	- max_presure: 2 bar;
+
+constrain T5 with
+	- max_temp: 85 celcius;

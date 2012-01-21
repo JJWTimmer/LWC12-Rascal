@@ -2,8 +2,6 @@ module lang::lwc::structure::AST
 /*
 	AST for LWC'12 Structure Language
 	Author: Jasper Timmer <jjwtimmer@gmail.com>
-	
-	TODO: Add interlock / variant / constraint nodes
 */
 
 data Structure = structure(list[Statement] body);
@@ -12,6 +10,7 @@ data Statement = element(list[Modifier] modifiers, ElementName etype, str name, 
 		  	   | aliaselem(str id, list[Modifier] modifiers, ElementName etype, list[Property] properties)
 		       | pipe(ElementName pid, str name, ConnectionPoint from, ConnectionPoint to, list[Property] properties)
 		       | sensor(str name, ConnectionPoint on, list[Property] properties)
+		       | constraint(str name, list[Property])
 		       ;
 
 data Modifier = modifier(str id);

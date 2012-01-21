@@ -2,8 +2,6 @@ module lang::lwc::structure::Syntax
 /*
 	Syntax for LWC'12 Structure Language
 	Author: Jasper Timmer <jjwtimmer@gmail.com>
-	
-	TODO: Add interlock / variant / constraint syntax
 */
 
 lexical Comment = [#] ![\n]* [\n];
@@ -18,6 +16,7 @@ keyword Reserved = "is"
 				 | "connects"
 				 | "with"
 				 | "on"
+				 | "constrain"
 				 ;
 
 lexical Identifier = ([a-zA-Z_][a-zA-Z0-9_]* !>> [a-zA-Z0-9_]) \ Reserved;
@@ -46,6 +45,7 @@ syntax Statement = Element
 				 | Alias
 				 | Pipe
 				 | Sensor
+				 | Constraint
 				 ;
 
 syntax Element = @Foldable element: Modifier* ElementName Identifier Property* ";";
@@ -69,3 +69,5 @@ syntax Property = property: "-" PropertyName ":" ValueList;
 syntax PropertyName = @category="Identifier" propertyname: Identifier;
 
 syntax Sensor = sensor: Identifier "on" ConnectionPoint Property*";";
+
+syntax Constraint = @category="MetaAmbiguity" constraint: "constrain" Identifier "with" Property* ";";

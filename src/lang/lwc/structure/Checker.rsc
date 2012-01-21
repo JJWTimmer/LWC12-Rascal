@@ -78,7 +78,7 @@ public lang::lwc::structure::Syntax::Structure check(lang::lwc::structure::Synta
 		}
 	}
 
-	tree@messages += msgs;
+	tree@messages = msgs;
 	iprintln(msgs);
 	
 	return tree;

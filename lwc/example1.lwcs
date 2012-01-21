@@ -17,7 +17,7 @@ CentralHeatingUnit C1;
 
 #Aliasses
 WaterPipe is Pipe
-	- diamter: 22 mm;
+	- diameter: 22 mm;
 
 GasPipe is Pipe
 	- diameter: 15 mm;

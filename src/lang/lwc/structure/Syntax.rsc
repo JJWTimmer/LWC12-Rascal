@@ -4,7 +4,7 @@ module lang::lwc::structure::Syntax
 	Author: Jasper Timmer <jjwtimmer@gmail.com>
 */
 
-lexical Comment = [#] ![\n]* [\n];
+lexical Comment = [#] ![\n]* $;
 
 lexical Layout 
 	= [\ \t\n\r] 

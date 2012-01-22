@@ -1,8 +1,17 @@
+#Aliases
+WaterPipe is Pipe
+	- diameter: 22 mm;
+
+GasPipe is Pipe
+	- diameter: 15 mm;
+	
+CDV is Controller Discrete Valve;
+
 #Elements
 Boiler B1
 	- capacity: 50 Liter;
-	
-Controlled Discrete Valve V1
+
+CDV V1
 	- connections: pumpin, boilerout, radiatorout;
 
 Radiator R1
@@ -15,19 +24,12 @@ Joint J1
 
 CentralHeatingUnit C1;
 
-#Aliasses
-WaterPipe is Pipe
-	- diameter: 22 mm;
-
-GasPipe is Pipe
-	- diameter: 15 mm;
-
 #Elements to outside
 
 ##Gas
 Gas Source GasIn;
 
-Controlled Discrete Valve V2
+CDV V2
 	- connections: gasin, gasout;
 
 GasPipe G1 connects GasIn with V2.gasin

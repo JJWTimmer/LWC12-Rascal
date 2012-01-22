@@ -33,7 +33,7 @@ data AssetNode = assetnode();
 
 data AliasInfo = ai(list[Modifier] modifiers, str elemname, list[Asset] assets);
 
-public node outliner(lang::lwc::structure::Syntax::Structure tree) {
+public node outliner(start[Structure] tree) {
 	lang::lwc::structure::AST::Structure ast = implode(#lang::lwc::structure::AST::Structure, tree);
 	
 	list[ElementNode] el = [];

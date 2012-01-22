@@ -11,9 +11,9 @@ import Message;
 import ParseTree;
 import IO;
 
-anno set[Message] lang::lwc::structure::Syntax::Structure@messages;
+anno set[Message] start[Structure]@messages;
 
-public lang::lwc::structure::Syntax::Structure check(lang::lwc::structure::Syntax::Structure tree) {
+public start[Structure] check(start[Structure] tree) {
 	//create AST
 	lang::lwc::structure::AST::Structure ast = implode(#lang::lwc::structure::AST::Structure, tree);
 	

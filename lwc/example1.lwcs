@@ -1,11 +1,11 @@
-#Aliases
+#Aliasses
 WaterPipe is Pipe
 	- diameter: 22 mm;
 
 GasPipe is Pipe
 	- diameter: 15 mm;
 	
-CDV is Controller Discrete Valve;
+CDV is Controlled Discrete Valve;
 
 #Elements
 Boiler B1
@@ -36,7 +36,7 @@ GasPipe G1 connects GasIn with V2.gasin
 	- length: 2.5 m;
 
 GasPipe G2 connects V2.gasout with C1.gasin
-	- length: 0.5 m;
+	- length: 0.5 m; #test
 
 ##Water
 Liquid Source ColdWaterIn;
@@ -94,3 +94,4 @@ constraint cs2:
 	
 constraint cs2:
 	(T5 + T6) < T2;
+	

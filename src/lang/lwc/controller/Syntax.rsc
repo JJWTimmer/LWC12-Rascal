@@ -6,7 +6,7 @@ lexical Layout
 	= Whitespace: [\ \t\n\r] 
 	| @category="Comment" comment: Comment;
 
-layout LAYOUTLIST = Layout* !>> [\ \t\n\r];
+layout LAYOUTLIST = Layout* !>> [\ \t\n\r#];
 
 keyword Keyword = "if" | "condition" | "goto" | "and" | "or" | "not" | "state";
 

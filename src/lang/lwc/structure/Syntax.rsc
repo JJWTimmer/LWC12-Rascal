@@ -10,7 +10,7 @@ lexical Layout
 	= [\ \t\n\r] 
 	| @category="Comment" Comment;
 
-layout LAYOUTLIST = Layout* !>> [\ \t\n\r];
+layout LAYOUTLIST = Layout* !>> [\ \t\n\r#];
 
 keyword Reserved = "is"
 				 | "connects"
@@ -92,7 +92,7 @@ syntax Asset = asset: "-" AssetName ":" ValueList;
 syntax AssetName = @category="Identifier" assetname: Identifier;
 
 //Start
-start syntax Structure = structure: Statement+;
+start syntax Structure = structure: Statement*;
 
 syntax Statement = Element
 				 | Alias

@@ -49,10 +49,8 @@ public start[Structure] check(start[Structure] tree) {
 	
 		// Check for duplicate element names
 		case E:element(_, _, str Name, _) : {
-
-			if (Name in elementnames || Name in aliasnames || Name in pipenames || Name in constraintnames) {
-				Message msg = error("Duplicate name", E@location);
-				msgs += msg;
+			if (Name in (elementnames + aliasnames + pipenames + constraintnames)) {
+				msgs += error("Duplicate name", E@location);
 			} else {
 				elementnames += Name;
 			}
@@ -60,11 +58,8 @@ public start[Structure] check(start[Structure] tree) {
 		
 		// Check for duplicate pipe names
 		case P:pipe(_, str Name, _, _, _) : {
-
-			if (Name in elementnames || Name in aliasnames || Name in pipenames || Name in constraintnames) {
-
-				Message msg = error("Duplicate name", P@location);
-				msgs += msg;
+			if (Name in (elementnames + aliasnames + pipenames + constraintnames)) {
+				msgs += error("Duplicate name", P@location);
 			} else {
 				pipenames += Name;
 			}
@@ -72,9 +67,8 @@ public start[Structure] check(start[Structure] tree) {
 		
 		// Check of duplicate alias names
 		case A:aliaselem(str Name, _, _, _) : {
-			if (Name in elementnames || Name in aliasnames || Name in pipenames || Name in constraintnames) {
-				Message msg = error("Duplicate name", A@location);
-				msgs += msg;
+			if (Name in (elementnames + aliasnames + pipenames + constraintnames)) {
+				msgs += error("Duplicate name", A@location);
 			} else {
 				aliasnames += Name;
 			}
@@ -82,7 +76,7 @@ public start[Structure] check(start[Structure] tree) {
 		
 		// Check of duplicate constraint names
 		case C:constraint(str Name, _) : {
-			if (Name in elementnames || Name in aliasnames || Name in pipenames || Name in constraintnames) {
+			if (Name in (elementnames + aliasnames + pipenames + constraintnames)) {
 				Message msg = error("Duplicate name", C@location);
 				msgs += msg;
 			} else {

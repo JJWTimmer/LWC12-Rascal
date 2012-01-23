@@ -21,7 +21,7 @@ anno set[Message] start[Structure]@messages;
 public start[Structure] check(start[Structure] tree) {
 
 	// Allowed elements names
-	set[str] elementNames = {
+	set[str] allowedElementNames = {
 		"Boiler", 
 		"CentralHeatingUnit", 
 		"Exhaust", 
@@ -38,7 +38,6 @@ public start[Structure] check(start[Structure] tree) {
 	lang::lwc::structure::AST::Structure ast = implode(#lang::lwc::structure::AST::Structure, tree);
 	ast = propagateAliasses(ast);
 	
-	
 	// make empty sets
 	set[Message] msgs = {};
 	set[str] elementnames = {};
@@ -47,7 +46,8 @@ public start[Structure] check(start[Structure] tree) {
 	set[str] constraintnames = {};
 	
 	visit (ast) {
-
+	
+		// Check for duplicate element names
 		case E:element(_, _, str Name, _) : {
 
 			if (Name in elementnames || Name in aliasnames || Name in pipenames || Name in constraintnames) {
@@ -80,6 +80,7 @@ public start[Structure] check(start[Structure] tree) {
 			}
 		}
 		
+		// Check of duplicate constraint names
 		case C:constraint(str Name, _) : {
 			if (Name in elementnames || Name in aliasnames || Name in pipenames || Name in constraintnames) {
 				Message msg = error("Duplicate name", C@location);
@@ -90,15 +91,12 @@ public start[Structure] check(start[Structure] tree) {
 		}
 		
 		// Validate element names
-
-		case E:elementname(str name) : {
-			if (name notin (elementnames + aliasnames)) {
-				str possibleAliases = implode(aliasnames, ", ");
-
+		case E:elementname(str name): {
+			if (name notin (allowedElementNames + aliasnames)) {
 				str msg = "Invalid element\n" +
 						  "Should be one of:\n" + 
-						  implode(elementnames, ", ");
-
+						  implode(allowedElementNames, ", ");
+				
 				if (size(aliasnames) > 0)
 					msg += "\nOr one of the following aliases:\n"
 						+ implode(aliasnames, ", ");

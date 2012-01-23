@@ -13,6 +13,7 @@ import lang::lwc::Util;
 
 import Message;
 import ParseTree;
+import IO;
 import Set;
 
 anno set[Message] start[Structure]@messages;
@@ -75,7 +76,7 @@ public start[Structure] check(start[Structure] tree) {
 				Message msg = error("Duplicate name", A@location);
 				msgs += msg;
 			} else {
-				aliasNames += Name;
+				aliasnames += Name;
 			}
 		}
 		
@@ -89,14 +90,16 @@ public start[Structure] check(start[Structure] tree) {
 		}
 		
 		// Validate element names
+
 		case E:elementname(str name) : {
 			if (name notin (elementnames + aliasnames)) {
 				str possibleAliases = implode(aliasnames, ", ");
+
 				str msg = "Invalid element\n" +
 						  "Should be one of:\n" + 
 						  implode(elementnames, ", ");
-					
-				if (size(aliasnames))
+
+				if (size(aliasnames) > 0)
 					msg += "\nOr one of the following aliases:\n"
 						+ implode(aliasnames, ", ");
 				

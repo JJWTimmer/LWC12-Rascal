@@ -17,6 +17,7 @@ import IO;
 import Set;
 
 anno set[Message] start[Structure]@messages;
+anno loc node@location;
 
 public start[Structure] check(start[Structure] tree) {
 
@@ -45,44 +46,24 @@ public start[Structure] check(start[Structure] tree) {
 	set[str] pipenames = {};
 	set[str] constraintnames = {};
 	
+	bool isDuplicate(str name) = name in (elementnames + aliasnames + pipenames + constraintnames);
+	
+	set[str] checkDuplicate(str name, node N) {
+		if (isDuplicate(name)) {
+			msgs += error("Duplicate name\nThe name <name> is already in use", N@location); 
+		 	return {};
+		} else {
+			return {name};
+		}
+	}
+	
 	visit (ast) {
 	
-		// Check for duplicate element names
-		case E:element(_, _, str Name, _) : {
-			if (Name in (elementnames + aliasnames + pipenames + constraintnames)) {
-				msgs += error("Duplicate name", E@location);
-			} else {
-				elementnames += Name;
-			}
-		}
-		
-		// Check for duplicate pipe names
-		case P:pipe(_, str Name, _, _, _) : {
-			if (Name in (elementnames + aliasnames + pipenames + constraintnames)) {
-				msgs += error("Duplicate name", P@location);
-			} else {
-				pipenames += Name;
-			}
-		}
-		
-		// Check of duplicate alias names
-		case A:aliaselem(str Name, _, _, _) : {
-			if (Name in (elementnames + aliasnames + pipenames + constraintnames)) {
-				msgs += error("Duplicate name", A@location);
-			} else {
-				aliasnames += Name;
-			}
-		}
-		
-		// Check of duplicate constraint names
-		case C:constraint(str Name, _) : {
-			if (Name in (elementnames + aliasnames + pipenames + constraintnames)) {
-				Message msg = error("Duplicate name", C@location);
-				msgs += msg;
-			} else {
-				constraintnames += Name;
-			}
-		}
+		// Check for duplicate names for elements, pipes, aliases and aliases
+		case E:element(_, _, str name, _)		: elementnames += checkDuplicate(name, E);
+		case P:pipe(_, str name, _, _, _)		: pipenames += checkDuplicate(name, P);
+		case C:constraint(str name, _)			: constraintnames += checkDuplicate(name, C);
+		case A:aliaselem(str name, _, _, _)		: aliasnames += checkDuplicate(name, A);
 		
 		// Validate element names
 		case E:elementname(str name): {
@@ -100,6 +81,5 @@ public start[Structure] check(start[Structure] tree) {
 		}
 	}
 
-	tree@messages = msgs;
-	return tree;
+	return tree[@messages = msgs];
 }

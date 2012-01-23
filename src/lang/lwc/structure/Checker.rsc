@@ -13,6 +13,7 @@ import lang::lwc::Util;
 
 import Message;
 import ParseTree;
+import Set;
 
 anno set[Message] start[Structure]@messages;
 
@@ -40,7 +41,7 @@ public start[Structure] check(start[Structure] tree) {
 	// make empty sets
 	set[Message] msgs = {};
 	set[str] elementnames = {};
-	set[str] aliasNames = {};
+	set[str] aliasnames = {};
 	set[str] pipenames = {};
 	set[str] constraintnames = {};
 	
@@ -48,7 +49,7 @@ public start[Structure] check(start[Structure] tree) {
 
 		case E:element(_, _, str Name, _) : {
 
-			if (Name in elementnames || Name in aliasNames || Name in pipenames || Name in constraintnames) {
+			if (Name in elementnames || Name in aliasnames || Name in pipenames || Name in constraintnames) {
 				Message msg = error("Duplicate name", E@location);
 				msgs += msg;
 			} else {
@@ -59,7 +60,7 @@ public start[Structure] check(start[Structure] tree) {
 		// Check for duplicate pipe names
 		case P:pipe(_, str Name, _, _, _) : {
 
-			if (Name in elementnames || Name in aliasNames || Name in pipenames || Name in constraintnames) {
+			if (Name in elementnames || Name in aliasnames || Name in pipenames || Name in constraintnames) {
 
 				Message msg = error("Duplicate name", P@location);
 				msgs += msg;
@@ -89,15 +90,15 @@ public start[Structure] check(start[Structure] tree) {
 		
 		// Validate element names
 		case E:elementname(str name) : {
-			if (name notin (elementNames + aliasNames)) {
-				str possibleAliases = implode(aliasNames, ", ");
+			if (name notin (elementnames + aliasnames)) {
+				str possibleAliases = implode(aliasnames, ", ");
 				str msg = "Invalid element\n" +
 						  "Should be one of:\n" + 
-						  implode(elementNames, ", ");
+						  implode(elementnames, ", ");
 					
-				if (size(aliasNames))
+				if (size(aliasnames))
 					msg += "\nOr one of the following aliases:\n"
-						+ implode(aliasNames, ", ");
+						+ implode(aliasnames, ", ");
 				
 				msgs += error(msg, E@location);
 			}

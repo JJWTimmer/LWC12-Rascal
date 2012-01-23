@@ -2,27 +2,30 @@ module lang::lwc::controller::AST
 
 data Controller = controller(list[TopStatement] topstatements);
 
-//2 opties voor TopStatement. Bij optie 2 moet je ook ADT's voor State,
-//Condition en Declaration maken. Wel completer, maar is het ook mooier?
-//Deze keuze moet bij meer ADT's gemaakt worden.
-//optie 1
 data TopStatement = state(StateName state, list[Statement] statements)
-                  | condition(Identifier name, Expression expression)
-                  | declaration(Identifier name, Primary val);
+                  | condition(str condition, Expression expression)
+                  | declaration(Primary variable, Primary val);
                   
-//optie 2
-/*
-data TopStatement = state(State s)
-                  | condition(Condition c)
-                  | declaration(Declaration d);
-*/
-data Statement = assignment(Assignable assignable, str operator, Expression expression)
+data StateName = statename(str name);
+
+data Statement = assignment(Assignable assignable, str operator, Value val)
                | ifstatement(Expression expression, Statement statement)
                | goto(StateName state);
-               
-data Assignable = variable(Identifier name)
-                | property(Identifier element, Identifier prop);
-                
+                    
+data Value = expression(Expression e)
+           | connections(list[str] connections);
+           
+data Assignable = property(str element, Property property) | variable(str var);
+
+data Property = propname(str name);
+           
+data Primary = integer(int val)
+             | booltrue()
+             | boolfalse()
+             | variable(str var)
+             | property(str element, str attribute)
+             ; 
+                             
 data Expression = prim(Primary p)
                 | paren(Expression e)
                 | not(Expression e)

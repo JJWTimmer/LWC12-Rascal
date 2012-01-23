@@ -8,56 +8,55 @@ lexical Layout
 
 layout LAYOUTLIST = Layout* !>> [\ \t\n\r#];
 
-keyword Keyword = "if" | "condition" | "goto" | "and" | "or" | "not" | "state" | "true" | "false";
+keyword Keyword = "if" | "condition" | "goto" | "and" | "or" | "not" | "state";
 
-lexical Identifier 	= id: ([a-zA-Z_][a-zA-Z0-9_]* !>> [a-zA-Z0-9_]) \ Keyword;
+lexical Identifier 	= ([a-zA-Z_][a-zA-Z0-9_]* !>> [a-zA-Z0-9_]) \ Keyword;
 lexical ValveConnection = @category="Identifier" ":" Identifier;
 lexical Int 		= @category="Constant" "-"? [0-9]+ !>> [0-9];
-lexical Boolean 	= @category="Identifier" "true" | "false";
+lexical Boolean 	= @category="Identifier" booltrue: "true" | boolfalse: "false";
 
 syntax Primary 
-	= Int
+	= integer: Int
 	| Boolean
-	| Variable
-	| Property
+	| Assignable
 	;
 	
-syntax Variable = Identifier;
-syntax Property = Identifier "." Identifier;
-syntax StateName = @category="Variable" Identifier;
+syntax Variable = variable: Identifier;
+syntax Property = propname: Identifier;
+syntax StateName = @category="Variable" statename: Identifier;
 
 start syntax Controller = controller: TopStatement*;
 
 syntax TopStatement
-	= state: State
-	| condition: Condition
-	| declaration: Declaration 
+	= State
+	| Condition
+	| Declaration 
 	;
 	
-syntax State = "state" StateName ":" Statement*;
-syntax Condition = "condition" Identifier ":" Expression;
-syntax Declaration = Variable "=" Primary;
+syntax State = state: "state" StateName ":" Statement*;
+syntax Condition = condition: "condition" Identifier ":" Expression;
+syntax Declaration = declaration: Variable "=" Primary;
 
 syntax Statement 
-	= assignment: Assignment
-	| ifstatement: IfStatement
-	| goto: Goto;
+	= Assignment
+	| IfStatement
+	| Goto;
 	
-syntax Assignable = variable: Variable | property: Property;
+syntax Assignable = property: Identifier "." Property | Variable;
 
 syntax Assignment
-	= Assignable ( "=" | "+=" | "-=" | "*=") operator Value;
+	= assignment: Assignable ( "=" | "+=" | "-=" | "*=") operator Value;
 	
 syntax IfStatement
-	= "if" Expression ":" Statement;
+	= ifstatement: "if" Expression ":" Statement;
 
 syntax Goto 
-	= "goto" StateName;
+	= goto: "goto" StateName;
 	
-syntax Value = Expression | ValveConfiguration;
+syntax Value = expression: Expression | ValveConfiguration;
 
 syntax ValveConfiguration 
-	= {  ValveConnection "," }+
+	= connections: {  ValveConnection "," }+
 	;
 
 syntax Expression 

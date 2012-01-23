@@ -54,13 +54,13 @@ WaterPipe W2 connects HotWaterOut with B1.outsideout
 #Waterpipes
 WaterPipe W3 connects C1.hotout with P1.in
 	- length: 1 m;
-WaterPipe W4 connects P1.out with V1.hotin
+WaterPipe W4 connects P1.out with V1.pumpin
 	- length: 1.5 m;
 WaterPipe W5 connects V1.boilerout with B1.hotin
 	- length: 0.8 m;
 WaterPipe W6 connects B1.coldout with J1.fromboiler
 	- length: 1.2 m;
-WaterPipe W7 connects V1.radiatorout with R1.hotin
+WaterPipe W7 connects V1.pumpin with R1.hotin
 	- length: 3 m;
 WaterPipe W8 connects R1.coldout with J1.fromradiator
 	- length: 4 m;
@@ -79,6 +79,6 @@ constraint cs2:
 	#flow units always per minute
 	(G1.flow > 0 m3 and G1.flow < 0.1 m3) or G1.flow == 0;
 	
-constraint cs3:
+constraint cs2:
 	(T5 + T6) < T2;
 	

@@ -34,11 +34,11 @@ syntax Num = @category="Constant" integer: Int
 		   | @category="Constant" realnum: Real
 		   ;
 
-syntax Assignable = property: Identifier "." Property
+syntax Assignable = property: Identifier "." PropName
 				  | variable: Identifier
 				  ;
 
-syntax Property = @category="Variable" propname: Identifier;
+syntax PropName = @category="Variable" propname: Identifier;
 
 syntax Value = Assignable
 			 | Num

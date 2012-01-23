@@ -1,6 +1,11 @@
 module lang::lwc::structure::Checker
 
 /*
+
+	Todo:
+		- Check number of pipes on a connection
+		- Hint about possible connections if an invalid connection name is used
+		
 	AST Checker for LWC'12 Structure Language
 	Author: Jasper Timmer <jjwtimmer@gmail.com>
 */
@@ -24,11 +29,12 @@ data Context = context(
 	set[str] aliasnames,
 	set[str] pipenames,
 	set[str] constraintnames,
+	map[str, set[str]] elementconnections,
 
 	set[Message] messages	
 ); 
 
-Context initContext() = context({}, {}, {}, {}, {});
+Context initContext() = context({}, {}, {}, {}, (), {});
 
 anno set[Message] start[Structure]@messages;
 anno loc node@location;
@@ -44,7 +50,27 @@ public start[Structure] check(start[Structure] tree) {
 	return tree[@messages = context.messages];
 }
 
-Context checkSecondPass(Context context, Structure tree) = context;
+Context checkSecondPass(Context context, Structure tree) {
+
+	visit(tree) {
+		case pipe(_, _, Value from, Value to, _) : {
+			
+			if (property(str Var, propname(str pname)) := from) {
+				if (context.elementconnections[Var]? && pname notin context.elementconnections[Var]) {
+					context.messages += { error("Connectionpoint does not exist", from@location) };
+				}
+			}
+			
+			if (property(str Var, propname(str pname)) := to) {
+				if (context.elementconnections[Var]? && pname notin context.elementconnections[Var]) {
+					context.messages += { error("Connectionpoint does not exist", to@location) };
+				}
+			}
+		}
+	}
+	
+	return context;
+}
 
 Context checkFirstPass(Context context, Structure tree) {
 
@@ -62,7 +88,6 @@ Context checkFirstPass(Context context, Structure tree) {
 		"Valve"
 	};
 		
-	// make empty sets
 	bool isDuplicate(str name) = name in (
 		context.elementnames + 
 		context.aliasnames + 
@@ -77,10 +102,20 @@ Context checkFirstPass(Context context, Structure tree) {
 			return {name};
 		}
 	}
+
 	
 	visit (tree) {
 		// Check for duplicate names for elements, pipes, aliases and aliases
-		case E:element(_, _, str name, _)		: context.elementnames += checkDuplicate(name, E);
+		case E:element(_, _, str name, list[Asset] Assets): 
+		{
+			context.elementnames += checkDuplicate(name, E);
+			
+			// Collect connectionpoints
+			if ([A*, asset(assetname("connections"), valuelist(list[Value] Values)), B*] := Assets) {
+				context.elementconnections[name] = { connpoint | variable(str connpoint) <- Values};
+			}
+		}
+		
 		case P:pipe(_, str name, _, _, _)		: context.pipenames += checkDuplicate(name, P);
 		case C:constraint(str name, _)			: context.constraintnames += checkDuplicate(name, C);
 		case A:aliaselem(str name, _, _, _)		: context.aliasnames += checkDuplicate(name, A);
@@ -91,7 +126,7 @@ Context checkFirstPass(Context context, Structure tree) {
 				str msg = "Invalid element\n" +
 						  "Should be one of:\n" + 
 						  implode(allowedElementNames, ", ");
-				
+
 				if (size(context.aliasnames) > 0)
 					msg += "\nOr one of the following aliases:\n"
 						+ implode(context.aliasnames, ", ");
@@ -100,6 +135,7 @@ Context checkFirstPass(Context context, Structure tree) {
 			}
 		}
 	}
-
+	
 	return context;
 }
+

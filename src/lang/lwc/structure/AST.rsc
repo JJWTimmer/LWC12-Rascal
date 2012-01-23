@@ -23,13 +23,13 @@ data Value = integer(int val)
 		   | metric(Value size, Unit unit)
 		   | booltrue()
 		   | boolfalse()
-		   | property(str var, Property property)
+		   | property(str var, PropName property)
 		   | variable(str var)
 		   ;
 		   
 data ValueList = valuelist(list[Value] values);
 
-data Property = propname(str name);
+data PropName = propname(str name);
 
 data ElementName = elementname(str id);
 

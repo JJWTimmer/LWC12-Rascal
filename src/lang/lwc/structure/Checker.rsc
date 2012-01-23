@@ -17,6 +17,7 @@ import IO;
 import Set;
 
 anno set[Message] start[Structure]@messages;
+anno loc node@location;
 
 public start[Structure] check(start[Structure] tree) {
 
@@ -44,58 +45,34 @@ public start[Structure] check(start[Structure] tree) {
 	set[str] aliasnames = {};
 	set[str] pipenames = {};
 	set[str] constraintnames = {};
-	
 	map[str, set[str]] elementconnections = ();
+
+	bool isDuplicate(str name) = name in (elementnames + aliasnames + pipenames + constraintnames);
+	
+	set[str] checkDuplicate(str name, node N) {
+		if (isDuplicate(name)) {
+			msgs += error("Duplicate name\nThe name <name> is already in use", N@location); 
+		 	return {};
+		} else {
+			return {name};
+		}
+	}
+
 	
 	visit (ast) {
 	
-		// Check for duplicate element names
-		case E:element(_, _, str Name, list[Asset] Assets) : {
-
-			if (Name in elementnames || Name in aliasnames || Name in pipenames || Name in constraintnames) {
-				Message msg = error("Duplicate name", E@location);
-				msgs += msg;
-			} else {
-				elementnames += Name;
-			}
-			
+		// Check for duplicate names for elements, pipes, aliases and aliases
+		case E:element(_, _, str name, list[Asset] Assets)		: {
+			elementnames += checkDuplicate(name, E);
 			//collect connectionpoints
 			if ([A*, asset(assetname("connections"), valuelist(list[Value] Values)), B*] := Assets) {
 				set[str] connectionpoints = { connpoint | variable(str connpoint) <- Values};
 				elementconnections[Name] = connectionpoints;
 			}
 		}
-		
-		// Check for duplicate pipe names
-		case P:pipe(_, str Name, _, _, _) : {
-			if (Name in elementnames || Name in aliasnames || Name in pipenames || Name in constraintnames) {
-
-				Message msg = error("Duplicate name", P@location);
-				msgs += msg;
-			} else {
-				pipenames += Name;
-			}
-		}
-		
-		// Check of duplicate alias names
-		case A:aliaselem(str Name, _, _, _) : {
-			if (Name in elementnames || Name in aliasnames || Name in pipenames || Name in constraintnames) {
-				Message msg = error("Duplicate name", A@location);
-				msgs += msg;
-			} else {
-				aliasnames += Name;
-			}
-		}
-		
-		// Check of duplicate constraint names
-		case C:constraint(str Name, _) : {
-			if (Name in elementnames || Name in aliasnames || Name in pipenames || Name in constraintnames) {
-				Message msg = error("Duplicate name", C@location);
-				msgs += msg;
-			} else {
-				constraintnames += Name;
-			}
-		}
+		case P:pipe(_, str name, _, _, _)		: pipenames += checkDuplicate(name, P);
+		case C:constraint(str name, _)			: constraintnames += checkDuplicate(name, C);
+		case A:aliaselem(str name, _, _, _)		: aliasnames += checkDuplicate(name, A);
 		
 		// Validate element names
 		case E:elementname(str name): {
@@ -135,6 +112,6 @@ public start[Structure] check(start[Structure] tree) {
 	}
 
 	iprintln(msgs);
-	tree@messages = msgs;
-	return tree;
+
+	return tree[@messages = msgs];
 }

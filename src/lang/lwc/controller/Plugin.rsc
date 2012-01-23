@@ -8,7 +8,7 @@ import ParseTree;
 
 public void registerController() {
 
-	registerLanguage("LWC Controller Module", "lwcc", Controller(str input, loc origin) { 
+	registerLanguage("LWC Controller Module", "lwcc", start[Controller](str input, loc origin) { 
 		return parse(input, origin);
 	});
 	

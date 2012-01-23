@@ -1,6 +1,6 @@
 module lang::lwc::controller::Syntax
 
-lexical Comment = [#] ![\n]* [\n];
+lexical Comment = [#] ![\n]* $;
 
 lexical Layout 
 	= Whitespace: [\ \t\n\r] 

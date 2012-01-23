@@ -8,7 +8,7 @@ lexical Layout
 
 layout LAYOUTLIST = Layout* !>> [\ \t\n\r#];
 
-keyword Keyword = "if" | "condition" | "goto" | "and" | "or" | "not" | "state";
+keyword Keyword = "if" | "condition" | "goto" | "and" | "or" | "not" | "state" | "true" | "false";
 
 lexical Identifier 	= id: ([a-zA-Z_][a-zA-Z0-9_]* !>> [a-zA-Z0-9_]) \ Keyword;
 lexical ValveConnection = @category="Identifier" ":" Identifier;

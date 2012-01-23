@@ -12,6 +12,7 @@ import lang::lwc::Util;
 import Message;
 import ParseTree;
 import IO;
+import Set;
 
 anno set[Message] start[Structure]@messages;
 
@@ -95,14 +96,14 @@ public start[Structure] check(start[Structure] tree) {
 		}
 		
 		// Validate element names
-		case E:elementname(str name) : {
+		case E:elementname(str name): {
 			if (name notin (elementNames + aliasNames)) {
 				str possibleAliases = implode(aliasNames, ", ");
 				str msg = "Invalid element\n" +
 						  "Should be one of:\n" + 
 						  implode(elementNames, ", ");
 					
-				if (size(aliasNames))
+				if (size(aliasNames) > 0)
 					msg += "\nOr one of the following aliases:\n"
 						+ implode(aliasNames, ", ");
 				

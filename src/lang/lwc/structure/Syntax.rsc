@@ -15,7 +15,6 @@ layout LAYOUTLIST = Layout* !>> [\ \t\n\r#];
 keyword Reserved = "is"
 				 | "connects"
 				 | "with"
-				 | "on"
 				 | "constraint"
 				 | "true"
 				 | "false"
@@ -77,11 +76,7 @@ syntax Expression = val: Value
 				  )
 				  > left and: Expression "and" Expression
 				  > left or:  Expression "or" Expression
-				  ;
-
-syntax PossibleValues = ValueList
-					  | Expression
-					  ;				 
+				  ;		 
 				 
 syntax ElementName = @category="Type" elementname: Identifier;
 
@@ -97,7 +92,6 @@ start syntax Structure = structure: Statement*;
 syntax Statement = Element
 				 | Alias
 				 | Pipe
-				 | Sensor
 				 | Constraint
 				 ;
 
@@ -106,7 +100,5 @@ syntax Element = @Foldable element: Modifier* ElementName Identifier Asset* ";";
 syntax Alias = @Foldable aliaselem: Identifier "is" Modifier* ElementName Asset* ";";
 
 syntax Pipe = @Foldable pipe: ElementName Identifier "connects" Assignable "with" Assignable Asset* ";";
-
-syntax Sensor = @Foldable sensor: Identifier "on" Assignable Asset*";";
 
 syntax Constraint = @Foldable constraint: "constraint" Identifier ":" Expression ";";

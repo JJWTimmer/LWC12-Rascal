@@ -1,3 +1,14 @@
+#Aliasses
+WaterPipe is Pipe
+	- diameter: 22 mm;
+
+GasPipe is Pipe
+	- diameter: 15 mm;
+	
+TempSensor is Sensor
+	- type: Temperature
+	- range: 0, 100;
+	
 #Elements
 Boiler B1
 	- capacity: 50 Liter;
@@ -14,13 +25,6 @@ Joint J1
 	- connections: fromboiler, fromradiator, tocentralheating;
 
 CentralHeatingUnit C1;
-
-#Aliasses
-WaterPipe is Pipe
-	- diamter: 22 mm;
-
-GasPipe is Pipe
-	- diameter: 15 mm;
 
 #Elements to outside
 
@@ -64,23 +68,8 @@ WaterPipe W9 connects J1.tocentralheating with C1.coldin
 	- length: 0.5 m;
 
 #Sensors
-F1 on W1
-	- type: flow;
-
-T2 on B1
-	- type: temperature;
-
-S3 on P1
-	- type: speed;
-
-T4 on C1.burner
-	- type: temperature;
-
-T5 on C1
-	- type: temperature;
-
-T6 on W3
-	- type: temperature;
+TempSensor T6
+	- on: W3; 
 
 #Constraints
 constraint cs1:

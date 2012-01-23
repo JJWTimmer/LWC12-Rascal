@@ -2,14 +2,14 @@ module lang::lwc::structure::PropagateAliasses
 
 import lang::lwc::structure::AST;
 
-data AliasInfo = ai(list[Modifier] modifiers, ElementName elemname, list[Asset] assets);
+data AliasInfo = ai(list[Modifier] modifiers, str elemname, list[Asset] assets);
 
 public Structure propagateAliasses(Structure ast) {
 	map[str, AliasInfo] aliasinfo = ();
 	
 	visit(ast) {
 		case aliaselem(str Id, list[Modifier] Modifiers, elementname(str ElemName), list[Asset] Assets) : {
-			ai = aliasinfo(Modifiers, ElemName, Assets);
+			ai = ai(Modifiers, ElemName, Assets);
 			aliasinfo[Id] = ai;
 		}
 	}

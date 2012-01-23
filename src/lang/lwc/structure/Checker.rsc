@@ -16,7 +16,7 @@ anno set[Message] start[Structure]@messages;
 public start[Structure] check(start[Structure] tree) {
 	//create AST
 	lang::lwc::structure::AST::Structure ast = implode(#lang::lwc::structure::AST::Structure, tree);
-	lang::lwc::structure::AST::Structure ast = propagateAliasses(ast);
+	ast = propagateAliasses(ast);
 	
 	
 	//make empty sets
@@ -24,12 +24,11 @@ public start[Structure] check(start[Structure] tree) {
 	set[str] elementnames = {};
 	set[str] aliasnames = {};
 	set[str] pipenames = {};
-	set[str] sensornames = {};
 	set[str] constraintnames = {};
 	
 	visit (ast) {
 		case E:element(_, _, str Name, _) : {
-			if (Name in elementnames || Name in aliasnames || Name in pipenames || Name in sensornames || Name in constraintnames) {
+			if (Name in elementnames || Name in aliasnames || Name in pipenames || Name in constraintnames) {
 				Message msg = error("Duplicate name", E@location);
 				msgs += msg;
 			} else {
@@ -38,7 +37,7 @@ public start[Structure] check(start[Structure] tree) {
 		}
 		
 		case P:pipe(_, str Name, _, _, _) : {
-			if (Name in elementnames || Name in aliasnames || Name in pipenames || Name in sensornames || Name in constraintnames) {
+			if (Name in elementnames || Name in aliasnames || Name in pipenames || Name in constraintnames) {
 				Message msg = error("Duplicate name", P@location);
 				msgs += msg;
 			} else {
@@ -47,7 +46,7 @@ public start[Structure] check(start[Structure] tree) {
 		}
 		
 		case A:aliaselem(str Name, _, _, _) : {
-			if (Name in elementnames || Name in aliasnames || Name in pipenames || Name in sensornames || Name in constraintnames) {
+			if (Name in elementnames || Name in aliasnames || Name in pipenames || Name in constraintnames) {
 				Message msg = error("Duplicate name", A@location);
 				msgs += msg;
 			} else {
@@ -55,17 +54,8 @@ public start[Structure] check(start[Structure] tree) {
 			}
 		}
 		
-		case S:sensor(_, _, str Name, _) : {
-			if (Name in elementnames || Name in aliasnames || Name in pipenames || Name in sensornames || Name in constraintnames) {
-				Message msg = error("Duplicate name", S@location);
-				msgs += msg;
-			} else {
-				sensornames += Name;
-			}
-		}
-		
 		case C:constraint(str Name, _) : {
-			if (Name in elementnames || Name in aliasnames || Name in pipenames || Name in sensornames || Name in constraintnames) {
+			if (Name in elementnames || Name in aliasnames || Name in pipenames || Name in constraintnames) {
 				Message msg = error("Duplicate name", C@location);
 				msgs += msg;
 			} else {

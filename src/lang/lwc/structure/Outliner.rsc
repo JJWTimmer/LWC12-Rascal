@@ -5,88 +5,61 @@ module lang::lwc::structure::Outliner
 */
 import lang::lwc::structure::Syntax;
 import lang::lwc::structure::AST;
+import lang::lwc::structure::PropagateAliasses;
 
 import ParseTree;
 import util::IDE;
 import Node;
 
 data Outline = root(StructureOutline structure);
-data StructureOutline = structureoutline(Aliases aliases, Elements elements, Pipes pipes, Sensors sensors, Constraints constraints);
+data StructureOutline = structureoutline(Aliases aliases, Elements elements, Pipes pipes, Constraints constraints);
 
-data Elements = elements(list[ElementNode]);
+data Elements = elements(list[node]);
 data Aliases = aliases(list[AliasNode]);
 data Pipes = pipes(list[PipeNode]);
-data Sensors = sensors(list[SensorNode]);
 data Constraints = constraints(list[ConstraintNode]);
 
 data Modifiers = modifiers(list[ModifierNode]);
 data Assets = assets(list[AssetNode]);
 
 
-data ElementNode = elementnode(Modifiers modifiers, Assets assets);
+data ElementNode = elementnode(str Etype, Modifiers modifiers, Assets assets);
 data AliasNode = aliasnode(Modifiers modifiers, Assets assets);
 data PipeNode = pipenode(Assets assets);
-data SensorNode = sensornode(Assets assets);
 data ConstraintNode = constraintnode();
 data ModifierNode = modifiernode();
 data AssetNode = assetnode();
 
-data AliasInfo = ai(list[Modifier] modifiers, str elemname, list[Asset] assets);
-
 public node outliner(start[Structure] tree) {
 	lang::lwc::structure::AST::Structure ast = implode(#lang::lwc::structure::AST::Structure, tree);
+	ast = propagateAliasses(ast);
 	
 	list[ElementNode] el = [];
 	list[AliasNode] al = [];
 	list[PipeNode] pi = [];
-	list[SensorNode] se = [];
-	list[ConstraintNode] co = [];	
+	list[ConstraintNode] co = [];
 	
-	map[str, AliasInfo] aliasmap = ();
-
-	//first visit all aliasses to build property table
-	visit (ast) {		
-		case A:aliaselem(str Id, list[Modifier] Mods, elementname(ElemName), list[Asset] Assets) : {
-			if (aliasmap[ElemName]?) {
-				Mods += aliasmap[ElemName].modifiers;
-				Assets += aliasmap[ElemName].assets;
-			}
+	visit (ast) {
+		case A:aliaselem(str Name, list[Modifier] Mods, _, list[Asset] Assets) : {
 			an = aliasnode(setAnnotations(modifiers(getModNode(Mods)), ("label" : "Modifiers")), setAnnotations(assets(getAssetNode(Assets)), ("label" : "Assets")));
-			an@label = Id;
+			an@label = Name;
 			an@\loc = A@location;
 			al += an;
 			
-			aliasmap[Id] = ai(Mods, ElemName, Assets);
 		}
-	}
 	
-	visit (ast) {
-		case E:element(list[Modifier] Mods, elementname(ElemName), str Name, list[Asset] Assets) : {
-			if (aliasmap[ElemName]?) {
-				Mods += aliasmap[ElemName].modifiers;
-				Assets += aliasmap[ElemName].assets;
-			}
-			en = elementnode(setAnnotations(modifiers(getModNode(Mods)), ("label" : "Modifiers")), setAnnotations(assets(getAssetNode(Assets)), ("label" : "Assets")));
+		case E:element(list[Modifier] Mods, elementname(str Etype), str Name, list[Asset] Assets) : {
+			en = elementnode(Etype, setAnnotations(modifiers(getModNode(Mods)), ("label" : "Modifiers")), setAnnotations(assets(getAssetNode(Assets)), ("label" : "Assets")));
 			en@label = Name;
 			en@\loc = E@location;
 			el += en;
 		}
 		
-		case P:pipe(elementname(ElemName), str Name, _, _, list[Asset] Assets) : {
-			if (aliasmap[ElemName]?) {
-				Assets += aliasmap[ElemName].assets;
-			}
+		case P:pipe(_, str Name, _, _, list[Asset] Assets) : {
 			pn = pipenode(setAnnotations(assets(getAssetNode(Assets)), ("label" : "Assets")));
 			pn@label = Name;
 			pn@\loc = P@location;
 			pi += pn;
-		}
-		
-		case S:sensor(str Name, _, list[Asset] Assets) : {
-			sn = sensornode(setAnnotations(assets(getAssetNode(Assets)), ("label" : "Assets")));
-			sn@label = Name;
-			sn@\loc = S@location;
-			se += sn;
 		}
 		
 		case C:constraint(str Name, _) : {
@@ -97,14 +70,23 @@ public node outliner(start[Structure] tree) {
 		}
 	}
 	
-	Elements elements = elements(el);
+	set[str] etypes = {etype | elementnode(str etype, _, _) <- el};
+	
+	list[node] elemnodes = [];
+	
+	for (etype <- etypes) {
+		node etypenode = "<etype>list"([setAnnotations("<e@label>"(modifiers, assets), ("loc":e@\loc)) | e: elementnode(etype, Modifiers modifiers, Assets assets) <- el]);
+		etypenode@label = etype;
+		elemnodes += etypenode;
+	}
+	
+	Elements elements = elements(elemnodes);
 	Aliases aliases = aliases(al);
 	Pipes pipes = pipes(pi);
-	Sensors sensors = sensors(se);
 	Constraints constraints = constraints(co);
 	
 	
-	StructureOutline so = structureoutline(aliases, elements, pipes, sensors, constraints);
+	StructureOutline so = structureoutline(aliases, elements, pipes, constraints);
 	so@label = "Structure";
 	Outline root = root(so);
 

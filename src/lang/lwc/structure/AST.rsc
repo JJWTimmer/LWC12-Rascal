@@ -7,9 +7,8 @@ module lang::lwc::structure::AST
 data Structure = structure(list[Statement] body);
 
 data Statement = element(list[Modifier] modifiers, ElementName etype, str name, list[Asset] assets)
-		  	   | aliaselem(str id, list[Modifier] modifiers, ElementName etype, list[Asset] assets)
-		       | pipe(ElementName pid, str name, Value from, Value to, list[Asset] assets)
-		       | sensor(str name, Value on, list[Asset] assets)
+		  	   | aliaselem(str name, list[Modifier] modifiers, ElementName etype, list[Asset] assets)
+		       | pipe(ElementName etype, str name, Value from, Value to, list[Asset] assets)
 		       | constraint(str name, Expression expression)
 		       ;
 

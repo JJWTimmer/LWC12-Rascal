@@ -6,16 +6,18 @@ module lang::lwc::structure::Checker
 
 import lang::lwc::structure::AST;
 import lang::lwc::structure::Syntax;
+import lang::lwc::structure::PropagateAliasses;
 
 import Message;
 import ParseTree;
-import IO;
 
 anno set[Message] start[Structure]@messages;
 
 public start[Structure] check(start[Structure] tree) {
 	//create AST
 	lang::lwc::structure::AST::Structure ast = implode(#lang::lwc::structure::AST::Structure, tree);
+	lang::lwc::structure::AST::Structure ast = propagateAliasses(ast);
+	
 	
 	//make empty sets
 	set[Message] msgs = {};
@@ -25,7 +27,7 @@ public start[Structure] check(start[Structure] tree) {
 	set[str] sensornames = {};
 	set[str] constraintnames = {};
 	
-	top-down visit (ast) {
+	visit (ast) {
 		case E:element(_, _, str Name, _) : {
 			if (Name in elementnames || Name in aliasnames || Name in pipenames || Name in sensornames || Name in constraintnames) {
 				Message msg = error("Duplicate name", E@location);
@@ -72,14 +74,12 @@ public start[Structure] check(start[Structure] tree) {
 		}		
 		case E:elementname(str Name) : {
 			if (Name notin {"Pipe", "Joint", "Valve", "Radiator", "CentralHeatingUnit", "Boiler", "Source", "Exhaust", "Pump", "Sensor"} && Name notin aliasnames) {
-				Message msg = error("Invalid element\nShould be one of:\nPipe, Joint, Valve, Radiator, CentralHeatingUnit, Boiler, Source, Exhaust, Pump, Sensor\nOr an alias which should be declared before use.", E@location);
+				Message msg = error("Invalid element\nShould be one of:\nPipe, Joint, Valve, Radiator, CentralHeatingUnit, Boiler, Source, Exhaust, Pump, Sensor\nOr an alias name.", E@location);
 				msgs += msg;
 			}
 		}
 	}
 
 	tree@messages = msgs;
-	iprintln(msgs);
-	
 	return tree;
 }

@@ -1,17 +1,8 @@
-#Aliasses
-WaterPipe is Pipe
-	- diameter: 22 mm;
-
-GasPipe is Pipe
-	- diameter: 15 mm;
-	
-CDV is Controlled Discrete Valve;
-
 #Elements
 Boiler B1
 	- capacity: 50 Liter;
-
-CDV V1
+	
+Controlled Discrete Valve V1
 	- connections: pumpin, boilerout, radiatorout;
 
 Radiator R1
@@ -24,19 +15,26 @@ Joint J1
 
 CentralHeatingUnit C1;
 
+#Aliasses
+WaterPipe is Pipe
+	- diamter: 22 mm;
+
+GasPipe is Pipe
+	- diameter: 15 mm;
+
 #Elements to outside
 
 ##Gas
 Gas Source GasIn;
 
-CDV V2
+Controlled Discrete Valve V2
 	- connections: gasin, gasout;
 
 GasPipe G1 connects GasIn with V2.gasin
 	- length: 2.5 m;
 
 GasPipe G2 connects V2.gasout with C1.gasin
-	- length: 0.5 m; #test
+	- length: 0.5 m;
 
 ##Water
 Liquid Source ColdWaterIn;
@@ -92,6 +90,6 @@ constraint cs2:
 	#flow units always per minute
 	(G1.flow > 0 m3 and G1.flow < 0.1 m3) or G1.flow == 0;
 	
-constraint cs2:
+constraint cs3:
 	(T5 + T6) < T2;
-	#test!
+	

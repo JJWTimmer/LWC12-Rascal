@@ -45,10 +45,12 @@ public start[Structure] check(start[Structure] tree) {
 	set[str] pipenames = {};
 	set[str] constraintnames = {};
 	
+	map[str, set[str]] elementconnections = ();
+	
 	visit (ast) {
 	
 		// Check for duplicate element names
-		case E:element(_, _, str Name, _) : {
+		case E:element(_, _, str Name, list[Asset] Assets) : {
 
 			if (Name in elementnames || Name in aliasnames || Name in pipenames || Name in constraintnames) {
 				Message msg = error("Duplicate name", E@location);
@@ -56,11 +58,16 @@ public start[Structure] check(start[Structure] tree) {
 			} else {
 				elementnames += Name;
 			}
+			
+			//collect connectionpoints
+			if ([A*, asset(assetname("connections"), valuelist(list[Value] Values)), B*] := Assets) {
+				set[str] connectionpoints = { connpoint | variable(str connpoint) <- Values};
+				elementconnections[Name] = connectionpoints;
+			}
 		}
 		
 		// Check for duplicate pipe names
 		case P:pipe(_, str Name, _, _, _) : {
-
 			if (Name in elementnames || Name in aliasnames || Name in pipenames || Name in constraintnames) {
 
 				Message msg = error("Duplicate name", P@location);
@@ -105,7 +112,29 @@ public start[Structure] check(start[Structure] tree) {
 			}
 		}
 	}
+	
+	iprintln(elementconnections);
+	
+	// Check valid connection points	
+	visit(ast) {
 
+		case pipe(_, _, Value from, Value to, _) : {
+			
+			if (property(str Var, propname(str pname)) := from) {
+				if (elementconnections[Var]? && pname notin elementconnections[Var]) {
+					msgs += error("Connectionpoint does not exist", from@location);
+				}
+			}
+			
+			if (property(str Var, propname(str pname)) := to) {
+				if (elementconnections[Var]? && pname notin elementconnections[Var]) {
+					msgs += error("Connectionpoint does not exist", to@location);
+				}
+			}
+		}
+	}
+
+	iprintln(msgs);
 	tree@messages = msgs;
 	return tree;
 }

@@ -13,51 +13,42 @@ keyword Keyword = "if" | "condition" | "goto" | "and" | "or" | "not" | "state" |
 lexical Identifier 	= ([a-zA-Z_][a-zA-Z0-9_]* !>> [a-zA-Z0-9_]) \ Keyword;
 lexical ValveConnection = @category="Identifier" ":" Identifier;
 lexical Int 		= @category="Constant" "-"? [0-9]+ !>> [0-9];
-lexical Boolean 	= @category="Identifier" booltrue: "true" | boolfalse: "false";
+
+syntax Boolean 	= @category="Identifier" \true: "true" 
+					  | \false: "false";
 
 syntax Primary 
 	= integer: Int
-	| Boolean
-	| Assignable
+	| boolean: Boolean
+	| variable: Identifier
+	| property: Identifier "." Identifier
 	;
 	
-syntax Variable = variable: Identifier;
-syntax Property = propname: Identifier;
 syntax StateName = @category="Variable" statename: Identifier;
 
 start syntax Controller = controller: TopStatement*;
 
 syntax TopStatement
-	= State
-	| Condition
-	| Declaration 
+	= state: "state" StateName ":" Statement*
+	| condition: "condition" Identifier ":" Expression
+	| declaration: Identifier "=" Primary 
 	;
 	
-syntax State = state: "state" StateName ":" Statement*;
-syntax Condition = condition: "condition" Identifier ":" Expression;
-syntax Declaration = declaration: Variable "=" Primary;
-
 syntax Statement 
 	= Assignment
-	| IfStatement
-	| Goto;
+	| ifstatement: "if" Expression ":" Statement
+	| goto: "goto" StateName;
 	
-syntax Assignable = property: Identifier "." Property | Variable;
+syntax Assignable = property: Identifier "." Identifier 
+                  | variable: Identifier;
 
-syntax Assignment
-	= assignment: Assignable ( "=" | "+=" | "-=" | "*=") operator Value;
-	
-syntax IfStatement
-	= ifstatement: "if" Expression ":" Statement;
-
-syntax Goto 
-	= goto: "goto" StateName;
-	
-syntax Value = expression: Expression | ValveConfiguration;
-
-syntax ValveConfiguration 
-	= connections: {  ValveConnection "," }+
-	;
+syntax Assignment = assign: Assignable "=" Value
+	              | \append: Assignable "+=" Value
+	              | remove: Assignable "-=" Value
+	              | multiply: Assignable "*=" Value;
+		
+syntax Value = expression: Expression 
+             | connections: {  ValveConnection "," }+;
 
 syntax Expression 
 	= prim: Primary

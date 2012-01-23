@@ -4,28 +4,30 @@ data Controller = controller(list[TopStatement] topstatements);
 
 data TopStatement = state(StateName state, list[Statement] statements)
                   | condition(str condition, Expression expression)
-                  | declaration(Primary variable, Primary val);
+                  | declaration(str variable, Primary val);
                   
 data StateName = statename(str name);
 
-data Statement = assignment(Assignable assignable, str operator, Value val)
+data Statement = assign(Assignable left, Value right)
+               | \append(Assignable left, Value right)
+               | remove(Assignable left, Value right)
+               | multiply(Assignable left, Value right)
                | ifstatement(Expression expression, Statement statement)
                | goto(StateName state);
                     
 data Value = expression(Expression e)
            | connections(list[str] connections);
            
-data Assignable = property(str element, Property property) | variable(str var);
-
-data Property = propname(str name);
+data Assignable = property(str element, str attribute) 
+                | variable(str var);
            
-data Primary = integer(int val)
-             | booltrue()
-             | boolfalse()
+data Primary = integer(int intVal)
+             | boolean(Boolean boolVal)
              | variable(str var)
-             | property(str element, str attribute)
-             ; 
-                             
+             | property(str element, str attribute); 
+
+data Boolean = \true() | \false();                        
+     
 data Expression = prim(Primary p)
                 | paren(Expression e)
                 | not(Expression e)
@@ -41,5 +43,4 @@ data Expression = prim(Primary p)
                 | eq(Expression left, Expression right)
                 | neq(Expression left, Expression right)
                 | and(Expression left, Expression right)
-                | or(Expression left, Expression right)
-                ;
+                | or(Expression left, Expression right);

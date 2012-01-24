@@ -1,4 +1,4 @@
-module lang::lwc::Elements
+module lang::lwc::Definition
 
 // Units definitions
 public alias Unit = str;

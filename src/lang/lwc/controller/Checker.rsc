@@ -12,7 +12,6 @@ import Message;
 
 data Context = context(
 	set[str] statenames,
-	set[str] conditionnames,
 	set[str] variablenames,
 	//map[str,str] properties,
 	
@@ -21,7 +20,7 @@ data Context = context(
 anno set[Message] start[Controller]@messages;
 anno loc node@location;
 	
-Context initContext() = context({}, {}, {}, {});
+Context initContext() = context({}, {}, {});
 
 public start[Controller] check(start[Controller] parseTree) {
 	
@@ -67,7 +66,6 @@ Context checkNames(Context context, Controller tree) {
 	
 	bool isDuplicate(str name) = name in (
 		context.statenames + 
-		context.conditionnames +
 		context.variablenames);
 		
 	set[str] checkDuplicate(str name, node N) {
@@ -79,12 +77,16 @@ Context checkNames(Context context, Controller tree) {
 		}
 	}
 		
-	visit(tree) {
+	//Collect names
+	top-down-break visit(tree) {
 		//Check for duplicate names for states, conditions and variables
 		case S:state(statename(str name), _) : context.statenames += checkDuplicate(name, S);
-		case C:condition(str name, _) : context.conditionnames += checkDuplicate(name, C);
+		case C:condition(str name, _) : context.variablenames += checkDuplicate(name, C);
 		case D:declaration(str name, _) : context.variablenames += checkDuplicate(name, D);
+		default: ;
+	}
 		
+	top-down visit(tree) {
 		//Validate state names
 		case G:goto(statename(str name)) : {
 			if(name notin context.statenames) {
@@ -104,7 +106,7 @@ Context checkNames(Context context, Controller tree) {
 				context.messages += { error(msg, V@location) };
 			}
 		}
-		/*
+		
 		//Validate property names
 		case P:property(str element, str attribute) : {
 			str msg;
@@ -122,7 +124,7 @@ Context checkNames(Context context, Controller tree) {
 				}
 			}
 			context.messages += { error(msg, P@location) };
-		}*/
+		}
 	}
 	
 	return context;

@@ -5,9 +5,22 @@ WaterPipe is Pipe
 GasPipe is Pipe
 	- diameter: 15 mm;
 	
-TempSensor is Sensor
+TempMeter is Sensor
 	- type: Temperature
-	- range: 0, 100;
+	- range: 0, 100
+	- unit: celsius;
+	
+FlowMeter is Sensor
+	- type: flow
+	- range: 0, 1
+	- unit: m3
+	- per_unit: minute;
+
+SpeedMeter is Sensor
+	- type: speed
+	- range: 0, 500
+	- unit: rotations
+	- per_unit: minute;
 	
 #Elements
 Boiler B1
@@ -68,8 +81,23 @@ WaterPipe W9 connects J1.tocentralheating with C1.coldin
 	- length: 0.5 m;
 
 #Sensors
-TempSensor T6
+TempMeter TM6
 	- on: W3; 
+
+TempMeter TM5
+	- on: C1;
+
+TempMeter TM4
+	- on: C1.burner;
+
+TempMeter TM2
+	- on: B1;
+	
+FlowMeter FM1
+	- on: W2;
+
+SpeedMeter SM3
+	- on: P1;
 
 #Constraints
 constraint cs1:
@@ -78,7 +106,4 @@ constraint cs1:
 constraint cs2:
 	#flow units always per minute
 	(G1.flow > 0 m3 and G1.flow < 0.1 m3) or G1.flow == 0;
-	
-constraint cs2:
-	(T5 + T6) < T2;
 	

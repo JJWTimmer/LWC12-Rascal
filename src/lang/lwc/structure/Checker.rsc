@@ -103,14 +103,22 @@ Context checkFirstPass(Context context, Structure tree) {
 		}
 	}
 
+	// First visit, collects and checks alias names
+	//
+	// This pass is needed so we know which element names are allowed in the
+	// second visit
+	visit (tree) {
+		case A:aliaselem(str name, _, _, _): context.aliasnames += checkDuplicate(name, A);
+	}
 	
+	// Second visit, checks and collects Elements, Pipes and Constraints
 	visit (tree) {
 		// Check for duplicate names for elements, pipes, aliases and aliases
 		case E:element(_, _, str name, list[Attribute] Attributes): 
 		{
 			context.elementnames += checkDuplicate(name, E);
 			
-			// Collect connectionpoints
+			// Collect connection points
 			if ([A*, attribute(attributename("connections"), valuelist(list[Value] Values)), B*] := Attributes) {
 				context.elementconnections[name] = { connpoint | variable(str connpoint) <- Values};
 			}
@@ -118,20 +126,19 @@ Context checkFirstPass(Context context, Structure tree) {
 		
 		case P:pipe(_, str name, _, _, _)		: context.pipenames += checkDuplicate(name, P);
 		case C:constraint(str name, _)			: context.constraintnames += checkDuplicate(name, C);
-		case A:aliaselem(str name, _, _, _)		: context.aliasnames += checkDuplicate(name, A);
 		
 		// Validate element names
 		case E:elementname(str name): {
 			if (name notin (allowedElementNames + context.aliasnames)) {
 				str msg = "Invalid element\n" +
 						  "Should be one of:\n" + 
-						  implode(allowedElementNames, ", ");
+						  "\t" + implode(allowedElementNames, ", ");
 
 				if (size(context.aliasnames) > 0)
 					msg += "\nOr one of the following aliases:\n"
-						+ implode(context.aliasnames, ", ");
+						+ "\t" + implode(context.aliasnames, ", ");
 				
-				msgs += error(msg, E@location);
+				context.messages += { error(msg, E@location) };
 			}
 		}
 	}

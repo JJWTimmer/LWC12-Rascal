@@ -5,26 +5,18 @@ WaterPipe is Pipe
 GasPipe is Pipe
 	- diameter: 15 mm;
 	
-TempMeter is Sensor
-	- type: Temperature
-	- range: 0, 100
-	- unit: celsius;
+TempMeter is Temperature Sensor
+	- range: 0 celsius, 100 celsius;
 	
-FlowMeter is Sensor
-	- type: flow
-	- range: 0, 1
-	- unit: m3
-	- per_unit: minute;
+FlowMeter is Flow Sensor
+	- range: 0 m3/minute, 1 m3/minute;
 
-SpeedMeter is Sensor
-	- type: speed
-	- range: 0, 500
-	- unit: rotations
-	- per_unit: minute;
+SpeedMeter is Speed Sensor
+	- range: 0 rpm, 500 rpm;
 	
 #Elements
 Boiler B1
-	- capacity: 50 Liter;
+	- capacity: 50 liter;
 	
 Controlled Discrete Valve V1
 	- connections: pumpin, boilerout, radiatorout;

@@ -6,17 +6,17 @@ module lang::lwc::structure::AST
 
 data Structure = structure(list[Statement] body);
 
-data Statement = element(list[Modifier] modifiers, ElementName etype, str name, list[Asset] assets)
-		  	   | aliaselem(str name, list[Modifier] modifiers, ElementName etype, list[Asset] assets)
-		       | pipe(ElementName etype, str name, Value from, Value to, list[Asset] assets)
+data Statement = element(list[Modifier] modifiers, ElementName etype, str name, list[Attribute] attributes)
+		  	   | aliaselem(str name, list[Modifier] modifiers, ElementName etype, list[Attribute] attributes)
+		       | pipe(ElementName etype, str name, Value from, Value to, list[Attribute] attributes)
 		       | constraint(str name, Expression expression)
 		       ;
 
 data Modifier = modifier(str id);
 
-data Asset = asset(AssetName name, ValueList val);
+data Attribute = attribute(AttributeName name, ValueList val);
 
-data AssetName = assetname(str name);
+data AttributeName = attributename(str name);
 
 data Value = integer(int val)
 		   | realnum(real number)
@@ -33,7 +33,7 @@ data PropName = propname(str name);
 
 data ElementName = elementname(str id);
 
-data Unit = unit(str name, list[Unit] unitOptional);
+data Unit = unit(list[str] units);
 
 data Expression = val(Value v)
                 | paren(Expression e)

@@ -109,7 +109,6 @@ Context checkFirstPass(Context context, Structure tree) {
 	// second visit
 	top-down-break visit (tree.body) {
 		case A:aliaselem(str name, _, _, _): context.aliasnames += checkDuplicate(name, A);
-		default: ;
 	}
 	
 	// Second visit, checks and collects Elements, Pipes and Constraints

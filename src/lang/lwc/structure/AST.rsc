@@ -33,7 +33,7 @@ data PropName = propname(str name);
 
 data ElementName = elementname(str id);
 
-data Unit = unit(str name);
+data Unit = unit(str name, list[Unit] unitOptional);
 
 data Expression = val(Value v)
                 | paren(Expression e)

@@ -7,6 +7,7 @@ data AliasInfo = ai(list[Modifier] modifiers, str elemname, list[Attribute] attr
 public Structure propagateAliasses(Structure ast) {
 	map[str, AliasInfo] aliasinfo = ();
 	
+	// Collect alias information
 	visit(ast) {
 		case aliaselem(str Id, list[Modifier] Modifiers, elementname(str ElemName), list[Attribute] Attributes) : {
 			ai = ai(Modifiers, ElemName, Attributes);
@@ -14,7 +15,8 @@ public Structure propagateAliasses(Structure ast) {
 		}
 	}
 	
-	ast = visit(ast) {
+	// Propagete alias properties and modifiers to elements and pipes
+	return visit(ast) {
 		case E:element(list[Modifier] Modifiers, elementname(str ElemName), _, list[Attribute] Attributes) : {
 			if (aliasinfo[ElemName]?) {
 				E.modifiers += aliasinfo[ElemName].modifiers;
@@ -32,6 +34,4 @@ public Structure propagateAliasses(Structure ast) {
 			}
 		}
 	}
-	
-	return ast;
 }

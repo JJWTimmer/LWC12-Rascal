@@ -107,8 +107,9 @@ Context checkFirstPass(Context context, Structure tree) {
 	//
 	// This pass is needed so we know which element names are allowed in the
 	// second visit
-	visit (tree) {
+	top-down-break visit (tree.body) {
 		case A:aliaselem(str name, _, _, _): context.aliasnames += checkDuplicate(name, A);
+		default: ;
 	}
 	
 	// Second visit, checks and collects Elements, Pipes and Constraints

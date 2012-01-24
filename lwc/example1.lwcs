@@ -16,7 +16,7 @@ FlowMeter is Flow Sensor
 Boiler B1
 	- capacity: 50 liter;
 	
-Controlled Discrete Valve V1
+Controlled ThreeWay Valve V1
 	- connections: pumpin, boilerout, radiatorout;
 
 Radiator R1

@@ -12,8 +12,9 @@ module lang::lwc::structure::Checker
 
 import lang::lwc::structure::AST;
 import lang::lwc::structure::Implode;
-import lang::lwc::structure::PropagateAliasses;
+import lang::lwc::structure::Propagate;
 import lang::lwc::Util;
+import lang::lwc::Elements;
 
 import Message;
 import ParseTree;
@@ -73,20 +74,6 @@ Context checkSecondPass(Context context, Structure tree) {
 }
 
 Context checkFirstPass(Context context, Structure tree) {
-
-	// Allowed elements names
-	set[str] allowedElementNames = {
-		"Boiler", 
-		"CentralHeatingUnit", 
-		"Exhaust", 
-		"Joint", 
-		"Pipe", 
-		"Pump", 
-		"Radiator", 
-		"Sensor",
-		"Source", 
-		"Valve"
-	};
 		
 	bool isDuplicate(str name) = name in (
 		context.elementnames + 
@@ -129,10 +116,10 @@ Context checkFirstPass(Context context, Structure tree) {
 		
 		// Validate element names
 		case E:elementname(str name): {
-			if (name notin (allowedElementNames + context.aliasnames)) {
+			if (name notin (ElementNames + context.aliasnames)) {
 				str msg = "Invalid element\n" +
 						  "Should be one of:\n" + 
-						  "\t" + implode(allowedElementNames, ", ");
+						  "\t" + implode(ElementNames, ", ");
 
 				if (size(context.aliasnames) > 0)
 					msg += "\nOr one of the following aliases:\n"

@@ -11,26 +11,26 @@ public list[Unit] SpeedUnits = ["rpm"];
 
 public list[Unit] Units = VolumeUnits + TimeUnits + LengthUnits + PowerUnits + TemperatureUnits + SpeedUnits;
 
-public data Element = element(list[ModifierSet] modifiers, list[Attribute] attributes, list[ConnectionPoint] connectionpoints, list[SensorPoint] sensorpoints);
-public alias Modifier = str;
-public alias ModifierSet = set[Modifier];
-public data Attribute = requiredAttrib(str name, list[list[Unit]] unit)
-			   | optionalAttrib(str name, list[list[Unit]] unit, Value defaultvalue);
-public data Value = numValue(num val, list[Unit] unit)
-		   | boolValue(bool boolean)
-		   | listValue(list[str] contents)
-		   ;
-public data SensorPoint = sensorPoint(str name, list[list[Unit]] unit)
-				 | selfPoint(list[list[Unit]] unit);
-public data ConnectionPoint = gasConnection(str name)
-					 | liquidConnection(str name)
-					 | unknownConnection(str name)
-					 | attribConnections()
-					 | liquidConnectionModifier(str name, Modifier modifier)
-					 | unknownConnectionModifier(str name, Modifier modifier)
-					 ;
+public data ValidElement = element(list[ValidModifierSet] modifiers, list[ValidAttribute] attributes, list[ValidConnectionPoint] connectionpoints, list[ValidSensorPoint] sensorpoints);
+public alias ValidModifier = str;
+public alias ValidModifierSet = set[ValidModifier];
+public data ValidAttribute = requiredAttrib(str name, list[list[Unit]] unit)
+					  	   | optionalAttrib(str name, list[list[Unit]] unit, ValidValue defaultvalue);
+public data ValidValue = numValue(num val, list[Unit] unit)
+				  	   | boolValue(bool boolean)
+				  	   | listValue(list[str] contents)
+				  	   ;
+public data ValidSensorPoint = sensorPoint(str name, list[list[Unit]] unit)
+				 			 | selfPoint(list[list[Unit]] unit);
+public data ValidConnectionPoint = gasConnection(str name)
+					 			 | liquidConnection(str name)
+					 			 | unknownConnection(str name)
+					 			 | attribConnections()
+								 | liquidConnectionModifier(str name, ValidModifier modifier)
+					 			 | unknownConnectionModifier(str name, ValidModifier modifier)
+					 			 ;
 
-public Element Boiler =
+public ValidElement Boiler =
 	element(	[], //modifiers
 				[
 					optionalAttrib("capacity", [VolumeUnits], numValue(50, ["liter"])),
@@ -48,7 +48,7 @@ public Element Boiler =
 	);
 
 
-public Element CentralHeatingUnit =
+public ValidElement CentralHeatingUnit =
 	element(	[], //modifiers
 				[
 					optionalAttrib("burnertemp", [TemperatureUnits], numValue(90, ["Celcius"])),
@@ -68,7 +68,7 @@ public Element CentralHeatingUnit =
 	);
 	
 	
-public Element Exhaust =
+public ValidElement Exhaust =
 	element(	[
 					{"Gas", "Liquid"}
 				], //modifiers
@@ -79,7 +79,7 @@ public Element Exhaust =
 				[]  // sensorpoints
 	);
 
-public Element Joint =
+public ValidElement Joint =
 	element(	[], //modifiers
 				[
 					optionalAttrib("connections", [], listValue(["in", "out"]))
@@ -92,7 +92,7 @@ public Element Joint =
 	
 
 
-public Element Pipe =
+public ValidElement Pipe =
 	element(	[], //modifiers
 				[
 					optionalAttrib("diameter", [LengthUnits], numValue(15, ["mm"])),
@@ -105,7 +105,7 @@ public Element Pipe =
 	);
 	
 
-public Element Pump =
+public ValidElement Pump =
 	element(	[
 					{"Vacuum", "Venturi"}
 				], //modifiers
@@ -123,7 +123,7 @@ public Element Pump =
 	);
 
 
-public Element Radiator =
+public ValidElement Radiator =
 	element(	[], //modifiers
 				[
 					requiredAttrib("heatcapacity", [PowerUnits])
@@ -139,7 +139,7 @@ public Element Radiator =
 	
 
 
-public Element Sensor =
+public ValidElement Sensor =
 	element(	[
 					{
 						"Speed",
@@ -165,7 +165,7 @@ public Element Sensor =
 	
 	
 	
-public Element Source =
+public ValidElement Source =
 	element(	[
 					{"Gas", "Liquid"}
 				], //modifiers
@@ -178,11 +178,11 @@ public Element Source =
 				[]  // sensorpoints
 	);
 
-public Element Valve =
+public ValidElement Valve =
 	element(	[
 					{"Controlled"},
 					{"Pin"},
-					{"3-way"}
+					{"ThreeWay"}
 				], //modifiers
 				[
 					optionalAttrib("position", [], listValue([":closed"]))
@@ -190,14 +190,14 @@ public Element Valve =
 				[
 					unknownConnection("a"),
 					unknownConnection("b"),
-					unknownConnectionModifier("c", "3-way")
+					unknownConnectionModifier("c", "ThreeWay")
 					
 				], //connectionpoints
-				[]  // sensorpoints
+				[] // sensorpoints
 	);
 	
 
-public map[str, Element] Elements = (
+public map[str, ValidElement] Elements = (
 								"Boiler" : Boiler,
 								"CentralHeatingUnit" : CentralHeatingUnit,
 								"Exhaust" : Exhaust,
@@ -209,3 +209,4 @@ public map[str, Element] Elements = (
 								"Source" : Source,
 								"Valve" : Valve
 							);
+public list[str] ElementNames = [key | key <- Elements];

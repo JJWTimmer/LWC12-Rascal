@@ -11,9 +11,7 @@ TempMeter is Temperature Sensor
 FlowMeter is Flow Sensor
 	- range: 0 m3/minute, 1 m3/minute;
 
-SpeedMeter is Speed Sensor
-	- range: 0 rpm, 500 rpm;
-	
+
 #Elements
 Boiler B1
 	- capacity: 50 liter;
@@ -98,4 +96,8 @@ constraint cs1:
 constraint cs2:
 	#flow units always per minute
 	(G1.flow > 0 m3 and G1.flow < 0.1 m3) or G1.flow == 0;
+	
+SpeedMeter is Speed Sensor
+	- range: 0 rpm, 500 rpm;
+	
 	

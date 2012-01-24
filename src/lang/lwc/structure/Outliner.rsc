@@ -5,99 +5,86 @@ module lang::lwc::structure::Outliner
 */
 import lang::lwc::structure::Syntax;
 import lang::lwc::structure::AST;
-import lang::lwc::structure::PropagateAliasses;
+import lang::lwc::structure::Implode;
+import lang::lwc::structure::Propagate;
+import lang::lwc::Outline;
 
 import ParseTree;
 import util::IDE;
 import Node;
+import IO;
 
-data Outline = root(StructureOutline structure);
-data StructureOutline = structureoutline(Aliases aliases, Elements elements, Pipes pipes, Constraints constraints);
+// Data structures
+data StructureOutline = solOutline(
+	OutlineNode aliases, 
+	OutlineNode elements, 
+	OutlineNode pipes, 
+	OutlineNode constraints
+);
 
-data Elements = elements(list[node]);
-data Aliases = aliases(list[AliasNode]);
-data Pipes = pipes(list[PipeNode]);
-data Constraints = constraints(list[ConstraintNode]);
-
-data Modifiers = modifiers(list[ModifierNode]);
-data Attributes = attributes(list[AttributeNode]);
-
-
-data ElementNode = elementNode(str Etype, Modifiers modifiers, Attributes attributes);
-data AliasNode = aliasNode(Modifiers modifiers, Attributes attributes);
-data PipeNode = pipeNode(Attributes attributes);
-data ConstraintNode = constraintNode();
-data ModifierNode = modifierNode();
-data AttributeNode = attributeNode();
+data ElementNode = solElement(str \type, node modifiers, node attributes);
+data AliasNode = solAlias(OutlineNode modifiers, OutlineNode attributes);
 
 public node outliner(start[Structure] tree) {
-	lang::lwc::structure::AST::Structure ast = implode(#lang::lwc::structure::AST::Structure, tree);
-	ast = propagateAliasses(ast);
+
+	// Setup the basic outline
+	StructureOutline outline = solOutline(
+		olListNode([])[@label="Aliases"],
+		olListNode([])[@label="Elements"],
+		olListNode([])[@label="Pipes"],
+		olListNode([])[@label="Constraints"]
+	)[@label="Structure"];
 	
-	list[ElementNode] el = [];
-	list[AliasNode] al = [];
-	list[PipeNode] pi = [];
-	list[ConstraintNode] co = [];
+	list[node] elements = [];
 	
-	visit (ast) {
-		case A:aliaselem(str Name, list[Modifier] Mods, _, list[Attribute] Attribs) : {
-			an = aliasNode(setAnnotations(modifiers(getModNode(Mods)), ("label" : "Modifiers")), setAnnotations(attributes(getAttributeNode(Attribs)), ("label" : "Attributes")));
-			an@label = Name;
-			an@\loc = A@location;
-			al += an;
-			
-		}
+	// Visit the the AST (where aliases are propagated)
+	visit (propagateAliasses(implode(tree))) {
 	
-		case E:element(list[Modifier] Mods, elementname(str Etype), str Name, list[Attribute] Attribs) : {
-			en = elementNode(Etype, setAnnotations(modifiers(getModNode(Mods)), ("label" : "Modifiers")), setAnnotations(attributes(getAttributeNode(Attribs)), ("label" : "Attributes")));
-			en@label = Name;
-			en@\loc = E@location;
-			el += en;
-		}
+		// Create alias nodes
+		case A:aliaselem(str name, list[Modifier] modifiers, _, list[Attribute] attributes):
+			outline.aliases.children += [solAlias(
+				initModifiers(modifiers),
+				initAttributes(attributes)
+			)[@label=name][@\loc=A@location]];
+	
+		// Collect elements, they are further processed below
+		case E:element(list[Modifier] modifiers, elementname(str \type), str name, list[Attribute] attributes):
+			elements += [
+				solElement(
+					\type, 
+					initModifiers(modifiers), 
+					initAttributes(attributes)
+				)[@label=name][@\loc=E@location]
+			];
 		
-		case P:pipe(_, str Name, _, _, list[Attribute] Attribs) : {
-			pn = pipeNode(setAnnotations(attributes(getAttributeNode(Attribs)), ("label" : "Attributes")));
-			pn@label = Name;
-			pn@\loc = P@location;
-			pi += pn;
-		}
+		// Create pipe nodes
+		case P:pipe(_, str name, _, _, list[Attribute] attributes):
+			outline.pipes.children += [olSimpleNode(initAttributes(attributes))[@label=name][@\loc=P@location]];
 		
-		case C:constraint(str Name, _) : {
-			cn = constraintNode();
-			cn@label = Name;
-			cn@\loc = C@location;
-			co += cn;
-		}
+		// Create constraint nodes
+		case C:constraint(str name, _): 
+			outline.constraints.children += [olLeaf()[@label=name][@\loc=C@location]];
 	}
-	
-	set[str] etypes = {etype | elementNode(str etype, _, _) <- el};
-	
-	list[node] elemNodes = [];
-	
-	for (etype <- etypes) {
-		node etypeNode = "<etype>list"([setAnnotations("<e@label>"(modifiers, attributes), ("loc":e@\loc)) | e: elementNode(etype, Modifiers modifiers, Attributes attributes) <- el]);
-		etypeNode@label = etype;
-		elemNodes += etypeNode;
-	}
-	
-	Elements elements = elements(elemNodes);
-	Aliases aliases = aliases(al);
-	Pipes pipes = pipes(pi);
-	Constraints constraints = constraints(co);
-	
-	
-	StructureOutline so = structureoutline(aliases, elements, pipes, constraints);
-	so@label = "Structure";
-	Outline root = root(so);
 
-	return root;
+	// Group elements by type
+	outline.elements.children = for (solElement(str etype, _, _) <- elements) append(
+		olListNode(
+			["<e@label>"(modifiers, attributes)[@\loc=e@\loc] | e: solElement(etype, node modifiers, node attributes) <- elements]
+		)[@label = etype]
+	);
+	
+	// Return the outline in an empty node
+	return olSimpleNode(outline);
 }
 
-private list[ModifierNode] getModNode(list[Modifier] mods) {
-	return [setAnnotations(modifierNode(), ("label" : m.id, "loc" : m@location)) | m <- mods];
-}
+// Helper method to construct a list of modifier nodes
+private OutlineNode initModifiers(list[Modifier] lst) 
+	= olListNode(
+		[ olLeaf()[@label=E.id][@\loc=E@location] | E <- lst ]
+	)[@label="Modifiers"];
 
-
-private list[AttributeNode] getAttributeNode(list[Attribute] attributes) {
-	return [setAnnotations(attributeNode(), ("label" : attribute.name.name, "loc" : attribute@location)) | attribute <- attributes];
-}
+// Helper method to construct a list of attribute nodes
+private OutlineNode initAttributes(list[Attribute] lst) 
+	= olListNode(
+		[ olLeaf()[@label=E.name.name][@\loc=E@location] | E <- lst ]
+	)[@label="Attributes"];

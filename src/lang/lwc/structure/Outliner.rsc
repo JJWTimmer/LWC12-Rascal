@@ -78,7 +78,7 @@ public node outliner(start[Structure] tree) {
 }
 
 // Helper method to construct a list of modifier nodes
-private OutlineNode initModifier(list[Modifier] lst) 
+private OutlineNode initModifiers(list[Modifier] lst) 
 	= olListNode(
 		[ olLeaf()[@label=E.id][@\loc=E@location] | E <- lst ]
 	)[@label="Modifiers"];

@@ -25,12 +25,12 @@ Context initContext() = context({}, {}, {}, {});
 
 public start[Controller] check(start[Controller] parseTree) {
 	
-	Controller ast = load(parseTree);
+	Controller ast = implode(parseTree);
 	Context context = initContext();
 	
 	context = checkNames(context, ast);
 	
-	return tree[@messages = context.messages];
+	return parseTree[@messages = context.messages];
 }
 
 Context checkNames(Context context, Controller tree) {
@@ -63,7 +63,7 @@ Context checkNames(Context context, Controller tree) {
 	
 	//this should contain all used variable names in the structure file
 	//and their ElementType
-	map[str,str] allowedElements = {};
+	map[str,str] allowedElements = ();
 	
 	bool isDuplicate(str name) = name in (
 		context.statenames + 
@@ -91,7 +91,7 @@ Context checkNames(Context context, Controller tree) {
 				str msg = "Invalid state\n" +
 						  "Should be one of:\n" +
 						  implode(context.statenames, ", ");
-				context.messages += error(msg, G@location);
+				context.messages += { error(msg, G@location) };
 			}
 		}
 		
@@ -101,10 +101,10 @@ Context checkNames(Context context, Controller tree) {
 				str msg = "Invalid variable\n" +
 						  "Should be one of:\n" + 
 						  implode(context.variablenames, ", ");
-				context.messages += error(msg, V@location);
+				context.messages += { error(msg, V@location) };
 			}
 		}
-		
+		/*
 		//Validate property names
 		case P:property(str element, str attribute) : {
 			str msg;
@@ -121,8 +121,10 @@ Context checkNames(Context context, Controller tree) {
 						  implode(properties, ", ");
 				}
 			}
-			context.messages += error(msg, P@location);
-		}
+			context.messages += { error(msg, P@location) };
+		}*/
 	}
+	
+	return context;
 }
 

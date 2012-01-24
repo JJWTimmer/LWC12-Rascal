@@ -1,5 +1,7 @@
 module lang::lwc::controller::AST
 
+anno loc TopStatement@location;
+
 data Controller = controller(list[TopStatement] topstatements);
 
 data TopStatement = state(StateName state, list[Statement] statements)

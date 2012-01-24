@@ -182,7 +182,7 @@ public ValidElement Valve =
 	element(	[
 					{"Controlled"},
 					{"Pin"},
-					{"3-way"}
+					{"ThreeWay"}
 				], //modifiers
 				[
 					optionalAttrib("position", [], listValue([":closed"]))
@@ -190,7 +190,7 @@ public ValidElement Valve =
 				[
 					unknownConnection("a"),
 					unknownConnection("b"),
-					unknownConnectionModifier("c", "3-way")
+					unknownConnectionModifier("c", "ThreeWay")
 					
 				], //connectionpoints
 				[] // sensorpoints

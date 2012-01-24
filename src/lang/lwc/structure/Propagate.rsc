@@ -3,8 +3,6 @@ module lang::lwc::structure::Propagate
 import lang::lwc::structure::AST;
 import lang::lwc::Elements;
 
-import IO;
-
 data AliasInfo = ai(list[Modifier] modifiers, str elemname, list[Attribute] attributes);
 
 public Structure propagate(Structure ast) {

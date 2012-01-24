@@ -18,7 +18,7 @@ SpeedMeter is Speed Sensor
 Boiler B1
 	- capacity: 50 liter;
 	
-Controlled Valve V1
+Controlled ThreeWay Valve V1
 	- connections: pumpin, boilerout, radiatorout;
 
 Radiator R1

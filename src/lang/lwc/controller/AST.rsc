@@ -1,6 +1,11 @@
 module lang::lwc::controller::AST
 
 anno loc TopStatement@location;
+anno loc Statement@location;
+anno loc Value@location;
+anno loc Expression@location;
+anno loc Assignable@location;
+anno loc Primary@location;
 
 data Controller = controller(list[TopStatement] topstatements);
 

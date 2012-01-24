@@ -23,7 +23,6 @@ public Structure propagateAliasses(Structure ast) {
 		}
 	}
 	
-	// Propagate alias properties and modifiers to elements and pipes
 	return visit(ast) {
 		case E:element(list[Modifier] Modifiers, elementname(str ElemName), _, list[Attribute] Attributes) : {
 			if (aliasinfo[ElemName]?) {
@@ -45,7 +44,7 @@ public Structure propagateAliasses(Structure ast) {
 }
 
 public Structure propagateDefaults(Structure ast) {
-	ast = visit(ast) {
+	ast = top-down-break visit(ast) {
 		case E:element(_, elementname(str ElemName), _, list[Attribute] Attributes) : {
 			if (Elements[ElemName]?) {
 				list[AttributeDefinition] optionalAttribs = [O | O:optionalAttrib(_, _, _) <- Elements[ElemName].attributes];
@@ -62,6 +61,8 @@ public Structure propagateDefaults(Structure ast) {
 				}
 			}
 		}
+		
+		default: ;
 	}
 	
 	return ast;

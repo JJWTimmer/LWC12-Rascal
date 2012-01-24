@@ -106,12 +106,12 @@ Context checkFirstPass(Context context, Structure tree) {
 	
 	visit (tree) {
 		// Check for duplicate names for elements, pipes, aliases and aliases
-		case E:element(_, _, str name, list[Asset] Assets): 
+		case E:element(_, _, str name, list[Attribute] Attributes): 
 		{
 			context.elementnames += checkDuplicate(name, E);
 			
 			// Collect connectionpoints
-			if ([A*, asset(assetname("connections"), valuelist(list[Value] Values)), B*] := Assets) {
+			if ([A*, attribute(attributename("connections"), valuelist(list[Value] Values)), B*] := Attributes) {
 				context.elementconnections[name] = { connpoint | variable(str connpoint) <- Values};
 			}
 		}

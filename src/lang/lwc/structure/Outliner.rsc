@@ -59,11 +59,11 @@ public node outliner(start[Structure] tree) {
 		
 		// Create pipe nodes
 		case P:pipe(_, str name, _, _, list[Attribute] attributes):
-			outline.aliases.children += [pipenode(initAttributes(attributes))[@label=name][@\loc=P@location]];
+			outline.pipes.children += [olSimpleNode(initAttributes(attributes))[@label=name][@\loc=P@location]];
 		
 		// Create constraint nodes
 		case C:constraint(str name, _): 
-			outline.constraints.children += [constraintnode()[@label=name][@\loc=C@location]];
+			outline.constraints.children += [olLeaf()[@label=name][@\loc=C@location]];
 	}
 
 	// Group elements by type

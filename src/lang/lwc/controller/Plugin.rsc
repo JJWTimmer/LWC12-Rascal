@@ -2,15 +2,20 @@ module lang::lwc::controller::Plugin
 
 import lang::lwc::controller::Syntax;
 import lang::lwc::controller::Parser;
+import lang::lwc::controller::Outliner;
 
 import util::IDE;
-import ParseTree;
+
+str CONTROLLER_LANG = "LWC Controller Module";
+str CONTROLLER_EXT  = "lwcc";
 
 public void registerController() {
 
-	registerLanguage("LWC Controller Module", "lwcc", start[Controller](str input, loc origin) { 
+	registerLanguage(CONTROLLER_LANG, CONTROLLER_EXT, start[Controller](str input, loc origin) { 
 		return parse(input, origin);
 	});
+	
+	registerOutliner(CONTROLLER_LANG, outliner);
 	
 	/*
 	registerAnnotator("LWC Structure Module", Fighter(Fighter input) {

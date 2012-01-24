@@ -57,8 +57,8 @@ data Expression = val(Value v)
 anno loc Structure@location;
 anno loc Statement@location;
 anno loc Modifier@location;
-anno loc Asset@location;
-anno loc AssetName@location;
+anno loc Attribute@location;
+anno loc AttributeName@location;
 anno loc Value@location;
 anno loc ValueList@location;
 anno loc ElementName@location;

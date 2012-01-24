@@ -40,20 +40,20 @@ public node outliner(start[Structure] tree) {
 	list[ConstraintNode] co = [];
 	
 	visit (ast) {
-		case A:aliaselem(str name, list[Modifier] modifiers, _, list[Asset] attributes):
+		case A:aliaselem(str name, list[Modifier] modifiers, _, list[Attribute] attributes):
 			al += aliasnode(
 				initModifiers(modifiers),
 				initAttributes(attributes)
 			)[@label=name][@\loc=A@location];
 	
-		case E:element(list[Modifier] modifiers, elementname(str Etype), str name, list[Asset] attributes):
+		case E:element(list[Modifier] modifiers, elementname(str Etype), str name, list[Attribute] attributes):
 			el += elementnode(
 				Etype, 
 				initModifiers(modifiers), 
 				initAttributes(attributes)
 			)[@label=name][@\loc=E@location];
 		
-		case P:pipe(_, str name, _, _, list[Asset] attributes):
+		case P:pipe(_, str name, _, _, list[Attribute] attributes):
 			pi += pipenode(initAttributes(attributes))[@label=name][@\loc=P@location];
 		
 		case C:constraint(str name, _): 
@@ -83,7 +83,7 @@ private Modifiers initModifiers(list[Modifier] mods)
 		[modifiernode()[@label=m.id][@\loc=m@location] | m <- mods]
 	)[@label="Modifiers"];
 
-private Attributes initAttributes(list[Asset] lst) 
+private Attributes initAttributes(list[Attribute] lst) 
 	= attributes(
 		[setAnnotations(attributenode(), ("label" : E.name.name, "loc" :E@location)) | E <- lst]
 	)[@label="Attributes"];

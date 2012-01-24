@@ -60,7 +60,7 @@ state RAMPUP:
 	goto DISPATCH
 
 state RADIATOR:
-	Valve.states = radiators
+	Valve.states = :a,:b
 	goto RAMPUP
 	
 state BOILER:

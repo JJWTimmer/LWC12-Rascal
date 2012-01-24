@@ -48,7 +48,7 @@ syntax Value = Assignable
 
 syntax Metric = metric: Num Unit;
 
-syntax Unit = @category="Constant" unit: Identifier ("/" Unit)?;
+syntax Unit = @category="Constant" unit: {Identifier "/"}+;
 
 syntax ValueList = valuelist: {Value  ","}+;
 
@@ -82,9 +82,9 @@ syntax ElementName = @category="Type" elementname: Identifier;
 
 syntax Modifier = @category="Type" modifier: Identifier;
 
-syntax Asset = asset: "-" AssetName ":" ValueList;
+syntax Attribute = attribute: "-" AttributeName ":" ValueList;
 
-syntax AssetName = @category="Identifier" assetname: Identifier;
+syntax AttributeName = @category="Identifier" attributename: Identifier;
 
 //Start
 start syntax Structure = structure: Statement*;
@@ -95,10 +95,10 @@ syntax Statement = Element
 				 | Constraint
 				 ;
 
-syntax Element = @Foldable element: Modifier* ElementName Identifier Asset* ";";
+syntax Element = @Foldable element: Modifier* ElementName Identifier Attribute* ";";
 
-syntax Alias = @Foldable aliaselem: Identifier "is" Modifier* ElementName Asset* ";";
+syntax Alias = @Foldable aliaselem: Identifier "is" Modifier* ElementName Attribute* ";";
 
-syntax Pipe = @Foldable pipe: ElementName Identifier "connects" Assignable "with" Assignable Asset* ";";
+syntax Pipe = @Foldable pipe: ElementName Identifier "connects" Assignable "with" Assignable Attribute* ";";
 
 syntax Constraint = @Foldable constraint: "constraint" Identifier ":" Expression ";";

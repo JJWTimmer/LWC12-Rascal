@@ -22,7 +22,7 @@ data StructureOutline = solOutline(
 	OutlineNode constraints
 );
 
-data ElementNode = solElement(str \type, node modifiers, node attributes);
+data ElementNode = solElement(node modifiers, node attributes);
 data AliasNode = solAlias(OutlineNode modifiers, OutlineNode attributes);
 
 public node outliner(start[Structure] tree) {
@@ -35,7 +35,7 @@ public node outliner(start[Structure] tree) {
 		olListNode([])[@label="Constraints"]
 	)[@label="Structure"];
 	
-	list[node] elements = [];
+	map[str,list[node]] elements = ();
 	
 	// Visit the the AST (where aliases are propagated)
 	visit (propagateAliasses(implode(tree))) {
@@ -49,13 +49,14 @@ public node outliner(start[Structure] tree) {
 	
 		// Collect elements, they are further processed below
 		case E:element(list[Modifier] modifiers, elementname(str \type), str name, list[Attribute] attributes):
-			elements += [
-				solElement(
-					\type, 
-					initModifiers(modifiers), 
-					initAttributes(attributes)
-				)[@label=name][@\loc=E@location]
+		{
+			if (! elements[\type]?) elements[\type] = [];
+
+			elements[\type] += [
+				solElement(initModifiers(modifiers), initAttributes(attributes))
+				[@label=name][@\loc=E@location] 
 			];
+		}
 		
 		// Create pipe nodes
 		case P:pipe(_, str name, _, _, list[Attribute] attributes):
@@ -67,10 +68,10 @@ public node outliner(start[Structure] tree) {
 	}
 
 	// Group elements by type
-	outline.elements.children = for (solElement(str etype, _, _) <- elements) append(
+	outline.elements.children = for (str K <- elements) append(
 		olListNode(
-			["<e@label>"(modifiers, attributes)[@\loc=e@\loc] | e: solElement(etype, node modifiers, node attributes) <- elements]
-		)[@label = etype]
+			[e | e: solElement(node modifiers, node attributes) <- elements[K]]
+		)[@label = K]
 	);
 	
 	// Return the outline in an empty node

@@ -2,9 +2,11 @@ module lang::lwc::controller::Checker
 
 import lang::lwc::controller::AST;
 import lang::lwc::controller::Load;
-import lang::lwc::Util;
 
 import Message;
+import List;
+import Set;
+import IO;
 
 /*
 	TODO: get map from element variables as defined in structure file, to element type of these variables
@@ -34,6 +36,7 @@ public start[Controller] check(start[Controller] parseTree) {
 
 Context checkNames(Context context, Controller tree) {
 
+	//replace me with Definition.rsc definitions!
 	map[str,set[str]] allowedProperties = (
 		"Boiler": {"capacity", 
 				   "watertemp", 
@@ -92,7 +95,7 @@ Context checkNames(Context context, Controller tree) {
 			if(name notin context.statenames) {
 				str msg = "Invalid state\n" +
 						  "Should be one of:\n" +
-						  implode(context.statenames, ", ");
+						  intercalate(", ", toList(context.statenames));
 				context.messages += { error(msg, G@location) };
 			}
 		}
@@ -102,7 +105,7 @@ Context checkNames(Context context, Controller tree) {
 			if(name notin context.variablenames) {
 				str msg = "Invalid variable\n" +
 						  "Should be one of:\n" + 
-						  implode(context.variablenames, ", ");
+						  intercalate(", ", toList(context.variablenames));
 				context.messages += { error(msg, V@location) };
 			}
 		}
@@ -113,14 +116,14 @@ Context checkNames(Context context, Controller tree) {
 			if(element notin allowedElements) {
 				msg = "Invalid variable\n" +
 					  "Should be one of:\n" +
-					  implode(context.variablenames, ", ");
+					  intercalate(", ", toList(context.variablenames));
 			}
 			else {
 				set[str] properties = allowedProperties[allowedElements[element]];
 				if(attribute notin properties) {
 					msg = "Invalid property\n" +
 						  "Should be one of:\n" +
-						  implode(properties, ", ");
+						  intercalate(", ", toList(properties));
 				}
 			}
 			context.messages += { error(msg, P@location) };

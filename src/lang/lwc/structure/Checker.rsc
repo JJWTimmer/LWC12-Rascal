@@ -13,12 +13,11 @@ module lang::lwc::structure::Checker
 import lang::lwc::structure::AST;
 import lang::lwc::structure::Implode;
 import lang::lwc::structure::Propagate;
-import lang::lwc::Util;
 import lang::lwc::Definition;
 
 import Message;
 import ParseTree;
-import IO;
+import List;
 import Set;
 
 /*
@@ -42,7 +41,7 @@ anno loc node@location;
 
 public start[Structure] check(start[Structure] tree) {
 	
-	Structure ast = propagateAliasses(implode(tree));
+	Structure ast = propagate(implode(tree));
 	
 	Context context = initContext();
 	context = checkFirstPass(context, ast);
@@ -51,28 +50,18 @@ public start[Structure] check(start[Structure] tree) {
 	return tree[@messages = context.messages];
 }
 
-Context checkSecondPass(Context context, Structure tree) {
 
-	visit(tree) {
-		case pipe(_, _, Value from, Value to, _) : {
-			
-			if (property(str Var, propname(str pname)) := from) {
-				if (context.elementconnections[Var]? && pname notin context.elementconnections[Var]) {
-					context.messages += { error("Connectionpoint does not exist", from@location) };
-				}
-			}
-			
-			if (property(str Var, propname(str pname)) := to) {
-				if (context.elementconnections[Var]? && pname notin context.elementconnections[Var]) {
-					context.messages += { error("Connectionpoint does not exist", to@location) };
-				}
-			}
-		}
-	}
+/*
+	checks in first pass:
+	duplicate alias names
+	duplicate element names
+	duplicate pipe names
+	duplicate constraint names
+	valid element names from Definition.rsc
 	
-	return context;
-}
-
+	extra:
+	collect connectionpoints
+*/
 Context checkFirstPass(Context context, Structure tree) {
 		
 	bool isDuplicate(str name) = name in (
@@ -119,11 +108,11 @@ Context checkFirstPass(Context context, Structure tree) {
 			if (name notin (ElementNames + context.aliasnames)) {
 				str msg = "Invalid element\n" +
 						  "Should be one of:\n" + 
-						  "\t" + implode(ElementNames, ", ");
+						  "\t" + intercalate(", ", ElementNames);
 
 				if (size(context.aliasnames) > 0)
 					msg += "\nOr one of the following aliases:\n"
-						+ "\t" + implode(context.aliasnames, ", ");
+						+ "\t" + intercalate(", ", context.aliasnames);
 				
 				context.messages += { error(msg, E@location) };
 			}
@@ -133,3 +122,30 @@ Context checkFirstPass(Context context, Structure tree) {
 	return context;
 }
 
+/*
+	checks in second pass:
+	validate connectionpoints
+*/
+Context checkSecondPass(Context context, Structure tree) {
+
+	
+
+	visit(tree) {
+		case pipe(_, _, Value from, Value to, _) : {
+			
+			if (property(str Var, propname(str pname)) := from) {
+				if (context.elementconnections[Var]? && pname notin context.elementconnections[Var]) {
+					context.messages += { error("Connectionpoint does not exist", from@location) };
+				}
+			}
+			
+			if (property(str Var, propname(str pname)) := to) {
+				if (context.elementconnections[Var]? && pname notin context.elementconnections[Var]) {
+					context.messages += { error("Connectionpoint does not exist", to@location) };
+				}
+			}
+		}
+	}
+	
+	return context;
+}

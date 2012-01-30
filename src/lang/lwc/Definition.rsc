@@ -167,10 +167,7 @@ public map[str, ElementDefinition] Elements = (
 			requiredAttrib("on", []),   //sensorpoint
 			requiredAttrib("range", []) //depends on modifier
 		],
-		[	//connectionpoints
-			liquidConnection("in"),
-			liquidConnection("out")
-		],
+		[],	//connectionpoints
 		[	//sensorpoints
 			selfPoint([TemperatureUnits])
 		]

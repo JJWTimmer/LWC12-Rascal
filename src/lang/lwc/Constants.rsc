@@ -17,7 +17,7 @@ list[str] getPropertyNames(str elementName) {
 	return result;
 }
 
-public list[str] ElementNames = [key | key <- Elements];
+public set[str] ElementNames = {key | key <- Elements};
 public map[str, list[AttributeDefinition]] OptionalAttribs = ( key : [ O | O:optionalAttrib(_,_,_) <- Elements[key].attributes ] | key <- Elements );
 public map[str, list[ConnectionPointDefinition]] DefinedConnectionPoints = ( key : Elements[key].connectionpoints | key <- Elements);
 public map[str, list[str]] ElementProperties = ( key : getPropertyNames(key) | key <- Elements );

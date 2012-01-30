@@ -48,7 +48,8 @@ syntax Value = Assignable
 
 syntax Metric = metric: Num Unit;
 
-syntax Unit = @category="Constant" unit: {Identifier "/"}+;
+syntax Unit = @category="Constant" unit: Identifier
+			| @category="Constant" unit: "[" {Identifier "/"}+ "]";
 
 syntax ValueList = valuelist: {Value  ","}+;
 

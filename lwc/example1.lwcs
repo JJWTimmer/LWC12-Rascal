@@ -9,9 +9,8 @@ TempMeter is Temperature Sensor
 	- range: 0 celsius, 100 celsius;
 	
 FlowMeter is Flow Sensor
-	- range: 0 m3/minute, 1 m3/minute;
-
-
+	- range: 0 [m3/minute/x/y/aap], 1 [m3/minute];
+	
 #Elements
 Boiler B1
 	- capacity: 50 liter;

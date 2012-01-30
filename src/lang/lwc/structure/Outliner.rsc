@@ -12,7 +12,6 @@ import lang::lwc::Outline;
 import ParseTree;
 import util::IDE;
 import Node;
-import IO;
 
 // Data structures
 data StructureOutline = solOutline(

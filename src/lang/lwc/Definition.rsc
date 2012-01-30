@@ -14,7 +14,7 @@ public alias ModifierDefinition = str;
 public alias ModifierSetDefinition = set[ModifierDefinition];
 
 public data ElementDefinition = element(
-	list[ModifierSetDefinition] modifiers, 
+	list[ModifierSetDefinition] modifiers,	//of every set, only one keyword is allowed
 	list[AttributeDefinition] attributes, 
 	list[ConnectionPointDefinition] connectionpoints, 
 	list[SensorPointDefinition] sensorpoints
@@ -31,195 +31,187 @@ public data ValueDefinition
 				  	   
 public data SensorPointDefinition 
 	= sensorPoint(str name, list[list[Unit]] unit)
-	| selfPoint(list[list[Unit]] unit);
+	| selfPoint(list[list[Unit]] unit);	//elementname == sensorpoint
 				 			 
 public data ConnectionPointDefinition 
 	= gasConnection(str name)
 	| liquidConnection(str name)
-	| unknownConnection(str name)
-	| attribConnections()
-	| liquidConnectionModifier(str name, ModifierDefinition modifier)
-	| unknownConnectionModifier(str name, ModifierDefinition modifier)
+	| unknownConnection(str name)	// gas OR liquid
+	| attribConnections()			// modifier for type, attribute 'connections' for names
+	| liquidConnectionModifier(str name, ModifierDefinition modifier) 	//only if modifier is defined
+	| unknownConnectionModifier(str name, ModifierDefinition modifier)	//only if modifier is defined
 	;
 
-public ElementDefinition Boiler =
-	element(	[], //modifiers
-				[
-					optionalAttrib("capacity", [VolumeUnits], numValue(50, ["liter"])),
-					optionalAttrib("watertemp", [TemperatureUnits], numValue(80, ["Celsius"]))
-				],  //attributes
-				[
-					liquidConnection("centralheatingin"),
-					liquidConnection("centrailheatingout"),
-					liquidConnection("hotwaterout"),
-					liquidConnection("coldwaterin")
-				], //connectionpoints
-				[
-					selfPoint([TemperatureUnits])
-				]  // sensorpoints
-	);
 
-
-public ElementDefinition CentralHeatingUnit =
-	element(	[], //modifiers
-				[
-					optionalAttrib("burnertemp", [TemperatureUnits], numValue(90, ["Celcius"])),
-					optionalAttrib("power", [PowerUnits], numValue(1200, ["watt"])),
-					optionalAttrib("ignite", [], boolValue(false))
-				],  //attributes
-				[
-					gasConnection("gasin"),
-					liquidConnection("centrailheatingout"),
-					liquidConnection("hotwaterout"),
-					liquidConnection("coldwaterin")
-				], //connectionpoints
-				[
-					sensorPoint("ignitiondetect", [TemperatureUnits]),
-					sensorPoint("internaltemp", [TemperatureUnits])
-				]  // sensorpoints
-	);
-	
-	
-public ElementDefinition Exhaust =
-	element(	[
-					{"Gas", "Liquid"}
-				], //modifiers
-				[],  //attributes
-				[
-					unknownConnection("[self]")
-				], //connectionpoints
-				[]  // sensorpoints
-	);
-
-public ElementDefinition Joint =
-	element(	[], //modifiers
-				[
-					optionalAttrib("connections", [], listValue(["in", "out"]))
-				],  //attributes
-				[
-					attribConnections()
-				], //connectionpoints
-				[]  // sensorpoints
-	);
-	
-
-
-public ElementDefinition Pipe =
-	element(	[], //modifiers
-				[
-					optionalAttrib("diameter", [LengthUnits], numValue(15, ["mm"])),
-					requiredAttrib("length", [LengthUnits])
-				],  //attributes
-				[], //connectionpoints
-				[
-					selfPoint([TemperatureUnits])
-				]  // sensorpoints
-	);
-	
-
-public ElementDefinition Pump =
-	element(	[
-					{"Vacuum", "Venturi"}
-				], //modifiers
-				[
-					requiredAttrib("capacity", [VolumeUnits, TimeUnits])
-				],  //attributes
-				[
-					liquidConnection("in"),
-					liquidConnection("out"),
-					liquidConnectionModifier("suck", "Venturi")
-				], //connectionpoints
-				[
-					selfPoint([SpeedUnits])
-				]  // sensorpoints
-	);
-
-
-public ElementDefinition Radiator =
-	element(	[], //modifiers
-				[
-					requiredAttrib("heatcapacity", [PowerUnits])
-				],  //attributes
-				[
-					liquidConnection("in"),
-					liquidConnection("out")
-				], //connectionpoints
-				[
-					selfPoint([TemperatureUnits])
-				]  // sensorpoints
-	);
-	
-
-
-public ElementDefinition Sensor =
-	element(	[
-					{
-						"Speed",
-						"Temperature",
-						"Flow",
-						"Pressure",
-						"Level"
-					}
-				], //modifiers
-				[
-					requiredAttrib("on", []),   //sensorpoint
-					requiredAttrib("range", []) //depends on modifier
-				],  //attributes
-				[
-					liquidConnection("in"),
-					liquidConnection("out")
-				], //connectionpoints
-				[
-					selfPoint([TemperatureUnits])
-				]  // sensorpoints
-	);
-	
-	
-	
-	
-public ElementDefinition Source =
-	element(	[
-					{"Gas", "Liquid"}
-				], //modifiers
-				[
-					requiredAttrib("flowrate", [VolumeUnits, TimeUnits])
-				],  //attributes
-				[
-					unknownConnection("[self]")
-				], //connectionpoints
-				[]  // sensorpoints
-	);
-
-public ElementDefinition Valve =
-	element(	[
-					{"Controlled"},
-					{"Pin"},
-					{"ThreeWay"}
-				], //modifiers
-				[
-					optionalAttrib("position", [], listValue([":closed"]))
-				],  //attributes
-				[
-					unknownConnection("a"),
-					unknownConnection("b"),
-					unknownConnectionModifier("c", "ThreeWay")
-					
-				], //connectionpoints
-				[] // sensorpoints
-	);
-	
-
+//The Element definitions:
+//---------------------------------------------------------------------------------------------------
 public map[str, ElementDefinition] Elements = (
-	"Boiler" 	: Boiler,
-	"CentralHeatingUnit" : CentralHeatingUnit,
-	"Exhaust" 	: Exhaust,
-	"Joint" 	: Joint,
-	"Pipe" 		: Pipe,
-	"Pump" 		: Pump,
-	"Radiator" 	: Radiator,
-	"Sensor" 	: Sensor,
-	"Source" 	: Source,
-	"Valve" 	: Valve
+	"Boiler" : element(
+		[],	//modifiers
+		[	//attributes
+			optionalAttrib("capacity", [VolumeUnits], numValue(50, ["liter"])),
+			optionalAttrib("watertemp", [TemperatureUnits], numValue(80, ["Celsius"]))
+		],
+		[	//connectionpoints
+			liquidConnection("centralheatingin"),
+			liquidConnection("centralheatingout"),
+			liquidConnection("hotwaterout"),
+			liquidConnection("coldwaterin")
+		],
+		[	//sensorpoints
+			selfPoint([TemperatureUnits])
+		]
+	),
+	
+	"CentralHeatingUnit" : element(
+		[],	//modifiers
+		[	//attributes
+			optionalAttrib("burnertemp", [TemperatureUnits], numValue(90, ["Celcius"])),
+			optionalAttrib("power", [PowerUnits], numValue(2400, ["watt"])),
+			optionalAttrib("ignite", [], boolValue(false))
+		],
+		[	//connectionpoints
+			gasConnection("gasin"),
+			liquidConnection("centrailheatingout"),
+			liquidConnection("hotwaterout"),
+			liquidConnection("coldwaterin")
+		],
+		[	//sensorpoints
+			sensorPoint("ignitiondetect", [TemperatureUnits]),
+			sensorPoint("internaltemp", [TemperatureUnits])
+		]
+	),
+	
+	
+	"Exhaust" : element(
+		[	//modifiers
+			{"Gas", "Liquid"}
+		],
+		[],	//attributes
+		[	//connectionpoints
+			unknownConnection("[self]")
+		],
+		[]	//sensorpoints
+	),
+	
+	
+	"Joint" : element(
+		[],	//modifiers
+		[	//attributes
+			optionalAttrib("connections", [], listValue(["in", "out"]))
+		],
+		[	//connectionpoints
+			attribConnections()
+		],
+		[]	//sensorpoints
+	),
+	
+	
+	"Pipe" : element(
+		[],	//modifiers
+		[	//attributes
+			optionalAttrib("diameter", [LengthUnits], numValue(15, ["mm"])),
+			requiredAttrib("length", [LengthUnits])
+		],
+		[],	//connectionpoints
+		[	//sensorpoints
+			selfPoint([TemperatureUnits])
+		]
+	),
+	
+	
+	"Pump" : element(
+		[	//modifiers
+			{"Vacuum", "Venturi"}
+		],
+		[	//attributes
+			requiredAttrib("capacity", [VolumeUnits, TimeUnits])
+		],
+		[	//connectionpoints
+			liquidConnection("in"),
+			liquidConnection("out"),
+			liquidConnectionModifier("suck", "Venturi")
+		],
+		[	//sensorpoints
+			selfPoint([SpeedUnits])
+		]
+	),
+	
+	
+	"Radiator" : element(
+		[],	//modifiers
+		[	//attributes
+			requiredAttrib("heatcapacity", [PowerUnits])
+		],
+		[	//connectionpoints
+			liquidConnection("in"),
+			liquidConnection("out")
+		],
+		[	//sensorpoints
+			selfPoint([TemperatureUnits])
+		]
+	),
+	
+	
+	"Sensor" : element(
+		[	//modifiers
+			{
+				"Speed",
+				"Temperature",
+				"Flow",
+				"Pressure",
+				"Level"
+			}
+		], 
+		[	//attributes
+			requiredAttrib("on", []),   //sensorpoint
+			requiredAttrib("range", []) //depends on modifier
+		],
+		[	//connectionpoints
+			liquidConnection("in"),
+			liquidConnection("out")
+		],
+		[	//sensorpoints
+			selfPoint([TemperatureUnits])
+		]
+	),
+	
+	
+	"Source" : element(
+		[	//modifiers
+			{"Gas", "Liquid"}
+		],
+		[	//attributes
+			requiredAttrib("flowrate", [VolumeUnits, TimeUnits])
+		],
+		[	//connectionpoints
+			unknownConnection("[self]")
+		],
+		[]	//sensorpoints
+	),
+	
+	
+	"Valve" : element(
+		[	//modifiers
+			{"Controlled"},
+			{"Pin"},
+			{"ThreeWay"}
+		],
+		[	//attributes
+			optionalAttrib("position", [], listValue([":closed"]))
+		],
+		[	//connectionpoints
+			unknownConnection("a"),
+			unknownConnection("b"),
+			unknownConnectionModifier("c", "ThreeWay")
+			
+		],
+		[]	//sensorpoints
+	)
 );
+//---------------------------------------------------------------------------------------------------
 
+//derived values
 public list[str] ElementNames = [key | key <- Elements];
+public map[str, list[AttributeDefinition]] OptionalAttribs = ( key : [ O | O:optionalAttrib(_,_,_) <- Elements[key].attributes]| key <- Elements );
+public map[str, list[ConnectionPointDefinition]] DefinedConnectionPoints = ( key : Elements[key].connectionpoints | key <- Elements);

@@ -14,7 +14,6 @@ FlowMeter is Flow Sensor
 SpeedMeter is Speed Sensor
 	- range: 0 rpm, 500 rpm;
 
->>>>>>> cfcb5155027338c1fae3fa64a582b0b77b1161de
 #Elements
 Boiler B1
 	- capacity: 50 liter;

@@ -12,9 +12,8 @@ import IO;
 /*
 	TODO:
 		get map from element variables as defined in structure file, to element type of these variables
-		check for unused states or variables
+		check for unused states or variables (not yet fixed!)
 		look at how to make clear isDuplicate modifies the Context
-		deep match on 'str name'?
 */
 
 data Context = context(
@@ -40,6 +39,7 @@ public start[Controller] check(start[Controller] parseTree) {
 Context checkNames(Context context, Controller tree) {	
 	context = collectNames(context, tree);
 	context = validateNames(context, tree);
+	context = findUnusedNames(context,tree);
 		
 	return context;
 }
@@ -64,7 +64,7 @@ Context collectNames(Context context, Controller tree) {
 		case C:condition(str name, _) : context.variableNames += checkDuplicate(name, C);
 		case D:declaration(str name, _) : context.variableNames += checkDuplicate(name, D);
 	}
-
+	
 	return context;
 }
 
@@ -113,7 +113,34 @@ Context validateNames(Context context, Controller tree) {
 }
 
 Context findUnusedNames(Context context, Controller tree) {
+	set[str] usedNames = {};
 	
+	visit(tree) {
+		case goto(statename(str name, _)) : usedNames += name;
+		case variable(str name) : usedNames += name;
+		case property(str name, _) : usedNames += name; //should this be here?
+	}
+	
+	visit(tree) {
+		case S:state(statename(str name, _)) : {
+			if(name notin usedNames) {
+				str msg = unusedNameMessage(name);
+				context.messages += { error(msg, S@location) };
+			}
+		}
+		case C:condition(str name, _) : {
+			if(name notin usedNames) {
+				str msg = unusedNameMessage(name);
+				context.messages += { error(msg, C@location) };
+			}
+		}
+		case D:declaration(str name, _) : {
+			if(name notin usedNames) {
+				str msg = unusedNameMessage(name);
+				context.messages += { error(msg, D@location) };
+			}
+		}
+	}
 
 	return context;
 }
@@ -124,3 +151,7 @@ str invalidNameMessage(str name, list[str] allowedNames) {
 		   'Should be one of:
 		   '<allowed>";
 }
+
+str unusedNameMessage(str name) {
+	return "<name> is never used";
+} 

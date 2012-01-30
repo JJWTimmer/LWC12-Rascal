@@ -21,3 +21,6 @@ public list[str] ElementNames = [key | key <- Elements];
 public map[str, list[AttributeDefinition]] OptionalAttribs = ( key : [ O | O:optionalAttrib(_,_,_) <- Elements[key].attributes ] | key <- Elements );
 public map[str, list[ConnectionPointDefinition]] DefinedConnectionPoints = ( key : Elements[key].connectionpoints | key <- Elements);
 public map[str, list[str]] ElementProperties = ( key : getPropertyNames(key) | key <- Elements );
+
+//locatie van getPropertyNames maakt uit voor herkenning in ElementProperties. ElementProperties veranderen
+//in een functie verhelpt dit probleem, maar het is een bug. In het klein reconstrueren en bug report maken

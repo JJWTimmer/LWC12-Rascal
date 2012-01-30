@@ -5,11 +5,12 @@ import lang::lwc::Definition;
 
 data AliasInfo = ai(list[Modifier] modifiers, str elemname, list[Attribute] attributes);
 
-
+//do everything
 public Structure propagate(Structure ast) {
 	ast = propagateAliasses(ast);
 	ast = propagateDefaults(ast);
 	ast = propagateConnectionPoints(ast);
+	ast = propagateSensorPoints(ast);
 	
 	return ast;
 }
@@ -62,7 +63,6 @@ public Structure propagateDefaults(Structure ast) {
 				insert P;
 			}
 		}
-		//do not add a default case in a top-down-break!
 	}
 	
 	return ast;
@@ -92,7 +92,21 @@ public Structure propagateConnectionPoints(Structure ast) {
 				insert E;
 			}
 		}
-		//do not add a default case in a top-down-break!
+	}
+	
+	return ast;
+}
+
+//add sensorpoints from definition to the ast
+public Structure propagateSensorPoints(Structure ast) {
+	ast = top-down-break visit(ast) {
+		case E:element(_, elementname(str ElemName), _, list[Attribute] Attributes) : {
+			if (Elements[ElemName]? && Elements[ElemName].sensorpoints != []) {
+				E.attributes = getSensorPoints(Attributes, Elements[ElemName].sensorpoints);
+				
+				insert E;
+			}
+		}
 	}
 	
 	return ast;
@@ -107,15 +121,12 @@ private list[Attribute] getDefaults(list[AttributeDefinition] optionalAttribs, l
 	];
 
 //transforms definition ADT's to AST ADT's
-private ValueList getValue(ValueDefinition defaultvalue) {
-	switch(defaultvalue) {
-		case numValue(int val, list[Unit] un) 	: return valuelist([metric(integer(val),unit(un))]);
-		case numValue(real val, list[Unit] un) 	: return valuelist([metric(realnum(val),unit(un))]);
-		case boolValue(true) 					: return valuelist([booltrue()]);
-		case boolValue(false) 					: return valuelist([boolfalse()]);
-		case listValue(list[str] lst) 			: return valuelist([variable(var) | var <- lst]);
-	}
-}
+private ValueList getValue(numValue(int val, list[Unit] un)) = valuelist([metric(integer(val),unit(un))]);
+private ValueList getValue(numValue(real val, list[Unit] un)) = valuelist([metric(realnum(val),unit(un))]);
+private ValueList getValue(boolValue(true)) = valuelist([booltrue()]);
+private ValueList getValue(boolValue(false)) = valuelist([boolfalse()]);
+private ValueList getValue(listValue(list[str] lst)) = valuelist([variable(var) | var <- lst]);
+
 
 //retrieve the connectionpoints that are defined to replace them in the tree
 private Attribute getConnectionPoints(str elemName, list[Modifier] mods, list[Attribute] attribs) {
@@ -126,44 +137,28 @@ private Attribute getConnectionPoints(str elemName, list[Modifier] mods, list[At
 		set[str] definedConnectionPointNames = {cpName | variable(cpName) <- ([] | it + values | attribute(attributename("connections"), valuelist(list[Value] values)) <- attribs)};
 		bool attribConnections = false;
 		
-		for (ConnectionPointDefinition cpDef <- defs) {
-			switch(cpDef) {
-				case gasConnection(str Name) :  {
-					elementConnectionPointNames += Name;
-				}
-				
-				case liquidConnection(str Name) : {
-					elementConnectionPointNames += Name;
-				}
-				
-				case unknownConnection(str Name) : {
-					elementConnectionPointNames += Name;
-				}
-				
-				//special case: allow the connections attribute and add its values (below)
-				case attribConnections() : {
-					attribConnections = true;
-				}
-				
-				case liquidConnectionModifier(str Name, ModifierDefinition Mod) : {
-					if (modifier(Mod) in mods) {
-						elementConnectionPointNames += Name;
-					}
-				}
-				
-				case unknownConnectionModifier(str Name, ModifierDefinition Mod) : {
-					if (modifier(Mod) in mods) {
-						elementConnectionPointNames += Name;
-					}
-				
-				}
-			}
-		}
-		
-		if (attribConnections) {
+		elementConnectionPointNames = { d.name | d <- defs, d has name, !(d has modifier) || (d has modifier && modifier(d.modifier) in mods) };
+		if (/attribConnections() := defs) {
 			elementConnectionPointNames += definedConnectionPointNames;
 		}
 	}
 	
 	return attribute(attributename("connections"), valuelist([variable(var) | var <- elementConnectionPointNames]));
+}
+
+//remove userdefined sensorpoints and add those from the defintion
+private list[Attribute] getSensorPoints(list[Attribute] attributes, list[SensorPointDefinition] points) {
+	attributes = visit (attributes) {
+		case [A*, attribute(_, _), B*] => A+B
+	}
+	
+	if (points != []) {
+		list[Value] definedPoints = [variable(name) | sensorPoint(str name, _) <- points];
+		if (/selfPoint(_) := points) {
+			definedPoints += [variable("[self]")];		
+		}
+		attributes += [attribute(attributename("sensorpoints"), valuelist(definedPoints))];
+	}
+	
+	return attributes;
 }

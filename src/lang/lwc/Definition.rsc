@@ -167,10 +167,7 @@ public map[str, ElementDefinition] Elements = (
 			requiredAttrib("on", []),   //sensorpoint
 			requiredAttrib("range", []) //depends on modifier
 		],
-		[	//connectionpoints
-			liquidConnection("in"),
-			liquidConnection("out")
-		],
+		[],	//connectionpoints
 		[	//sensorpoints
 			selfPoint([TemperatureUnits])
 		]
@@ -212,6 +209,6 @@ public map[str, ElementDefinition] Elements = (
 //---------------------------------------------------------------------------------------------------
 
 //derived values
-public list[str] ElementNames = [key | key <- Elements];
+public set[str] ElementNames = {key | key <- Elements};
 public map[str, list[AttributeDefinition]] OptionalAttribs = ( key : [ O | O:optionalAttrib(_,_,_) <- Elements[key].attributes]| key <- Elements );
 public map[str, list[ConnectionPointDefinition]] DefinedConnectionPoints = ( key : Elements[key].connectionpoints | key <- Elements);

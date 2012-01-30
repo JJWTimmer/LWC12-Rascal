@@ -1,4 +1,10 @@
 module lang::lwc::controller::Syntax
+/*
+	TODO:
+		make Expression abstraction
+		use 'bracket' keyword for the paren-case in Expression (remove constructor)
+		rename slt to leq and sgt to geq
+*/
 
 lexical Comment = [#] ![\n]* $;
 

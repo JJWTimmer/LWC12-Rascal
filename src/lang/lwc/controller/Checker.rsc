@@ -2,6 +2,7 @@ module lang::lwc::controller::Checker
 
 import lang::lwc::controller::AST;
 import lang::lwc::controller::Load;
+import lang::lwc::Constants;
 
 import Message;
 import List;
@@ -9,13 +10,16 @@ import Set;
 import IO;
 
 /*
-	TODO: get map from element variables as defined in structure file, to element type of these variables
+	TODO:
+		get map from element variables as defined in structure file, to element type of these variables
+		check for unused states or variables
+		look at how to make clear isDuplicate modifies the Context
+		deep match on 'str name'?
 */
 
 data Context = context(
-	set[str] statenames,
-	set[str] variablenames,
-	//map[str,str] properties,
+	set[str] stateNames,
+	set[str] variableNames,
 	
 	set[Message] messages);
 	
@@ -25,7 +29,6 @@ anno loc node@location;
 Context initContext() = context({}, {}, {});
 
 public start[Controller] check(start[Controller] parseTree) {
-	
 	Controller ast = implode(parseTree);
 	Context context = initContext();
 	
@@ -34,42 +37,17 @@ public start[Controller] check(start[Controller] parseTree) {
 	return parseTree[@messages = context.messages];
 }
 
-Context checkNames(Context context, Controller tree) {
+Context checkNames(Context context, Controller tree) {	
+	context = collectNames(context, tree);
+	context = validateNames(context, tree);
+		
+	return context;
+}
 
-	//replace me with Definition.rsc definitions!
-	map[str,set[str]] allowedProperties = (
-		"Boiler": {"capacity", 
-				   "watertemp", 
-				   "self"},
-		"CentralHeatingUnit": {"burnertemp",
-							   "power",
-							   "ignite",
-							   "ignitiondetect",
-							   "interntaltemp"
-								},
-		"Exhaust": {},
-		"Joint": {"connections"},
-		"Pipe": {"diameter", 
-				 "length", 
-				 "self"},
-		"Pump": {"capacity",
-				 "self"},
-		"Radiator": {"heatcapacity",
-					 "self"},
-		"Sensor": {"on",
-				   "unit",
-				   "range"},
-		"Source": {"flowrate"},
-		"Valve": {"position"}
-	);
-	
-	//this should contain all used variable names in the structure file
-	//and their ElementType
-	map[str,str] allowedElements = ();
-	
+Context collectNames(Context context, Controller tree) {
 	bool isDuplicate(str name) = name in (
-		context.statenames + 
-		context.variablenames);
+		context.stateNames + 
+		context.variableNames);
 		
 	set[str] checkDuplicate(str name, node N) {
 		if (isDuplicate(name)) {
@@ -79,33 +57,36 @@ Context checkNames(Context context, Controller tree) {
 			return {name};
 		}
 	}
-		
-	//Collect names
-	top-down-break visit(tree) {
-		//Check for duplicate names for states, conditions and variables
-		case S:state(statename(str name), _) : context.statenames += checkDuplicate(name, S);
-		case C:condition(str name, _) : context.variablenames += checkDuplicate(name, C);
-		case D:declaration(str name, _) : context.variablenames += checkDuplicate(name, D);
-		default: ;
-	}
-		
+
 	top-down visit(tree) {
+		//Check for duplicate names for states, conditions and variables
+		case S:state(statename(str name), _) : context.stateNames += checkDuplicate(name, S);
+		case C:condition(str name, _) : context.variableNames += checkDuplicate(name, C);
+		case D:declaration(str name, _) : context.variableNames += checkDuplicate(name, D);
+	}
+
+	return context;
+}
+
+Context validateNames(Context context, Controller tree) {
+	//this should contain all used variable names in the structure file
+	//and their ElementType
+	map[str,str] allowedElements = ();
+
+	//Validate names
+	visit(tree) {
 		//Validate state names
 		case G:goto(statename(str name)) : {
-			if(name notin context.statenames) {
-				str msg = "Invalid state\n" +
-						  "Should be one of:\n" +
-						  intercalate(", ", toList(context.statenames));
+			if(name notin context.stateNames) {
+				str msg = invalidNameMessage("state", toList(context.stateNames));
 				context.messages += { error(msg, G@location) };
 			}
 		}
 		
 		//Validate variable names
 		case V:variable(str name) : {
-			if(name notin context.variablenames) {
-				str msg = "Invalid variable\n" +
-						  "Should be one of:\n" + 
-						  intercalate(", ", toList(context.variablenames));
+			if(name notin context.variableNames) {
+				str msg = invalidNameMessage("variable", toList(context.variableNames));
 				context.messages += { error(msg, V@location) };
 			}
 		}
@@ -114,16 +95,14 @@ Context checkNames(Context context, Controller tree) {
 		case P:property(str element, str attribute) : {
 			str msg;
 			if(element notin allowedElements) {
-				msg = "Invalid variable\n" +
-					  "Should be one of:\n" +
-					  intercalate(", ", toList(context.variablenames));
+				msg = invalidNameMessage("variable", toList(context.variableNames));
 			}
 			else {
-				set[str] properties = allowedProperties[allowedElements[element]];
-				if(attribute notin properties) {
-					msg = "Invalid property\n" +
-						  "Should be one of:\n" +
-						  intercalate(", ", toList(properties));
+				str elementType = allowedElements[element];
+				allowedProperties = ElementProperties[elementType];
+				 
+				if(attribute notin allowedProperties) {
+					msg = invalidNameMessage("property", allowedProperties);					  
 				}
 			}
 			context.messages += { error(msg, P@location) };
@@ -133,3 +112,15 @@ Context checkNames(Context context, Controller tree) {
 	return context;
 }
 
+Context findUnusedNames(Context context, Controller tree) {
+	
+
+	return context;
+}
+
+str invalidNameMessage(str name, list[str] allowedNames) {
+	str allowed = intercalate(", ", allowedNames);
+	return "Invalid <name>
+		   'Should be one of:
+		   '<allowed>";
+}

@@ -2,7 +2,7 @@ module lang::lwc::controller::Checker
 
 import lang::lwc::controller::AST;
 import lang::lwc::controller::Load;
-import lang::lwc::controller::Constants;
+import lang::lwc::Constants;
 
 import Message;
 import List;

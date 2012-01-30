@@ -13,7 +13,7 @@ module lang::lwc::structure::Checker
 import lang::lwc::structure::AST;
 import lang::lwc::structure::Implode;
 import lang::lwc::structure::Propagate;
-import lang::lwc::Definition;
+import lang::lwc::Constants;
 
 import Message;
 import ParseTree;

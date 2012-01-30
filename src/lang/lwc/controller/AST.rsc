@@ -1,4 +1,11 @@
 module lang::lwc::controller::AST
+/*
+	TODO:
+		make Expression abstraction
+		remove paren-case
+		add prim-case to Expression
+		rename slt to leq and sgt to geq
+*/
 
 anno loc TopStatement@location;
 anno loc Statement@location;
@@ -10,8 +17,8 @@ anno loc Primary@location;
 data Controller = controller(list[TopStatement] topstatements);
 
 data TopStatement = state(StateName state, list[Statement] statements)
-                  | condition(str condition, Expression expression)
-                  | declaration(str variable, Primary val);
+                  | condition(str name, Expression expression)
+                  | declaration(str name, Primary val);
                   
 data StateName = statename(str name);
 

@@ -2,6 +2,12 @@ module lang::lwc::structure::AST
 /*
 	AST for LWC'12 Structure Language
 	Author: Jasper Timmer <jjwtimmer@gmail.com>
+	
+	TODO:
+		make Expression abstraction
+		remove paren-case
+		add val-case to Expression
+		rename slt to leq and sgt to geq
 */
 
 data Structure = structure(list[Statement] body);

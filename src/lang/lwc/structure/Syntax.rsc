@@ -2,6 +2,11 @@ module lang::lwc::structure::Syntax
 /*
 	Syntax for LWC'12 Structure Language
 	Author: Jasper Timmer <jjwtimmer@gmail.com>
+	
+	TODO:
+		make Expression abstraction
+		use 'bracket' keyword for the paren-case in Expression (remove constructor)
+		rename slt to leq and sgt to geq
 */
 
 lexical Comment = [#] ![\n]* $;

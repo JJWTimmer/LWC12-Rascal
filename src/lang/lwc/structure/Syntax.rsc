@@ -49,7 +49,10 @@ syntax Value = Assignable
 			 | Num
 			 | Metric
 			 | Boolean
+			 | position: Position
 			 ;
+
+lexical Position = ":" Identifier;
 
 syntax Metric = metric: Num Unit;
 

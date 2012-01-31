@@ -26,8 +26,8 @@ syntax Boolean 	= @category="Identifier" \true: "true"
 syntax Primary 
 	= integer: Int
 	| boolean: Boolean
-	| variable: Identifier
-	| property: Identifier "." Identifier
+	| rhsvariable: Variable
+	| rhsproperty: Property
 	;
 	
 syntax StateName = @category="Variable" statename: Identifier;
@@ -45,8 +45,8 @@ syntax Statement
 	| ifstatement: "if" Expression ":" Statement
 	| goto: "goto" StateName;
 	
-syntax Assignable = property: Identifier "." Identifier 
-                  | variable: Identifier;
+syntax Assignable = lhsproperty: Property 
+                  | lhsvariable: Variable;
 
 syntax Assignment = assign: Assignable "=" Value
 	              | \append: Assignable "+=" Value
@@ -55,6 +55,10 @@ syntax Assignment = assign: Assignable "=" Value
 		
 syntax Value = expression: Expression 
              | connections: {  ValveConnection "," }+;
+             
+syntax Variable = variable: Identifier;
+
+syntax Property = property: Identifier "." Identifier;
 
 syntax Expression 
 	= prim: Primary

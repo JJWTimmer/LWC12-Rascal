@@ -12,8 +12,6 @@ import IO;
 /*
 	TODO:
 		get map from element variables as defined in structure file, to element type of these variables
-		check for unused states or variables (not yet fixed!)
-		look at how to make clear isDuplicate modifies the Context
 */
 
 data Context = context(
@@ -36,19 +34,19 @@ public start[Controller] check(start[Controller] parseTree) {
 	return parseTree[@messages = context.messages];
 }
 
-Context checkNames(Context context, Controller tree) {	
-	context = collectNames(context, tree);
-	context = validateNames(context, tree);
-	context = findUnusedNames(context,tree);
+Context checkNames(Context context, Controller ast) {	
+	context = collectNames(context, ast);
+	context = validateNames(context, ast);
+	context = findUnusedNames(context, ast);
 		
 	return context;
 }
 
-Context collectNames(Context context, Controller tree) {
+Context collectNames(Context context, Controller ast) {
 	bool isDuplicate(str name) = name in (
 		context.stateNames + 
 		context.variableNames);
-		
+	
 	set[str] checkDuplicate(str name, node N) {
 		if (isDuplicate(name)) {
 			context.messages += { error("Duplicate name\nThe name <name> is already in use", N@location) }; 
@@ -58,9 +56,9 @@ Context collectNames(Context context, Controller tree) {
 		}
 	}
 
-	top-down visit(tree) {
+	top-down visit(ast) {
 		//Check for duplicate names for states, conditions and variables
-		case S:state(statename(str name), _) : context.stateNames += checkDuplicate(name, S);
+		case state(S:statename(str name), _) : context.stateNames += checkDuplicate(name, S);
 		case C:condition(str name, _) : context.variableNames += checkDuplicate(name, C);
 		case D:declaration(str name, _) : context.variableNames += checkDuplicate(name, D);
 	}
@@ -68,22 +66,22 @@ Context collectNames(Context context, Controller tree) {
 	return context;
 }
 
-Context validateNames(Context context, Controller tree) {
+Context validateNames(Context context, Controller ast) {
 	//this should contain all used variable names in the structure file
 	//and their ElementType
 	map[str,str] allowedElements = ();
 
 	//Validate names
-	visit(tree) {
+	visit(ast) {
 		//Validate state names
-		case G:goto(statename(str name)) : {
+		case goto(S:statename(str name)) : {
 			if(name notin context.stateNames) {
 				str msg = invalidNameMessage("state", toList(context.stateNames));
-				context.messages += { error(msg, G@location) };
+				context.messages += { error(msg, S@location) };
 			}
 		}
 		
-		//Validate variable names
+		//Validate rhs variable names
 		case V:variable(str name) : {
 			if(name notin context.variableNames) {
 				str msg = invalidNameMessage("variable", toList(context.variableNames));
@@ -112,33 +110,25 @@ Context validateNames(Context context, Controller tree) {
 	return context;
 }
 
-Context findUnusedNames(Context context, Controller tree) {
+Context findUnusedNames(Context context, Controller ast) {
 	set[str] usedNames = {};
 	
-	visit(tree) {
-		case goto(statename(str name, _)) : usedNames += name;
+	//Create a set of state and variable names that are used
+	visit(ast) {
+		case goto(statename(str name)) : usedNames += name;
 		case variable(str name) : usedNames += name;
-		case property(str name, _) : usedNames += name; //should this be here?
 	}
 	
-	visit(tree) {
-		case S:state(statename(str name, _)) : {
-			if(name notin usedNames) {
-				str msg = unusedNameMessage(name);
-				context.messages += { error(msg, S@location) };
-			}
+	//Look for names that are never used
+	visit(ast) {
+		case state(S:statename(str name), _) : { 
+			context = unusedNameError(context, S, name, usedNames);
 		}
 		case C:condition(str name, _) : {
-			if(name notin usedNames) {
-				str msg = unusedNameMessage(name);
-				context.messages += { error(msg, C@location) };
-			}
+			context = unusedNameError(context, C, name, usedNames);
 		}
 		case D:declaration(str name, _) : {
-			if(name notin usedNames) {
-				str msg = unusedNameMessage(name);
-				context.messages += { error(msg, D@location) };
-			}
+			context = unusedNameError(context, D, name, usedNames);
 		}
 	}
 
@@ -150,8 +140,12 @@ str invalidNameMessage(str name, list[str] allowedNames) {
 	return "Invalid <name>
 		   'Should be one of:
 		   '<allowed>";
-}
-
-str unusedNameMessage(str name) {
-	return "<name> is never used";
 } 
+
+Context unusedNameError(Context context, node N, str name, set[str] usedNames) {
+	if(name notin usedNames) {
+		str msg = "<name> is never used";
+		context.messages += { error(msg, N@location) };
+	}
+	return context;
+}

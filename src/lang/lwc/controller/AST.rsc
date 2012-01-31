@@ -8,6 +8,7 @@ module lang::lwc::controller::AST
 */
 
 anno loc TopStatement@location;
+anno loc StateName@location;
 anno loc Statement@location;
 anno loc Value@location;
 anno loc Expression@location;
@@ -32,13 +33,16 @@ data Statement = assign(Assignable left, Value right)
 data Value = expression(Expression e)
            | connections(list[str] connections);
            
-data Assignable = property(str element, str attribute) 
-                | variable(str var);
+data Assignable = lhsproperty(Property prop) 
+                | lhsvariable(Variable var);
            
 data Primary = integer(int intVal)
              | boolean(Boolean boolVal)
-             | variable(str var)
-             | property(str element, str attribute); 
+             | rhsvariable(Variable var)
+             | rhsproperty(Property prop);
+             
+data Variable = variable(str name); 
+data Property = property(str element, str attribute);
 
 data Boolean = \true() | \false();                        
      

@@ -3,6 +3,10 @@ module lang::lwc::Constants
 
 import lang::lwc::Definition;
 
+set[str] getPropertynames("Valve") {
+	return { "a", "b", "c", "closed" };
+}
+
 set[str] getPropertyNames(str elementName) {
 	set[str] result = {};
 	ElementDefinition elemDef = Elements[elementName];

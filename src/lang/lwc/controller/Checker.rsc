@@ -13,18 +13,20 @@ import Map;
 /*
 	TODO:
 		get map from element variables as defined in structure file, to element type of these variables
+		check whether variables and properties get the correct values (integer, bool, connectionlist) assigned?
 */
 
 data Context = context(
 	set[str] stateNames,
 	set[str] variableNames,
+	map[str,str] variableTypes,
 	
 	set[Message] messages);
 	
 anno set[Message] start[Controller]@messages;
 anno loc node@location;
 	
-Context initContext() = context({}, {}, {});
+Context initContext() = context({}, {}, (), {});
 
 public start[Controller] check(start[Controller] parseTree) {
 	Controller ast = implode(parseTree);
@@ -36,15 +38,16 @@ public start[Controller] check(start[Controller] parseTree) {
 }
 
 Context checkNames(Context context, Controller ast) {	
-	context = collectNames(context, ast);
+	context = collectNamesAndTypes(context, ast);
 	context = validateNames(context, ast);
+	context = validateTypes(context, ast);
 	context = findUnusedNames(context, ast);
 	context = findUnreachableCode(context, ast);
 		
 	return context;
 }
 
-Context collectNames(Context context, Controller ast) {
+Context collectNamesAndTypes(Context context, Controller ast) {
 	bool isDuplicate(str name) = name in (
 		context.stateNames + 
 		context.variableNames);
@@ -60,18 +63,38 @@ Context collectNames(Context context, Controller ast) {
 
 	top-down visit(ast) {
 		//Check for duplicate names for states, conditions and variables
+		//Propagate a set of names and a map of name to type
 		case state(S:statename(str name), _) : context.stateNames += checkDuplicate(name, S);
-		case C:condition(str name, _) : context.variableNames += checkDuplicate(name, C);
-		case D:declaration(str name, _) : context.variableNames += checkDuplicate(name, D);
+		case C:condition(str name, Expression expression) : {
+			context.variableNames += checkDuplicate(name, C);
+			context.variableTypes += (name : getType(expression));
+		}
+		case D:declaration(str name, Primary primary) : {
+			context.variableNames += checkDuplicate(name, D);
+			context.variableTypes += (name : getType(primary));
+		}
 	}
 	
 	return context;
 }
 
+str getType(value v) {
+	if(/integer(_) := v) {
+		return "integer";
+	}
+	else if(/boolean(_) := v) {
+		return "boolean";
+	}
+	else if(/connections(_) := v) {
+		return "connections";
+	}
+	return "";
+}
+
 Context validateNames(Context context, Controller ast) {
 	//this should contain all used variable names in the structure file
 	//and their ElementType
-	map[str,str] allowedElementNames = ();
+	map[str,str] elementMap = ();
 
 	//Validate names
 	visit(ast) {
@@ -79,18 +102,18 @@ Context validateNames(Context context, Controller ast) {
 		case goto(S:statename(str name)) :
 			context.messages += invalidNameError(S, name, context.stateNames, "state");
 		
-		//Validate rhs variable names
+		//Validate variable names
 		case V:variable(str name) :
 			context.messages += invalidNameError(V, name, context.variableNames, "variable");
 		
 		//Validate property names
 		case P:property(str element, str attribute) : {
-			if(element notin allowedElementNames) {
-				str msg = invalidNameMessage("variable", domain(allowedElementNames));
+			if(element notin elementMap) {
+				str msg = invalidNameMessage("variable", domain(elementMap));
 				context.messages += { error(msg, P@location) };
 			}
 			else {
-				str elementType = allowedElementNames[element];
+				str elementType = elementMap[element];
 				set[str] allowedProperties = ElementProperties[elementType];	 
 				context.messages += invalidNameError(P, attribute, allowedProperties, "property");
 			}
@@ -105,15 +128,55 @@ set[Message] invalidNameError(node N, str name, set[str] names, str nodeType) {
 		str msg = invalidNameMessage(nodeType, names);
 		return { error(msg, N@location) };
 	}
-	else return {};
+	else return {}; //validateType
 }
 
 str invalidNameMessage(str name, set[str] allowedNames) {
 	str allowed = intercalate(", ", toList(allowedNames));
-	return "Invalid <name>
+	return "Invalid <name>.
 		   'Should be one of:
 		   '<allowed>";
-} 
+}
+
+Context validateTypes(Context context, Controller ast) {
+	//Where to get info on what type a property should be? 
+	//Because a property can also be a list of connections, instead of an Expression
+	//This info will come from Definition/Constants or the structure file
+	
+	visit(ast) {
+		case S:assign(left, right) : context.messages += validateType(context, S, left, right);
+		case S:\append(left, right) : context.messages += validateType(context, S, left, right);
+		case S:remove(left, right) : context.messages += validateType(context, S, left, right);
+		case S:multiply(left, right) : context.messages += validateType(context, S, left, right);
+	}
+	
+	return context;
+}
+
+set[Message] validateType(Context context, Statement S, lhsvariable(variable(str left)), Value right) {
+	if(left in context.variableNames) {	
+		return validateType(S, context.variableTypes[left], getType(right));
+	}
+	return {};
+}
+
+set[Message] validateType(Context context, Statement S, lhsproperty(property(str elem,str attr)), Value right) {
+	//Where to get info on what type a property should be? 
+	//Because a property can also be a list of connections, instead of an Expression
+	//This info will come from Definition/Constants or the structure file
+
+	str leftType = ""; //???
+	
+	return validateType(S, leftType, getType(right));
+}
+
+set[Message] validateType(Statement S, str left, str right) {
+	if(left != right) {
+		str msg = "Invalid type. Variable or property is of type <left>, not <right>";
+		return { error(msg, S@location) };
+	}
+	return {};
+}
 
 Context findUnusedNames(Context context, Controller ast) {
 	set[str] usedNames = {};
@@ -142,7 +205,7 @@ Context findUnusedNames(Context context, Controller ast) {
 
 Context unusedNameError(Context context, node N, str name, set[str] usedNames) {
 	if(name notin usedNames) {
-		str msg = "<name> is never used";
+		str msg = "State, variable or property <name> is never used";
 		context.messages += { error(msg, N@location) };
 	}
 	return context;

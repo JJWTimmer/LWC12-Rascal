@@ -3,8 +3,8 @@ module lang::lwc::Constants
 
 import lang::lwc::Definition;
 
-list[str] getPropertyNames(str elementName) {
-	list[str] result = [];
+set[str] getPropertyNames(str elementName) {
+	set[str] result = {};
 	ElementDefinition elemDef = Elements[elementName];
 	
 	visit(elemDef) {
@@ -20,7 +20,7 @@ list[str] getPropertyNames(str elementName) {
 public set[str] ElementNames = {key | key <- Elements};
 public map[str, list[AttributeDefinition]] OptionalAttribs = ( key : [ O | O:optionalAttrib(_,_,_) <- Elements[key].attributes ] | key <- Elements );
 public map[str, list[ConnectionPointDefinition]] DefinedConnectionPoints = ( key : Elements[key].connectionpoints | key <- Elements);
-public map[str, list[str]] ElementProperties = ( key : getPropertyNames(key) | key <- Elements );
+public map[str, set[str]] ElementProperties = ( key : getPropertyNames(key) | key <- Elements );
 
 //locatie van getPropertyNames maakt uit voor herkenning in ElementProperties. ElementProperties veranderen
 //in een functie verhelpt dit probleem, maar het is een bug. In het klein reconstrueren en bug report maken

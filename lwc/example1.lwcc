@@ -43,6 +43,8 @@ state IGNITE:
 	Burner.gas_level = MIN_GAS
 	Pump.run = true
 	goto DISPATCH
+	Burner.ignite = false
+	Pump.run = true
 	
 state DISPATCH:
 	if roomTempHigh and boilerTempLow: goto BOILER

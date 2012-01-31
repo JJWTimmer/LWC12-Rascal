@@ -5,7 +5,7 @@ import lang::lwc::Definition;
 
 data AliasInfo = ai(list[Modifier] modifiers, str elemname, list[Attribute] attributes);
 
-//do everything
+//do all propagating
 public Structure propagate(Structure ast) {
 	ast = propagateAliasses(ast);
 	ast = propagateDefaults(ast);
@@ -68,6 +68,7 @@ public Structure propagateDefaults(Structure ast) {
 	return ast;
 }
 
+//add connectionpoints to the elements in the ast
 public Structure propagateConnectionPoints(Structure ast) {
 	ast = top-down-break visit(ast) {
 		case E:element(list[Modifier] Modifiers , elementname(str ElemName), _, list[Attribute] Attributes) : {

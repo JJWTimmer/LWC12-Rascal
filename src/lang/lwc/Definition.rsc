@@ -22,7 +22,8 @@ public data ElementDefinition = element(
 
 public data AttributeDefinition 
 	= requiredAttrib(str name, list[list[Unit]] unit)
-	| optionalAttrib(str name, list[list[Unit]] unit, ValueDefinition defaultvalue);
+	| optionalAttrib(str name, list[list[Unit]] unit, ValueDefinition defaultvalue)
+	| optionalModifierAttrib(str name, str modifier, list[list[Unit]] unit, ValueDefinition defaultvalue);
 
 public data ValueDefinition 
 	= numValue(num val, list[Unit] unit)
@@ -195,7 +196,8 @@ public map[str, ElementDefinition] Elements = (
 			{"ThreeWay"}
 		],
 		[	//attributes
-			optionalAttrib("position", [], listValue([":closed"]))
+			optionalAttrib("position", [], listValue([":closed"])),
+			optionalModifierAttrib("flowrate", "Pin", [VolumeUnits, TimeUnits], numValue(1, ["m3", "hour"])) // only for pin-valve
 		],
 		[	//connectionpoints
 			unknownConnection("a"),

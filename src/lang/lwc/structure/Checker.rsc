@@ -5,7 +5,8 @@ module lang::lwc::structure::Checker
 	Todo:
 		- Check number of pipes on a connection
 		- Hint about possible connections if an invalid connection name is used
-		- fix checkConnectionPoints and checkSensorPoints
+		- built checkSensorPoints
+		- checkConnectionPoints doesnt work for variable(name)
 		
 	AST Checker for LWC'12 Structure Language
 	Author: Jasper Timmer <jjwtimmer@gmail.com>
@@ -14,13 +15,14 @@ module lang::lwc::structure::Checker
 import lang::lwc::structure::AST;
 import lang::lwc::structure::Implode;
 import lang::lwc::structure::Propagate;
+import lang::lwc::Definition;
 import lang::lwc::Constants;
 
 import Message;
 import ParseTree;
 import List;
 import Set;
-
+import IO;
 /*
 	Context for static checker
 */
@@ -31,11 +33,11 @@ data Context = context(
 	set[str] pipenames,
 	set[str] constraintnames,
 	map[str, set[str]] elementconnections,
-
+	map[str, str] namemap,
 	set[Message] messages	
 ); 
 
-Context initContext() = context({}, {}, {}, {}, (), {});
+Context initContext() = context({}, {}, {}, {}, (), (), {});
 
 anno set[Message] start[Structure]@messages;
 anno loc node@location;
@@ -72,9 +74,10 @@ Context collect(Context context, Structure ast) {
 
 	visit (ast.body) {
 		case A:aliaselem(str name, _, _, _): context.aliasnames += checkDuplicate(name, A);
-		case element(_, _, str name, [A*, attribute(attributename("connections"), valuelist(list[Value] Values)), B*]) :
+		case element(_, elementname(str elem), str name, [A*, attribute(attributename("connections"), valuelist(list[Value] Values)), B*]) :
 		{
 			context.elementconnections[name] = { connpoint | variable(str connpoint) <- Values};
+			context.namemap[name] = elem;
 		}
 		
 		case E:element(_, _, str name, list[Attribute] Attributes): 
@@ -124,17 +127,45 @@ Context checkDuplicates(Context context, Structure ast) {
 	validate connectionpoints
 */
 Context checkConnectionPoints(Context context, Structure ast) {
-	void checkPoint(Value point) {
+
+	Context checkPoint(Value point, Context ctx) {
 		if (property(str var, propname(str pname)) := point) {
-			if (context.elementconnections[var]? && pname notin context.elementconnections[var]) {
-				context.messages += { error("Connectionpoint does not exist", point@location) };
+			if (ctx.elementconnections[var]? && pname notin ctx.elementconnections[var]) {
+				ctx.messages += { error("Connectionpoint does not exist", point@location) };
 			}
+		} else if (variable(str var) := point) {
+			if (ctx.elementconnections[var]? && /attribConnections() !:= DefinedConnectionPoints[context.namemap[name]]) {
+				ctx.messages += { error("Connectionpoint does not exist", point@location) };
+			}
+		}
+		
+		return ctx;
+	}
+
+	//check if the user defined connectionpoints are allowed according to the definitionfile
+	for (name <- context.elementconnections) {
+		//if there are no defined connectionpoints for <name>
+		if (!DefinedConnectionPoints[context.namemap[name]]?) {
+			//then remove this entry from the map
+			context.elementconnections -= (name : context.elementconnections[name]);
+		//if there are no attribconnections in the defined connectionpoints for <name> ???
+		} else {
+		
+			if (/attribConnections() !:= DefinedConnectionPoints[context.namemap[name]]) {
+				//then remove this entry from the map
+				context.elementconnections -= (name : context.elementconnections[name]);
+			}
+			
+			//if connectionpoints are defined, and there exists an attribConnections()
+			set[str] s = {};
+			set[str] cpds = {cpd.name | ConnectionPointDefinition cpd <- DefinedConnectionPoints[context.namemap[name]], cpd has name};
+			context.elementconnections[name] ? s += cpds;
 		}
 	}
 
 	for (/pipe(_, _, Value from, Value to, _) := ast) {	
-		checkPoint(from);
-		checkPoint(to);
+		context = checkPoint(from, context);
+		context = checkPoint(to, context);
 	}
 	
 	return context;
@@ -144,6 +175,6 @@ Context checkConnectionPoints(Context context, Structure ast) {
 	checks if sensorpoint names are correct
 */
 Context checkSensorPoints(Context context, Structure ast) {
-
+	
 	return context;
 }

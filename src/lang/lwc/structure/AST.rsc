@@ -31,6 +31,7 @@ data Value = integer(int val)
 		   | boolfalse()
 		   | property(str var, PropName property)
 		   | variable(str var)
+		   | position(str var)
 		   ;
 		   
 data ValueList = valuelist(list[Value] values);

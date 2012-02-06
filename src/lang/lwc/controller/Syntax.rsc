@@ -32,8 +32,9 @@ syntax Primary
 	| rhsproperty: Property
 	;
 
-
-syntax ExpVal = expval: Primary; //for imported expressions
+syntax Expression = expvalue: Primary
+				  | ...
+				  ;
 
 syntax StateName = @category="Variable" statename: Identifier;
 
@@ -57,7 +58,7 @@ syntax Assignment = assign: Assignable "=" Value
 	              | \append: Assignable "+=" Value
 	              | remove: Assignable "-=" Value
 	              | multiply: Assignable "*=" Value;
-		
+
 syntax Value = expression: Expression 
              | connections: {  ValveConnection "," }+;
              

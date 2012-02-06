@@ -42,7 +42,7 @@ data Primary = integer(int intVal)
              | rhsvariable(Variable var)
              | rhsproperty(Property prop);
 
-data ExpVal = expval(Primary v);
+data Expression = expvalue(Primary p); // extension of the imported one
 
 data Variable = variable(str name); 
 data Property = property(str element, str attribute);

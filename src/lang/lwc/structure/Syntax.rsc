@@ -32,8 +32,8 @@ lexical Identifier = ([a-zA-Z_][a-zA-Z0-9_]* !>> [a-zA-Z0-9_]) \ Reserved;
 
 lexical Real = "-"? [0-9]+ "." [0-9]+;
 lexical Int = "-"? [0-9]+ !>> [.0-9];
-syntax Boolean = @category="Constant" booltrue: "true"
-			   | @category="Constant" boolfalse: "false"
+syntax Boolean = @category="Constant" \true: "true"
+			   | @category="Constant" \false: "false"
 			   ;
 
 syntax Num = @category="Constant" integer: Int
@@ -61,7 +61,9 @@ syntax Metric = metric: Num Unit;
 
 syntax Unit = @category="Constant" unit: "[" {Identifier "/"}+ "]";
 
-syntax ExpVal = expval: Value; //for imported expressions
+syntax Expression = expvalue: Value
+				  | ...
+				  ;
 				 
 syntax ElementName = @category="Type" elementname: Identifier;
 

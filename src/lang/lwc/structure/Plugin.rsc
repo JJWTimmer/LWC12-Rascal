@@ -8,17 +8,18 @@ import util::IDE;
 import ParseTree;
 import Message;
 
-private str lang() = "LWC Structure Language";
+str STRUCTURE_LANG = "LWC Structure Module";
+str STRUCTURE_EXT  = "lwcs";
 
 
 public void registerStructure() {
 
-	registerLanguage(lang(), "lwcs", start[Structure](str input, loc org) {
+	registerLanguage(STRUCTURE_LANG, STRUCTURE_EXT, start[Structure](str input, loc org) {
        return parse(#start[Structure], input, org);
 	});
     
-	registerAnnotator(lang(), check);
+	registerAnnotator(STRUCTURE_LANG, check);
 	
-	registerOutliner(lang(), outliner);
+	registerOutliner(STRUCTURE_LANG, outliner);
 	
 }

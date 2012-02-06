@@ -1,7 +1,6 @@
 module lang::lwc::ExpressionAST
 
-data Expression = evalue(ExpVal v)
-                | not(Expression e)
+data Expression = not(Expression e)
                 | mul(Expression left, Expression right)
                 | div(Expression left, Expression right)
                 | mdl(Expression left, Expression right)

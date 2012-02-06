@@ -1,7 +1,6 @@
 module lang::lwc::ExpressionSyntax
 
-syntax Expression = evalue: ExpVal
-				  | bracket "(" Expression ")"
+syntax Expression = bracket "(" Expression ")"
 				  | not: "not" Expression
 				  > left (
 			      	mul: Expression "*" Expression |

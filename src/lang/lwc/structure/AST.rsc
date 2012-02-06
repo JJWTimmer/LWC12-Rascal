@@ -28,14 +28,14 @@ data AttributeName = attributename(str name);
 data Value = integer(int val)
 		   | realnum(real number)
 		   | metric(Value size, Unit unit)
-		   | booltrue()
-		   | boolfalse()
+		   | \true()
+		   | \false()
 		   | property(str var, PropName property)
 		   | variable(str var)
 		   | position(str var)
 		   ;
 		   
-data ExpVal = expval(Value v);
+data Expression = expvalue(Value v); // extension of the imported one
 
 data ValueList = valuelist(list[Value] values);
 

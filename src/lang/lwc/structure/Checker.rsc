@@ -12,7 +12,8 @@ module lang::lwc::structure::Checker
 	Author: Jasper Timmer <jjwtimmer@gmail.com>
 */
 
-import lang::lwc::structure::AST;
+extend lang::lwc::structure::AST;
+
 import lang::lwc::structure::Implode;
 import lang::lwc::structure::Propagate;
 import lang::lwc::Definition;

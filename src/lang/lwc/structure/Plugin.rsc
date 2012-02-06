@@ -1,6 +1,6 @@
 module lang::lwc::structure::Plugin
 
-import lang::lwc::structure::Syntax;
+extend lang::lwc::structure::Syntax;
 import lang::lwc::structure::Checker;
 import lang::lwc::structure::Outliner;
 

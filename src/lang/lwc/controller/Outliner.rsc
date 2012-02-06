@@ -1,9 +1,11 @@
 module lang::lwc::controller::Outliner
 
-import lang::lwc::controller::Syntax;
-import lang::lwc::controller::AST;
+extend lang::lwc::controller::Syntax;
+extend lang::lwc::controller::AST;
+
 import lang::lwc::controller::Load;
 import lang::lwc::Outline;
+
 import util::IDE;
 
 anno loc node@location;

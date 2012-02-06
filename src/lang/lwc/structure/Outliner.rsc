@@ -3,8 +3,9 @@ module lang::lwc::structure::Outliner
 	Code Outliner for LWC'12 Structure Language
 	Author: Jasper Timmer <jjwtimmer@gmail.com>
 */
-import lang::lwc::structure::Syntax;
-import lang::lwc::structure::AST;
+extend lang::lwc::structure::Syntax;
+extend lang::lwc::structure::AST;
+
 import lang::lwc::structure::Implode;
 import lang::lwc::structure::Propagate;
 import lang::lwc::Outline;

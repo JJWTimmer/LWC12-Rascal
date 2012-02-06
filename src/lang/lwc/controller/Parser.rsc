@@ -1,6 +1,7 @@
 module lang::lwc::controller::Parser
 
-import lang::lwc::controller::Syntax;
+extend lang::lwc::controller::Syntax;
+
 import ParseTree;
 
 public start[Controller] parse(str input) = parse(#start[Controller], input);

@@ -1,7 +1,8 @@
 module lang::lwc::structure::Implode
 
-import lang::lwc::structure::AST; 
-import lang::lwc::structure::Syntax;
+extend lang::lwc::structure::AST; 
+extend lang::lwc::structure::Syntax;
+
 import ParseTree;
 
 public lang::lwc::structure::AST::Structure implode(start[Structure] tree) 

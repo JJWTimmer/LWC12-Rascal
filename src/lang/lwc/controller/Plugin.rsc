@@ -1,6 +1,6 @@
 module lang::lwc::controller::Plugin
 
-import lang::lwc::controller::Syntax;
+extend lang::lwc::controller::Syntax;
 import lang::lwc::controller::Parser;
 import lang::lwc::controller::Outliner;
 import lang::lwc::controller::Checker;

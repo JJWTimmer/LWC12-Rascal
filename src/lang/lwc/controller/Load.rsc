@@ -1,6 +1,6 @@
 module lang::lwc::controller::Load
 
-import lang::lwc::controller::AST;
+extend lang::lwc::controller::AST;
 import lang::lwc::controller::Parser;
 import ParseTree;
 

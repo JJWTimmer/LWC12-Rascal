@@ -4,11 +4,16 @@ import lang::lwc::controller::AST;
 import lang::lwc::controller::Load;
 import lang::lwc::Constants;
 
+import lang::lwc::structure::Extern;
+
 import Message;
 import List;
 import Set;
 import IO;
 import Map;
+import String;
+
+anno loc start[Controller]@\loc;
 
 /*
 	TODO:
@@ -20,19 +25,30 @@ data Context = context(
 	set[str] stateNames,
 	set[str] variableNames,
 	map[str,str] variableTypes,
+	map[str,str] elementMap,
 	
 	set[Message] messages);
 	
 anno set[Message] start[Controller]@messages;
 anno loc node@location;
 	
-Context initContext() = context({}, {}, (), {});
+Context initContext() = context({}, {}, (), (), {});
 
 public start[Controller] check(start[Controller] parseTree) {
-	Controller ast = implode(parseTree);
+
 	Context context = initContext();
+	Controller controllerAst = implode(parseTree);
 	
-	context = checkNames(context, ast);
+	loc structureLocation = parseTree@\loc;
+	structureLocation.path = substring(structureLocation.path, 0, size(structureLocation.path) - 1) + "s";
+	
+	if (! isFile(structureLocation)) {
+		context.messages += { error("Structure file not found", parseTree@\loc) };
+	} else {
+		context.elementMap = structureElements(structureLocation);	
+	}
+	
+	context = checkNames(context, controllerAst);
 	
 	return parseTree[@messages = context.messages];
 }
@@ -94,6 +110,7 @@ str getType(value v) {
 Context validateNames(Context context, Controller ast) {
 	//this should contain all used variable names in the structure file
 	//and their ElementType
+	// Name -> Type
 	map[str,str] elementMap = ();
 
 	//Validate names
@@ -108,12 +125,12 @@ Context validateNames(Context context, Controller ast) {
 		
 		//Validate property names
 		case P:property(str element, str attribute) : {
-			if(element notin elementMap) {
-				str msg = invalidNameMessage("variable", domain(elementMap));
+			if(element notin context.elementMap) {
+				str msg = invalidNameMessage("variable", domain(context.elementMap));
 				context.messages += { error(msg, P@location) };
 			}
 			else {
-				str elementType = elementMap[element];
+				str elementType = context.elementMap[element];
 				set[str] allowedProperties = ElementProperties[elementType];	 
 				context.messages += invalidNameError(P, attribute, allowedProperties, "property");
 			}

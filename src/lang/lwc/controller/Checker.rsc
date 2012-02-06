@@ -17,8 +17,6 @@ anno loc start[Controller]@\loc;
 
 /*
 	TODO:
-		get map from element variables as defined in structure file, to element type of these variables
-		check whether variables and properties get the correct values (integer, bool, connectionlist) assigned?
 		check Valve connections (names)
 */
 
@@ -27,14 +25,13 @@ data Context = context(
 	set[str] stateNames,
 	set[str] variableNames,
 	map[str,str] variableTypes,
-	map[str,str] elementMap,
 	
 	set[Message] messages);
 	
 anno set[Message] start[Controller]@messages;
 anno loc node@location;
 	
-Context initContext() = context((), {}, {}, (), (), {});
+Context initContext() = context((), {}, {}, (), {});
 
 public start[Controller] check(start[Controller] parseTree) {
 
@@ -49,6 +46,8 @@ public start[Controller] check(start[Controller] parseTree) {
 	} else {
 		context.elementMap = structureElements(structureLocation);	
 	}
+	
+	iprint(context.elementMap);
 	
 	context = checkNames(context, controllerAst);
 	
@@ -98,13 +97,13 @@ Context collectNamesAndTypes(Context context, Controller ast) {
 
 str getType(value v) {
 	if(/integer(_) := v) {
-		return "integer";
+		return "num";
 	}
 	else if(/boolean(_) := v) {
-		return "boolean";
+		return "bool";
 	}
 	else if(/connections(_) := v) {
-		return "connections";
+		return "list";
 	}
 	return "";
 }
@@ -122,14 +121,15 @@ Context validateNames(Context context, Controller ast) {
 		
 		//Validate property names
 		case P:property(str element, str attribute) : {
-			if(element notin context.elementMap) {
-				str msg = invalidNameMessage("variable", domain(context.elementMap));
-				context.messages += { error(msg, P@location) };
+			set[Message] invalidElementMsg = invalidNameError(P, element, domain(context.elementMap), "variable");
+			
+			if(invalidElementMsg == {}) {
+				str elementType = context.elementMap[element];
+				set[str] allowedProperties = domain(ElementProperties[elementType]);
+				context.messages += invalidNameError(P, attribute, allowedProperties, "property");
 			}
 			else {
-				str elementType = context.elementMap[element];
-				set[str] allowedProperties = domain(ElementProperties[elementType]);	 
-				context.messages += invalidNameError(P, attribute, allowedProperties, "property");
+				context.messages += invalidElementMsg;
 			}
 		}
 	}
@@ -142,7 +142,7 @@ set[Message] invalidNameError(node N, str name, set[str] names, str nodeType) {
 		str msg = invalidNameMessage(nodeType, names);
 		return { error(msg, N@location) };
 	}
-	else return {}; //validateType
+	else return {};
 }
 
 str invalidNameMessage(str name, set[str] allowedNames) {
@@ -171,8 +171,14 @@ set[Message] validateType(Context context, Statement S, lhsvariable(variable(str
 }
 
 set[Message] validateType(Context context, Statement S, lhsproperty(property(str elem,str attr)), Value right) {
+	if(elem notin context.elementMap) {
+		return {};
+	}
 	str elementType = context.elementMap[elem];
 	map[str,str] allowedProperties = ElementProperties[elementType];
+	if(attr notin allowedProperties) {
+		return {};
+	}
 	str leftType = allowedProperties[attr]; 
 	
 	return validateType(S, leftType, getType(right));

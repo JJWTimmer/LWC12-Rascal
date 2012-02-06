@@ -4,17 +4,13 @@ import lang::lwc::structure::Load;
 import lang::lwc::structure::AST;
 
 public map[str,str] structureElements(loc input) {
+
+	map[str,str] elementMap = ();
 	
-	Structure ast = load(input);
-	
-	map[str,str] elementNames = ();
-	
-	visit(ast)
-	{
+	visit(load(input)) {
 		case element(_, ElementName etype, str name, _):
-			elementNames[name] = etype.id;
+			elementMap[name] = etype.id;
 	}
 	
-	return elementNames;
-} 
-
+	return elementMap;
+}

@@ -4,35 +4,53 @@ import lang::lwc::controller::AST;
 import lang::lwc::controller::Load;
 import lang::lwc::Constants;
 
+import lang::lwc::structure::Extern;
+
 import Message;
 import List;
 import Set;
 import IO;
 import Map;
+import String;
+
+anno loc start[Controller]@\loc;
 
 /*
 	TODO:
 		get map from element variables as defined in structure file, to element type of these variables
 		check whether variables and properties get the correct values (integer, bool, connectionlist) assigned?
+		check Valve connections (names)
 */
 
 data Context = context(
+	map[str,str] elementMap,
 	set[str] stateNames,
 	set[str] variableNames,
 	map[str,str] variableTypes,
+	map[str,str] elementMap,
 	
 	set[Message] messages);
 	
 anno set[Message] start[Controller]@messages;
 anno loc node@location;
 	
-Context initContext() = context({}, {}, (), {});
+Context initContext() = context((), {}, {}, (), (), {});
 
 public start[Controller] check(start[Controller] parseTree) {
-	Controller ast = implode(parseTree);
+
 	Context context = initContext();
+	Controller controllerAst = implode(parseTree);
 	
-	context = checkNames(context, ast);
+	loc structureLocation = parseTree@\loc;
+	structureLocation.path = substring(structureLocation.path, 0, size(structureLocation.path) - 1) + "s";
+	
+	if (! isFile(structureLocation)) {
+		context.messages += { error("Structure file not found", parseTree@\loc) };
+	} else {
+		context.elementMap = structureElements(structureLocation);	
+	}
+	
+	context = checkNames(context, controllerAst);
 	
 	return parseTree[@messages = context.messages];
 }
@@ -92,10 +110,6 @@ str getType(value v) {
 }
 
 Context validateNames(Context context, Controller ast) {
-	//this should contain all used variable names in the structure file
-	//and their ElementType
-	map[str,str] elementMap = ();
-
 	//Validate names
 	visit(ast) {
 		//Validate state names
@@ -108,13 +122,13 @@ Context validateNames(Context context, Controller ast) {
 		
 		//Validate property names
 		case P:property(str element, str attribute) : {
-			if(element notin elementMap) {
-				str msg = invalidNameMessage("variable", domain(elementMap));
+			if(element notin context.elementMap) {
+				str msg = invalidNameMessage("variable", domain(context.elementMap));
 				context.messages += { error(msg, P@location) };
 			}
 			else {
-				str elementType = elementMap[element];
-				set[str] allowedProperties = ElementProperties[elementType];	 
+				str elementType = context.elementMap[element];
+				set[str] allowedProperties = domain(ElementProperties[elementType]);	 
 				context.messages += invalidNameError(P, attribute, allowedProperties, "property");
 			}
 		}
@@ -139,10 +153,6 @@ str invalidNameMessage(str name, set[str] allowedNames) {
 }
 
 Context validateTypes(Context context, Controller ast) {
-	//Where to get info on what type a property should be? 
-	//Because a property can also be a list of connections, instead of an Expression
-	//This info will come from Definition/Constants or the structure file
-	
 	visit(ast) {
 		case S:assign(left, right) : context.messages += validateType(context, S, left, right);
 		case S:\append(left, right) : context.messages += validateType(context, S, left, right);
@@ -161,11 +171,9 @@ set[Message] validateType(Context context, Statement S, lhsvariable(variable(str
 }
 
 set[Message] validateType(Context context, Statement S, lhsproperty(property(str elem,str attr)), Value right) {
-	//Where to get info on what type a property should be? 
-	//Because a property can also be a list of connections, instead of an Expression
-	//This info will come from Definition/Constants or the structure file
-
-	str leftType = ""; //???
+	str elementType = context.elementMap[elem];
+	map[str,str] allowedProperties = ElementProperties[elementType];
+	str leftType = allowedProperties[attr]; 
 	
 	return validateType(S, leftType, getType(right));
 }

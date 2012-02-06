@@ -1,10 +1,12 @@
 module lang::lwc::controller::Syntax
+extend lang::lwc::ExpressionSyntax;
 /*
 	TODO:
 		make Expression abstraction
 		use 'bracket' keyword for the paren-case in Expression (remove constructor)
 		rename slt to leq and sgt to geq
 */
+
 
 lexical Comment = [#] ![\n]* $;
 
@@ -29,7 +31,10 @@ syntax Primary
 	| rhsvariable: Variable
 	| rhsproperty: Property
 	;
-	
+
+
+syntax ExpVal = expval: Primary; //for imported expressions
+
 syntax StateName = @category="Variable" statename: Identifier;
 
 start syntax Controller = controller: TopStatement*;
@@ -59,30 +64,3 @@ syntax Value = expression: Expression
 syntax Variable = variable: Identifier;
 
 syntax Property = property: Identifier "." Identifier;
-
-syntax Expression 
-	= prim: Primary
-	| paren: "(" Expression ")"
-	| not: "not" Expression
-	> left (
-         mul: Expression "*" Expression |
-         div: Expression "/" Expression |
-         mdl: Expression "%" Expression
-    )
-    > left (
-         add: Expression "+" Expression |
-         sub: Expression "-" Expression
-    )
-    > left (
-         lt:  Expression "\<" Expression |
-         gt:  Expression "\>" Expression |
-         slt: Expression "\<=" Expression |
-         sgt: Expression "\>=" Expression
-    ) 
-    > left(
-		eq:  Expression "==" Expression |
-		neq: Expression "!=" Expression
-	)
-	> left and: Expression "and" Expression
-	> left or:  Expression "or" Expression
-	;

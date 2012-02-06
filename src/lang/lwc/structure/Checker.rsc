@@ -134,7 +134,7 @@ Context checkConnectionPoints(Context context, Structure ast) {
 				ctx.messages += { error("Connectionpoint does not exist", point@location) };
 			}
 		} else if (variable(str var) := point) {
-			if (ctx.elementconnections[var]? && /attribConnections() !:= DefinedConnectionPoints[context.namemap[name]]) {
+			if (ctx.elementconnections[var]? && /attribConnections() !:= DefinedConnectionPoints[ctx.namemap[name]]) {
 				ctx.messages += { error("Connectionpoint does not exist", point@location) };
 			}
 		}

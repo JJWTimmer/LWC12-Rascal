@@ -1,4 +1,5 @@
 module lang::lwc::controller::AST
+extend lang::lwc::ExpressionAST;
 /*
 	TODO:
 		make Expression abstraction
@@ -40,25 +41,10 @@ data Primary = integer(int intVal)
              | boolean(Boolean boolVal)
              | rhsvariable(Variable var)
              | rhsproperty(Property prop);
-             
+
+data ExpVal = expval(Primary v);
+
 data Variable = variable(str name); 
 data Property = property(str element, str attribute);
 
-data Boolean = \true() | \false();                        
-     
-data Expression = prim(Primary p)
-                | paren(Expression e)
-                | not(Expression e)
-                | mul(Expression left, Expression right)
-                | div(Expression left, Expression right)
-                | mdl(Expression left, Expression right)
-                | add(Expression left, Expression right)
-                | sub(Expression left, Expression right)
-                | lt(Expression left, Expression right)
-                | gt(Expression left, Expression right)
-                | slt(Expression left, Expression right)
-                | sgt(Expression left, Expression right)
-                | eq(Expression left, Expression right)
-                | neq(Expression left, Expression right)
-                | and(Expression left, Expression right)
-                | or(Expression left, Expression right);
+data Boolean = \true() | \false();

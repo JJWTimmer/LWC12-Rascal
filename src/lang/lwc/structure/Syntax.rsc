@@ -1,5 +1,5 @@
 module lang::lwc::structure::Syntax
-extend lang::lwc::ExpressionSyntax;
+extend lang::lwc::expressions::Syntax;
 /*
 	Syntax for LWC'12 Structure Language
 	Author: Jasper Timmer <jjwtimmer@gmail.com>

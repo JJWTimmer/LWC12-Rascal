@@ -1,5 +1,5 @@
 module lang::lwc::controller::AST
-extend lang::lwc::ExpressionAST;
+extend lang::lwc::expressions::AST;
 /*
 	TODO:
 		make Expression abstraction

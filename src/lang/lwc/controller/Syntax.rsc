@@ -1,5 +1,5 @@
 module lang::lwc::controller::Syntax
-extend lang::lwc::ExpressionSyntax;
+extend lang::lwc::expressions::Syntax;
 /*
 	TODO:
 		make Expression abstraction

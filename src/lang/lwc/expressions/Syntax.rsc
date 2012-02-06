@@ -1,4 +1,4 @@
-module lang::lwc::ExpressionSyntax
+module lang::lwc::expressions::Syntax
 
 syntax Expression = bracket "(" Expression ")"
 				  | not: "not" Expression

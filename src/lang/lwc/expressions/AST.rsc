@@ -1,4 +1,4 @@
-module lang::lwc::ExpressionAST
+module lang::lwc::expressions::AST
 
 data Expression = not(Expression e)
                 | mul(Expression left, Expression right)

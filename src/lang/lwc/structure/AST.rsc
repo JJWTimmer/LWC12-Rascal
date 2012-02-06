@@ -1,5 +1,5 @@
 module lang::lwc::structure::AST
-extend lang::lwc::ExpressionAST;
+extend lang::lwc::expressions::AST;
 /*
 	AST for LWC'12 Structure Language
 	Author: Jasper Timmer <jjwtimmer@gmail.com>

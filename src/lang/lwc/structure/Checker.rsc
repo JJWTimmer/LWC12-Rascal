@@ -40,10 +40,9 @@ data Context = context(
 
 Context initContext() = context({}, {}, {}, {}, (), (), {});
 
-anno set[Message] start[Structure]@messages;
 anno loc node@location;
 
-public start[Structure] check(start[Structure] tree) {
+public Tree check(Tree tree) {
 	
 	Structure ast = implode(tree);
 	
@@ -81,9 +80,11 @@ Context collect(Context context, Structure ast) {
 			context.namemap[name] = elem;
 		}
 		
-		case E:element(_, _, str name, list[Attribute] Attributes): 
+		case E:element(_, elementname(str elem), str name, list[Attribute] Attributes): 
 		{
 			context.elementnames += checkDuplicate(name, E);
+			context.elementconnections[name] = {};
+			context.namemap[name] = elem;
 		}
 		
 		case P:pipe(_, str name, _, _, _)		: context.pipenames += checkDuplicate(name, P);
@@ -128,14 +129,14 @@ Context checkDuplicates(Context context, Structure ast) {
 	validate connectionpoints
 */
 Context checkConnectionPoints(Context context, Structure ast) {
-
+	
 	Context checkPoint(Value point, Context ctx) {
 		if (property(str var, propname(str pname)) := point) {
-			if (ctx.elementconnections[var]? && pname notin ctx.elementconnections[var]) {
+			if ( !ctx.elementconnections[var]? || (ctx.elementconnections[var]? && pname notin ctx.elementconnections[var])) {
 				ctx.messages += { error("Connectionpoint does not exist", point@location) };
 			}
 		} else if (variable(str var) := point) {
-			if (ctx.elementconnections[var]? && /attribConnections() !:= DefinedConnectionPoints[ctx.namemap[name]]) {
+			if ( !ctx.elementconnections[var]? || (ctx.elementconnections[var]? && "[self]" notin ctx.elementconnections[var] ) ) {
 				ctx.messages += { error("Connectionpoint does not exist", point@location) };
 			}
 		}
@@ -144,7 +145,7 @@ Context checkConnectionPoints(Context context, Structure ast) {
 	}
 
 	//check if the user defined connectionpoints are allowed according to the definitionfile
-	for (name <- context.elementconnections) {
+	for (name <- context.namemap) {
 		//if there are no defined connectionpoints for <name>
 		if (!DefinedConnectionPoints[context.namemap[name]]?) {
 			//then remove this entry from the map

@@ -1,6 +1,5 @@
 module lang::lwc::structure::Plugin
 
-import lang::lwc::structure::Syntax;
 import lang::lwc::structure::Parser;
 import lang::lwc::structure::Outliner;
 import lang::lwc::structure::Checker;
@@ -12,9 +11,7 @@ str STRUCTURE_EXT  = "lwcs";
 
 public void registerStructure() {
 
-	registerLanguage(STRUCTURE_LANG, STRUCTURE_EXT, start[Structure](str input, loc origin) { 
-		return parse(input, origin);
-	});
+	registerLanguage(STRUCTURE_LANG, STRUCTURE_EXT, parse);
 	
 	registerOutliner(STRUCTURE_LANG, outliner);
 	

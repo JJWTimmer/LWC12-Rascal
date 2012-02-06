@@ -1,6 +1,6 @@
 module lang::lwc::controller::Checker
 
-extend lang::lwc::controller::AST;
+import lang::lwc::controller::AST;
 import lang::lwc::controller::Load;
 import lang::lwc::Constants;
 
@@ -114,7 +114,7 @@ Context validateNames(Context context, Controller ast) {
 			}
 			else {
 				str elementType = elementMap[element];
-				set[str] allowedProperties = ElementProperties[elementType];	 
+				set[str] allowedProperties = domain(ElementProperties[elementType]);	 
 				context.messages += invalidNameError(P, attribute, allowedProperties, "property");
 			}
 		}
@@ -139,10 +139,6 @@ str invalidNameMessage(str name, set[str] allowedNames) {
 }
 
 Context validateTypes(Context context, Controller ast) {
-	//Where to get info on what type a property should be? 
-	//Because a property can also be a list of connections, instead of an Expression
-	//This info will come from Definition/Constants or the structure file
-	
 	visit(ast) {
 		case S:assign(left, right) : context.messages += validateType(context, S, left, right);
 		case S:\append(left, right) : context.messages += validateType(context, S, left, right);
@@ -161,11 +157,9 @@ set[Message] validateType(Context context, Statement S, lhsvariable(variable(str
 }
 
 set[Message] validateType(Context context, Statement S, lhsproperty(property(str elem,str attr)), Value right) {
-	//Where to get info on what type a property should be? 
-	//Because a property can also be a list of connections, instead of an Expression
-	//This info will come from Definition/Constants or the structure file
-
-	str leftType = ""; //???
+	str elementType = elementMap[elem];
+	map[str,str] allowedProperties = ElementProperties[elementType];
+	str leftType = allowedProperties[attr]; 
 	
 	return validateType(S, leftType, getType(right));
 }

@@ -1,6 +1,6 @@
 module lang::lwc::structure::Propagate
 
-extend lang::lwc::structure::AST;
+import lang::lwc::structure::AST;
 import lang::lwc::Definition;
 
 data AliasInfo = ai(list[Modifier] modifiers, str elemname, list[Attribute] attributes);

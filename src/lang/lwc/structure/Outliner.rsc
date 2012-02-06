@@ -2,11 +2,11 @@ module lang::lwc::structure::Outliner
 /*
 	Code Outliner for LWC'12 Structure Language
 	Author: Jasper Timmer <jjwtimmer@gmail.com>
+	
+	todo: fix imports
 */
-extend lang::lwc::structure::Syntax;
-extend lang::lwc::structure::AST;
-
-import lang::lwc::structure::Implode;
+import lang::lwc::structure::AST;
+import lang::lwc::structure::Load;
 import lang::lwc::structure::Propagate;
 import lang::lwc::Outline;
 
@@ -25,7 +25,7 @@ data StructureOutline = solOutline(
 data ElementNode = solElement(node modifiers, node attributes);
 data AliasNode = solAlias(OutlineNode modifiers, OutlineNode attributes);
 
-public node outliner(start[Structure] tree) {
+public node outliner(Tree tree) {
 
 	// Setup the basic outline
 	StructureOutline outline = solOutline(

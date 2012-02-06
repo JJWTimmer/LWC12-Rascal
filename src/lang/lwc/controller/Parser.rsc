@@ -1,6 +1,6 @@
 module lang::lwc::controller::Parser
 
-extend lang::lwc::controller::Syntax;
+import lang::lwc::controller::Syntax;
 
 import ParseTree;
 

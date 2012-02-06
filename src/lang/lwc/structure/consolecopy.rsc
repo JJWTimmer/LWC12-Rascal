@@ -1,5 +1,2 @@
-extend lang::lwc::structure::Syntax;
-extend lang::lwc::structure::AST;
-import ParseTree;
-tree = parse(#start[Structure], |project://lwc-uva/lwc/example1.lwcs|);
-ast = implode(#lang::lwc::structure::AST::Structure, tree);
+import lang::lwc::structure::Load;
+ast = load(|project://lwc-uva/lwc/example1.lwcs|);

@@ -4,11 +4,16 @@ import lang::lwc::controller::AST;
 import lang::lwc::controller::Load;
 import lang::lwc::Constants;
 
+import lang::lwc::structure::Extern;
+
 import Message;
 import List;
 import Set;
 import IO;
 import Map;
+import String;
+
+anno loc start[Controller]@\loc;
 
 /*
 	TODO:
@@ -22,19 +27,30 @@ data Context = context(
 	set[str] stateNames,
 	set[str] variableNames,
 	map[str,str] variableTypes,
+	map[str,str] elementMap,
 	
 	set[Message] messages);
 	
 anno set[Message] start[Controller]@messages;
 anno loc node@location;
 	
-Context initContext() = context((), {}, {}, (), {});
+Context initContext() = context((), {}, {}, (), (), {});
 
 public start[Controller] check(start[Controller] parseTree) {
-	Controller ast = implode(parseTree);
+
 	Context context = initContext();
+	Controller controllerAst = implode(parseTree);
 	
-	context = checkNames(context, ast);
+	loc structureLocation = parseTree@\loc;
+	structureLocation.path = substring(structureLocation.path, 0, size(structureLocation.path) - 1) + "s";
+	
+	if (! isFile(structureLocation)) {
+		context.messages += { error("Structure file not found", parseTree@\loc) };
+	} else {
+		context.elementMap = structureElements(structureLocation);	
+	}
+	
+	context = checkNames(context, controllerAst);
 	
 	return parseTree[@messages = context.messages];
 }

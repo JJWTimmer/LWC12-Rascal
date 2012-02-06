@@ -14,9 +14,11 @@ import Map;
 	TODO:
 		get map from element variables as defined in structure file, to element type of these variables
 		check whether variables and properties get the correct values (integer, bool, connectionlist) assigned?
+		check Valve connections (names)
 */
 
 data Context = context(
+	map[str,str] elementMap,
 	set[str] stateNames,
 	set[str] variableNames,
 	map[str,str] variableTypes,
@@ -26,7 +28,7 @@ data Context = context(
 anno set[Message] start[Controller]@messages;
 anno loc node@location;
 	
-Context initContext() = context({}, {}, (), {});
+Context initContext() = context((), {}, {}, (), {});
 
 public start[Controller] check(start[Controller] parseTree) {
 	Controller ast = implode(parseTree);
@@ -92,10 +94,6 @@ str getType(value v) {
 }
 
 Context validateNames(Context context, Controller ast) {
-	//this should contain all used variable names in the structure file
-	//and their ElementType
-	map[str,str] elementMap = ();
-
 	//Validate names
 	visit(ast) {
 		//Validate state names
@@ -108,12 +106,12 @@ Context validateNames(Context context, Controller ast) {
 		
 		//Validate property names
 		case P:property(str element, str attribute) : {
-			if(element notin elementMap) {
-				str msg = invalidNameMessage("variable", domain(elementMap));
+			if(element notin context.elementMap) {
+				str msg = invalidNameMessage("variable", domain(context.elementMap));
 				context.messages += { error(msg, P@location) };
 			}
 			else {
-				str elementType = elementMap[element];
+				str elementType = context.elementMap[element];
 				set[str] allowedProperties = domain(ElementProperties[elementType]);	 
 				context.messages += invalidNameError(P, attribute, allowedProperties, "property");
 			}
@@ -157,7 +155,7 @@ set[Message] validateType(Context context, Statement S, lhsvariable(variable(str
 }
 
 set[Message] validateType(Context context, Statement S, lhsproperty(property(str elem,str attr)), Value right) {
-	str elementType = elementMap[elem];
+	str elementType = context.elementMap[elem];
 	map[str,str] allowedProperties = ElementProperties[elementType];
 	str leftType = allowedProperties[attr]; 
 	

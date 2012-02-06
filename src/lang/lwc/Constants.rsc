@@ -4,7 +4,7 @@ module lang::lwc::Constants
 import lang::lwc::Definition;
 
 map[str,str] getProperties(str elementName) {
-	set[str] result = ();
+	map[str,str] result = ();
 	ElementDefinition elemDef = Elements[elementName];
 	
 	visit(elemDef) {

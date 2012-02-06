@@ -1,7 +1,7 @@
 module lang::lwc::controller::Outliner
 
-extend lang::lwc::controller::Syntax;
-extend lang::lwc::controller::AST;
+import lang::lwc::controller::Syntax;
+import lang::lwc::controller::AST;
 
 import lang::lwc::controller::Load;
 import lang::lwc::Outline;

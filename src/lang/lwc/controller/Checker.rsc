@@ -1,6 +1,6 @@
 module lang::lwc::controller::Checker
 
-extend lang::lwc::controller::AST;
+import lang::lwc::controller::AST;
 import lang::lwc::controller::Load;
 import lang::lwc::Constants;
 

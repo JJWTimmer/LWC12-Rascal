@@ -17,7 +17,7 @@ anno loc start[Controller]@\loc;
 
 /*
 	TODO:
-		check Valve connections (names)
+		check Valve connections (names) - use context.connections for this
 */
 
 data Context = context(
@@ -25,13 +25,14 @@ data Context = context(
 	set[str] stateNames,
 	set[str] variableNames,
 	map[str,str] variableTypes,
+	map[str,list[str]] connections,
 	
 	set[Message] messages);
 	
 anno set[Message] start[Controller]@messages;
 anno loc node@location;
 	
-Context initContext() = context((), {}, {}, (), {});
+Context initContext() = context((), {}, {}, (), (), {});
 
 public start[Controller] check(start[Controller] parseTree) {
 
@@ -45,16 +46,15 @@ public start[Controller] check(start[Controller] parseTree) {
 		context.messages += { error("Structure file not found", parseTree@\loc) };
 	} else {
 		context.elementMap = structureElements(structureLocation);	
+		context.connections = connections(structureLocation);
 	}
 	
-	iprint(context.elementMap);
-	
-	context = checkNames(context, controllerAst);
+	context = runChecks(context, controllerAst);
 	
 	return parseTree[@messages = context.messages];
 }
 
-Context checkNames(Context context, Controller ast) {	
+Context runChecks(Context context, Controller ast) {	
 	context = collectNamesAndTypes(context, ast);
 	context = validateNames(context, ast);
 	context = validateTypes(context, ast);
@@ -71,7 +71,8 @@ Context collectNamesAndTypes(Context context, Controller ast) {
 	
 	set[str] checkDuplicate(str name, node N) {
 		if (isDuplicate(name)) {
-			context.messages += { error("Duplicate name\nThe name <name> is already in use", N@location) }; 
+			context.messages += { error("Duplicate name.
+										'The name <name> is already in use", N@location) }; 
 		 	return {};
 		} else {
 			return {name};
@@ -84,18 +85,31 @@ Context collectNamesAndTypes(Context context, Controller ast) {
 		case state(S:statename(str name), _) : context.stateNames += checkDuplicate(name, S);
 		case C:condition(str name, Expression expression) : {
 			context.variableNames += checkDuplicate(name, C);
-			context.variableTypes += (name : getType(expression));
+			context.variableTypes += (name : getType(context, expression));
 		}
 		case D:declaration(str name, Primary primary) : {
 			context.variableNames += checkDuplicate(name, D);
-			context.variableTypes += (name : getType(primary));
+			context.variableTypes += (name : getType(context, primary));
 		}
 	}
 	
 	return context;
 }
 
-str getType(value v) {
+str getType(Context context, Expression e) {
+	switch(e) {
+		case expvalue(p)  : return getType(context, p);
+		case mul(l,_)	  : return "num";
+		case div(l,_)	  : return "num";
+		case mdl(l,_)	  : return "num";
+		case add(l,_)	  : return "num";
+		case sub(l,_)	  : return "num";
+		case Expression x : return "bool"; 
+	}
+
+}
+
+str getType(Context context, value v) {
 	if(/integer(_) := v) {
 		return "num";
 	}
@@ -104,6 +118,19 @@ str getType(value v) {
 	}
 	else if(/connections(_) := v) {
 		return "list";
+	}
+	else if(/rhsvariable(variable(str var)) := v) {
+		if(var in context.variableTypes) {
+			return context.variableTypes[var];
+		}
+	}
+	else if(/rhsproperty(property(str elem, str attr)) := v) {
+		if(elem in context.elementMap) {
+			map[str,str] properties = getProperties(context, elem);
+			if(attr in properties) {
+				return properties[attr];
+			}
+		}
 	}
 	return "";
 }
@@ -124,8 +151,7 @@ Context validateNames(Context context, Controller ast) {
 			set[Message] invalidElementMsg = invalidNameError(P, element, domain(context.elementMap), "variable");
 			
 			if(invalidElementMsg == {}) {
-				str elementType = context.elementMap[element];
-				set[str] allowedProperties = domain(ElementProperties[elementType]);
+				set[str] allowedProperties = domain(getProperties(context, element));
 				context.messages += invalidNameError(P, attribute, allowedProperties, "property");
 			}
 			else {
@@ -145,9 +171,9 @@ set[Message] invalidNameError(node N, str name, set[str] names, str nodeType) {
 	else return {};
 }
 
-str invalidNameMessage(str name, set[str] allowedNames) {
+str invalidNameMessage(str \type, set[str] allowedNames) {
 	str allowed = intercalate(", ", toList(allowedNames));
-	return "Invalid <name>.
+	return "Invalid <\type>.
 		   'Should be one of:
 		   '<allowed>";
 }
@@ -158,36 +184,83 @@ Context validateTypes(Context context, Controller ast) {
 		case S:\append(left, right) : context.messages += validateType(context, S, left, right);
 		case S:remove(left, right) : context.messages += validateType(context, S, left, right);
 		case S:multiply(left, right) : context.messages += validateType(context, S, left, right);
+		case S:ifstatement(condition, _) : {
+			if(getType(context, condition) == "bool") {
+				context.messages += validateExpression(context, condition);
+			}
+			else {
+				str msg = "Invalid expression. Condition of if statement should be of type bool";
+				context.messages += { error(msg, S@location) };
+			}
+		}
 	}
 	
 	return context;
 }
 
 set[Message] validateType(Context context, Statement S, lhsvariable(variable(str left)), Value right) {
-	if(left in context.variableNames) {	
-		return validateType(S, context.variableTypes[left], getType(right));
+	set[Message] result = {};
+	if(expression(e) := right) {
+		result += validateExpression(context, e);
 	}
-	return {};
+	if(left in context.variableNames) {	
+		result += validateType(S, context.variableTypes[left], getType(context, right));
+	}
+	return result;
 }
 
 set[Message] validateType(Context context, Statement S, lhsproperty(property(str elem,str attr)), Value right) {
-	if(elem notin context.elementMap) {
-		return {};
+	set[Message] result = {};
+	if(expression(e) := right) {
+		result += validateExpression(context, e);
 	}
-	str elementType = context.elementMap[elem];
-	map[str,str] allowedProperties = ElementProperties[elementType];
-	if(attr notin allowedProperties) {
-		return {};
-	}
-	str leftType = allowedProperties[attr]; 
-	
-	return validateType(S, leftType, getType(right));
+	if(elem in context.elementMap) {
+		map[str,str] allowedProperties = getProperties(context, elem);
+		if(attr in allowedProperties) {
+			str leftType = allowedProperties[attr];
+			result += validateType(S, leftType, getType(context, right));
+		} 
+	}	
+	return result;
 }
 
 set[Message] validateType(Statement S, str left, str right) {
 	if(left != right) {
 		str msg = "Invalid type. Variable or property is of type <left>, not <right>";
 		return { error(msg, S@location) };
+	}
+	return {};
+}
+
+set[Message] validateExpression(Context context, Expression e) {
+	loc location = e@location;
+	switch(e) {
+		case expvalue(_) : return {};
+		case not(inside) : {
+			if(getType(inside) == "bool") {
+				return validateExpression(context, inside);
+			}
+			return { error("Invalid expression.
+						   'Cannot negate something not of type bool", location) };
+		}
+		case Expression x : return validateExpression(context, x.left, x.right, location);
+	}
+}
+
+set[Message] validateExpression(Context context, Expression left, Expression right, loc parentExp) {
+	set[Message] leftMsg = validateExpression(context, left);
+	set[Message] rightMsg = validateExpression(context, right);
+	
+	if(leftMsg != {} || rightMsg != {}) {
+		return leftMsg + rightMsg;
+	}
+	
+	str leftType = getType(context, left);
+	str rightType = getType(context, right);
+	if(leftType != rightType) {
+		str msg = "Invalid expression. 
+				  'Cannot do this operation on type <leftType> and <rightType>";
+		return { error(msg, parentExp) };
 	}
 	return {};
 }
@@ -231,4 +304,9 @@ Context findUnreachableCode(Context context, Controller ast) {
 		context.messages += { error(msg, S@location) } + { error(msg, N@location) | N <- S2 };
 	}
 	return context;
+}
+
+map[str,str] getProperties(Context context, str elementName) {
+	str elementType = context.elementMap[elementName];
+	return ElementProperties[elementType];
 }

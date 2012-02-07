@@ -14,8 +14,8 @@ syntax Expression = bracket "(" Expression ")"
 			      > left (
 			      	lt:  Expression "\<" Expression |
 			        gt:  Expression "\>" Expression |
-			        slt: Expression "\<=" Expression |
-			        sgt: Expression "\>=" Expression
+			        leq: Expression "\<=" Expression |
+			        geq: Expression "\>=" Expression
 			      ) 
 			      > left(
 					eq:  Expression "==" Expression |

@@ -12,7 +12,7 @@ map[str,str] getProperties(str elementName) {
 	 	case optionalAttrib(str name, list[list[Unit]] unitList, ValueDefinition defaultValue) : result += (name : getValueType(unitList, defaultValue));
 	 	case optionalModifierAttrib(str name, _, list[list[Unit]] unitList, ValueDefinition defaultValue) : result += (name : getValueType(unitList, defaultValue));
 	 	case sensorPoint(str name, list[list[Unit]] unitList) : result += (name : getValueType(unitList));
-	 	case selfPoint(_) : result += ("[self]" : "");
+	 	case selfPoint(list[list[Unit]] unitList) : result += ("self" : getValueType(unitList));
 	}
 	
 	return result;

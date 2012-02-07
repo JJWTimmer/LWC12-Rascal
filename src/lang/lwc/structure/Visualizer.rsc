@@ -112,19 +112,16 @@ Figure pumpFigure(str name) =
 	
 Figure pumpSymbol()
 {
-	Figure point(num x, num y) = 
-		ellipse(align(x, y));
-	
 	Figure deg2p(num angle) = 
 		point(
 			cos(angle * PI() / 180) * 0.5 + 0.5,
 			sin(angle * PI() / 180) * 0.5 + 0.5);
 	
     return overlay([
-			ellipse(size(30)),
-			overlay([deg2p(-90 - 20), deg2p(0)], shapeConnected(true), size(30)),
-			overlay([deg2p(90 + 20), deg2p(0)], shapeConnected(true), size(30))
-		]);
+		ellipse(size(30)),
+		overlay([deg2p(-90 - 20), deg2p(0)], shapeConnected(true), size(30)),
+		overlay([deg2p(90 + 20), deg2p(0)], shapeConnected(true), size(30))
+	]);
 }
 
 //
@@ -150,8 +147,6 @@ Figure valveFigure(str N, list[Modifier] M) = box(
 				
 Figure valveSymbol(int ways)
 {
-	Figure point(num x, num y){ return ellipse(align(x,y));};
-
 	Figure twoWay =
 		overlay([
 			point(0,0), 
@@ -180,7 +175,9 @@ Figure valveSymbol(int ways)
 // Helper methods
 //
 
-list[str] collectSensorConnections(Statement sensor)
+private Figure point(num x, num y) = ellipse(align(x, y));
+
+private list[str] collectSensorConnections(Statement sensor)
 {
 	list[str] points = [];
 	

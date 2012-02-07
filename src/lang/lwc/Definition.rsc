@@ -3,12 +3,14 @@ module lang::lwc::Definition
 // Units definitions
 public alias Unit = str;
 public list[Unit] VolumeUnits = ["cm3", "dm3", "m3", "liter"];
+public list[Unit] AreaUnits = ["mm2", "cm2", "dm2", "m2"];
+public list[Unit] ForceUnits = ["N"];
 public list[Unit] TimeUnits = ["sec", "min", "hour", "day"];
 public list[Unit] LengthUnits = ["mm", "cm", "dm", "m", "km"];
 public list[Unit] PowerUnits = ["watt"];
 public list[Unit] TemperatureUnits = ["Celcius", "kelvin", "Fahrenheit"];
 public list[Unit] SpeedUnits = ["rpm"];
-public list[Unit] Units = VolumeUnits + TimeUnits + LengthUnits + PowerUnits + TemperatureUnits + SpeedUnits;
+public list[Unit] Units = VolumeUnits + AreaUnits + ForceUnits + TimeUnits + LengthUnits + PowerUnits + TemperatureUnits + SpeedUnits;
 
 public alias ModifierDefinition = str;
 public alias ModifierSetDefinition = set[ModifierDefinition];
@@ -116,7 +118,8 @@ public map[str, ElementDefinition] Elements = (
 		],
 		[],	//connectionpoints
 		[	//sensorpoints
-			selfPoint([TemperatureUnits])
+			sensorPoint("flow", [VolumeUnits, TimeUnits]),
+			sensorPoint("temperature", [TemperatureUnits])
 		]
 	),
 	
@@ -169,9 +172,7 @@ public map[str, ElementDefinition] Elements = (
 			requiredAttrib("range", []) //depends on modifier
 		],
 		[],	//connectionpoints
-		[	//sensorpoints
-			selfPoint([TemperatureUnits])
-		]
+		[]	//sensorpoints
 	),
 	
 	
@@ -207,4 +208,14 @@ public map[str, ElementDefinition] Elements = (
 		],
 		[]	//sensorpoints
 	)
+);
+
+//The sensor modifier definitions:
+//---------------------------------------------------------------------------------------------------
+public map[str, list[list[Unit]]] SensorModifiers = (
+	"Speed"			:	[SpeedUnits],
+	"Temperature"	:	[TemperatureUnits],
+	"Flow"			:	[VolumeUnits, TimeUnits],
+	"Pressure"		:	[ForceUnits, AreaUnits],
+	"Level"			:	[LengthUnits]
 );

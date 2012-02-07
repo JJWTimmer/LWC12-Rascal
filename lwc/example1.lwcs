@@ -4,10 +4,10 @@ WaterPipe is Pipe
 
 GasPipe is Pipe
 	- diameter: 15 [mm];
-	
+
 TempMeter is Temperature Sensor
 	- range: 0 [celsius], 100 [celsius];
-	
+
 FlowMeter is Flow Sensor
 	- range: 0 [m3/minute], 1 [m3/minute];
 
@@ -74,19 +74,19 @@ WaterPipe W9 connects J1.tocentralheating with C1.coldwaterin
 
 #Sensors
 TempMeter TM6
-	- on: W3; 
+	- on: W3.temperature; 
 
 TempMeter TM5
-	- on: C1;
+	- on: C1.internaltemp;
 
 TempMeter TM4
-	- on: C1.burner;
+	- on: C1.ignitiondetect;
 
 TempMeter TM2
 	- on: B1;
 	
 FlowMeter FM1
-	- on: W2;
+	- on: W2.flow;
 
 SpeedMeter SM3
 	- on: P1;

@@ -5,8 +5,8 @@ module lang::lwc::structure::Checker
 	Todo:
 		- Check number of pipes on a connection
 		- Hint about possible connections if an invalid connection name is used
-		- built checkSensorPoints
-		- checkConnectionPoints doesnt work for variable(name)
+		- built checkSensorPoints (check units)
+		- check modifiers
 		
 	AST Checker for LWC'12 Structure Language
 	Author: Jasper Timmer <jjwtimmer@gmail.com>
@@ -72,6 +72,8 @@ Context collect(Context context, Structure ast) {
 		}
 	}
 
+	ast = propagate(ast);
+
 	visit (ast.body) {
 		case A:aliaselem(str name, _, _, _): context.aliasnames += checkDuplicate(name, A);
 		case element(_, elementname(str elem), str name, [A*, attribute(attributename("connections"), valuelist(list[Value] Values)), B*]) :
@@ -112,7 +114,7 @@ Context checkDuplicates(Context context, Structure ast) {
 		if (name notin (ElementNames + context.aliasnames)) {
 			str msg = "Invalid element
 					  'Should be one of:
-					  '    <intercalate(", ", ElementNames)>";
+					  '    <intercalate(", ", toList(ElementNames))>";
 
 			if (context.aliasnames != {})
 				msg += "\nOr one of the following aliases:
@@ -173,10 +175,90 @@ Context checkConnectionPoints(Context context, Structure ast) {
 	return context;
 }
 
+
 /*
 	checks if sensorpoint names are correct
 */
-Context checkSensorPoints(Context context, Structure ast) {
+Context checkSensorPoints(Context context, Structure ast) {	
+	ast = propagate(ast);
 	
+	for (/X:element(list[Modifier] modifiers, E:elementname("Sensor"), str ename, list[Attribute] attributes) := ast) {
+		if (/attribute(attributename("on"), VL:valuelist(list[Value] val)) := attributes) {
+			if ([V:variable(_)] := val) {
+				context = checkSensorVar(context, V, modifiers);
+			} else if ([P:property(_, propname(_))] := val) {
+				context = checkSensorProp(context, P, modifiers);
+			} else {
+				context.messages += getErrorNonExistent(VL@location);
+			}
+		} else {
+			context.messages += getErrorNoOn(X@location);
+		}
+	}
+
 	return context;
+}
+
+private set[Message] getErrorNonExistent(loc where) = { error("Sensorpoint does not exist or to many points defined", where) };
+private set[Message] getErrorUnits(loc where) = { error("Sensorpoint not compatible with sensor or no modifier", where) };
+private set[Message] getErrorNoOn(loc where) = { error("Sensor not connected", where) };
+
+private Context checkSensorVar(Context ctx, V:variable(str name), list[Modifier] modifiers) {
+	if (ctx.namemap[name]? && /selfPoint(_) !:= DefinedSensorPoints[ctx.namemap[name]] ) {
+		ctx.messages += getErrorNonExistent(V@location);
+		
+	} if (name in ctx.pipenames && /selfPoint(_) !:= DefinedSensorPoints["Pipe"] ) {
+		ctx.messages += getErrorNonExistent(V@location);
+		
+	} else if (ctx.namemap[name]? && /selfPoint(list[list[Unit]] unitlist) := DefinedSensorPoints[ctx.namemap[name]] ) {
+		str firstMod = "";
+		if ([modifier(str \mod), M*] := modifiers) {
+			firstMod = \mod;
+		}
+		if (!SensorModifiers[firstMod]? || (SensorModifiers[firstMod]? && SensorModifiers[firstMod] != unitlist) ) {
+			ctx.messages += getErrorUnits(V@location);
+		}
+
+	} else if (name in ctx.pipenames && /selfPoint(list[list[Unit]] unitlist) := DefinedSensorPoints["Pipe"] ) {
+		str firstMod = "";
+		if ([modifier(str \mod), M*] := modifiers) {
+			firstMod = \mod;
+		}
+		
+		if (!SensorModifiers[firstMod]? || (SensorModifiers[firstMod]? && SensorModifiers[firstMod] != unitlist) ) {
+			ctx.messages += getErrorUnits(V@location);
+		}
+	} else {
+		ctx.messages += getErrorNonExistent(V@location);
+	}
+	return ctx;
+}
+
+private Context checkSensorProp(Context ctx, P:property(str vname, propname(str pname)), list[Modifier] modifiers) {
+	if (ctx.namemap[vname]? && /sensorPoint(pname, _) !:= DefinedSensorPoints[ctx.namemap[vname]] ) {
+		ctx.messages += getErrorNonExistent(P@location);
+	} else if (vname in ctx.pipenames && /sensorPoint(pname, _) !:= DefinedSensorPoints["Pipe"] ) {
+		ctx.messages += getErrorNonExistent(P@location);
+	} else if (ctx.namemap[vname]? && /sensorPoint(pname, list[list[Unit]] unitlist) := DefinedSensorPoints[ctx.namemap[vname]] ) {
+		str firstMod = "";
+		if ([modifier(str \mod), M*] := modifiers) {
+			firstMod = \mod;
+		}
+		if (!SensorModifiers[firstMod]? || (SensorModifiers[firstMod]? && SensorModifiers[firstMod] != unitlist) ) {
+			ctx.messages += getErrorUnits(P@location);
+		}
+		
+	} else if (vname in ctx.pipenames && /sensorPoint(pname, list[list[Unit]] unitlist) := DefinedSensorPoints["Pipe"] ) {
+		str firstMod = "";
+		if ([modifier(str \mod), M*] := modifiers) {
+			firstMod = \mod;
+		}
+		if (!SensorModifiers[firstMod]? || (SensorModifiers[firstMod]? && SensorModifiers[firstMod] != unitlist) ) {
+			ctx.messages += getErrorUnits(P@location);
+		}
+		
+	} else {
+		ctx.messages += getErrorNonExistent(P@location);
+	}
+	return ctx;
 }

@@ -1,10 +1,10 @@
 module lang::lwc::structure::Plugin
 
+import util::IDE;
+
 import lang::lwc::structure::Parser;
 import lang::lwc::structure::Outliner;
 import lang::lwc::structure::Checker;
-
-import util::IDE;
 
 str STRUCTURE_LANG = "LWC Structure Module";
 str STRUCTURE_EXT  = "lwcs";
@@ -17,4 +17,11 @@ public void registerStructure() {
 	
 	registerAnnotator(STRUCTURE_LANG, check);
 	
+	contribs = {popup(menu("LWC",[action("Re-register", rereg)]))};
+	registerContributions(STRUCTURE_LANG, contribs);
+	
+}
+
+public void rereg(ParseTree::Tree tree, loc file) {
+	registerStructure();
 }

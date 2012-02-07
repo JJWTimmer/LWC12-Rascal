@@ -2,6 +2,7 @@ module lang::lwc::structure::Propagate
 
 import lang::lwc::structure::AST;
 import lang::lwc::Definition;
+import lang::lwc::Constants;
 
 data AliasInfo = ai(list[Modifier] modifiers, str elemname, list[Attribute] attributes);
 
@@ -124,8 +125,8 @@ private list[Attribute] getDefaults(list[AttributeDefinition] optionalAttribs, l
 //transforms definition ADT's to AST ADT's
 private ValueList getValue(numValue(int val, list[Unit] un)) = valuelist([metric(integer(val),unit(un))]);
 private ValueList getValue(numValue(real val, list[Unit] un)) = valuelist([metric(realnum(val),unit(un))]);
-private ValueList getValue(boolValue(true)) = valuelist([booltrue()]);
-private ValueList getValue(boolValue(false)) = valuelist([boolfalse()]);
+private ValueList getValue(boolValue(true)) = valuelist([\true()]);
+private ValueList getValue(boolValue(false)) = valuelist([\false()]);
 private ValueList getValue(listValue(list[str] lst)) = valuelist([variable(var) | var <- lst]);
 
 
@@ -150,7 +151,7 @@ private Attribute getConnectionPoints(str elemName, list[Modifier] mods, list[At
 //remove userdefined sensorpoints and add those from the defintion
 private list[Attribute] getSensorPoints(list[Attribute] attributes, list[SensorPointDefinition] points) {
 	attributes = visit (attributes) {
-		case [A*, attribute(_, _), B*] => A+B
+		case [A*, attribute(attributename("sensorpoints"), _), B*] => A+B
 	}
 	
 	if (points != []) {

@@ -19,8 +19,8 @@ public map[str,list[str]] connections(loc input) {
 	map[str,list[str]] result = ();
 	Structure ast = propagateConnectionPoints(load(input));
 	
-	for(element(_, _, str name, list[Attribute] attributes) <- ast) {
-		result += (name : ( [] | it + values | attribute(attributename("connections"), valuelist(values)) <- attributes ) );
+	for(/element(_, elementname("Valve"), str name, list[Attribute] attributes) := ast) {
+		result += (name : ( [] | it + var | attribute(attributename("connections"), valuelist(values)) <- attributes, variable(str var) <- values ) );
 	}
 	
 	return result;	

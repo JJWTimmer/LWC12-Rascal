@@ -1,0 +1,33 @@
+Joint J1
+	- connections: a, b, c, d, e, f;
+	
+ThreeWay Valve V1;
+
+ThreeWay Valve V2;
+
+ThreeWay Valve V3;
+
+ThreeWay Valve V4;
+
+ThreeWay Valve V5;
+
+ThreeWay Valve V6;
+
+Pipe Pipe1 connects J1.a with V1.a;
+
+Pipe Pipe2 connects J1.b with V2.a;
+
+Pipe Pipe3 connects J1.c with V3.a;
+
+Pipe Pipe4 connects J1.d with V4.a;
+
+Pipe Pipe5 connects J1.e with V5.a;
+
+Pipe Pipe6 connects J1.f with V6.a;
+
+Pipe Pipe7 connects V1.b with V2.c;
+Pipe Pipe8 connects V2.b with V3.c;
+Pipe Pipe9 connects V3.b with V4.c;
+Pipe Pipe10 connects V4.b with V5.c;
+Pipe Pipe11 connects V5.b with V6.c;
+Pipe Pipe12 connects V6.b with V1.c;

@@ -17,7 +17,7 @@ anno loc start[Controller]@\loc;
 
 /*
 	TODO:
-		check Valve connections (names)
+		check Valve connections (names) - use context.connections for this
 */
 
 data Context = context(
@@ -25,13 +25,14 @@ data Context = context(
 	set[str] stateNames,
 	set[str] variableNames,
 	map[str,str] variableTypes,
+	map[str,list[str]] connections,
 	
 	set[Message] messages);
 	
 anno set[Message] start[Controller]@messages;
 anno loc node@location;
 	
-Context initContext() = context((), {}, {}, (), {});
+Context initContext() = context((), {}, {}, (), (), {});
 
 public start[Controller] check(start[Controller] parseTree) {
 
@@ -45,6 +46,7 @@ public start[Controller] check(start[Controller] parseTree) {
 		context.messages += { error("Structure file not found", parseTree@\loc) };
 	} else {
 		context.elementMap = structureElements(structureLocation);	
+		context.connections = connections(structureLocation);
 	}
 	
 	context = runChecks(context, controllerAst);
@@ -69,7 +71,8 @@ Context collectNamesAndTypes(Context context, Controller ast) {
 	
 	set[str] checkDuplicate(str name, node N) {
 		if (isDuplicate(name)) {
-			context.messages += { error("Duplicate name\nThe name <name> is already in use", N@location) }; 
+			context.messages += { error("Duplicate name.
+										'The name <name> is already in use", N@location) }; 
 		 	return {};
 		} else {
 			return {name};
@@ -168,9 +171,9 @@ set[Message] invalidNameError(node N, str name, set[str] names, str nodeType) {
 	else return {};
 }
 
-str invalidNameMessage(str name, set[str] allowedNames) {
+str invalidNameMessage(str \type, set[str] allowedNames) {
 	str allowed = intercalate(", ", toList(allowedNames));
-	return "Invalid <name>.
+	return "Invalid <\type>.
 		   'Should be one of:
 		   '<allowed>";
 }

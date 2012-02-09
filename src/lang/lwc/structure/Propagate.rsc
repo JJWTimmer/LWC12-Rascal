@@ -23,8 +23,8 @@ public Structure propagateAliasses(Structure ast) {
 	// Collect alias information
 	visit(ast) {
 		case aliaselem(str Id, list[Modifier] Modifiers, elementname(str ElemName), list[Attribute] Attributes) : {
-			ai = ai(Modifiers, ElemName, Attributes);
-			aliasinfo[Id] = ai;
+			AliasInfo ainf = ai(Modifiers, ElemName, Attributes);
+			aliasinfo[Id] = ainf;
 		}
 	}
 	

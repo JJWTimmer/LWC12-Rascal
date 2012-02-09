@@ -18,10 +18,11 @@ public void registerStructure() {
 	set[Contribution] contribution = { 
 		popup(menu("LWC", [
 			action(
-				"Visualize", (Tree tree, loc selection) {
+				"Visualize", (ParseTree::Tree tree, loc selection) {
 					visualize(tree);
 				}
-			)
+			),
+			action("Re-register", rereg)
 		]))
 	};
 	
@@ -30,10 +31,7 @@ public void registerStructure() {
 	registerLanguage(STRUCTURE_LANG, STRUCTURE_EXT, language);
 	registerOutliner(STRUCTURE_LANG, outliner);
 	registerAnnotator(STRUCTURE_LANG, check);
-	registerContributions(STRUCTURE_LANG, contribution);
-	contribs = {popup(menu("LWC",[action("Re-register", rereg)]))};
-	registerContributions(STRUCTURE_LANG, contribs);
-	
+	registerContributions(STRUCTURE_LANG, contribution);	
 }
 
 public void rereg(ParseTree::Tree tree, loc file) {

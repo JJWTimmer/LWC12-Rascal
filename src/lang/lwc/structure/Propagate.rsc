@@ -23,8 +23,8 @@ public Structure propagateAliasses(Structure ast) {
 	// Collect alias information
 	visit(ast) {
 		case aliaselem(str Id, list[Modifier] Modifiers, elementname(str ElemName), list[Attribute] Attributes) : {
-			ai = ai(Modifiers, ElemName, Attributes);
-			aliasinfo[Id] = ai;
+			AliasInfo ainf = ai(Modifiers, ElemName, Attributes);
+			aliasinfo[Id] = ainf;
 		}
 	}
 	
@@ -134,10 +134,9 @@ private Attribute getConnectionPoints(str elemName, list[Modifier] mods, list[At
 		
 	if(defs != []) {
 		set[str] definedConnectionPointNames = {cpName | variable(cpName) <- ([] | it + values | attribute(attributename("connections"), valuelist(list[Value] values)) <- attribs)};
-		bool attribConnections = false;
 		
 		elementConnectionPointNames = { d.name | d <- defs, d has name, !(d has modifier) || (d has modifier && modifier(d.modifier) in mods) };
-		if (/attribConnections() := defs) {
+		if (attribConnections() in defs) {
 			elementConnectionPointNames += definedConnectionPointNames;
 		}
 	}

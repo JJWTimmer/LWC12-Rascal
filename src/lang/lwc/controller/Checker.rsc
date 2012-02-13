@@ -15,17 +15,12 @@ import String;
 
 anno loc start[Controller]@\loc;
 
-/*
-	TODO:
-		check Valve connections (names) - use context.connections for this
-*/
-
 data Context = context(
 	map[str,str] elementMap,
 	set[str] stateNames,
 	set[str] variableNames,
 	map[str,str] variableTypes,
-	map[str,list[str]] connections,
+	map[str,list[str]] valvePositions,
 	
 	set[Message] messages);
 	
@@ -46,7 +41,7 @@ public start[Controller] check(start[Controller] parseTree) {
 		context.messages += { error("Structure file not found", parseTree@\loc) };
 	} else {
 		context.elementMap = structureElements(structureLocation);	
-		context.connections = connections(structureLocation);
+		context.valvePositions = valvePositions(structureLocation);
 	}
 	
 	context = runChecks(context, controllerAst);
@@ -218,9 +213,28 @@ set[Message] validateType(Context context, Statement S, lhsproperty(property(str
 		map[str,str] allowedProperties = getProperties(context, elem);
 		if(attr in allowedProperties) {
 			str leftType = allowedProperties[attr];
-			result += validateType(S, leftType, getType(context, right));
+			if(context.elementMap[elem] == "Valve") {
+				result += validateValvePositions(context, S, elem, right);
+			}
+			else {
+				result += validateType(S, leftType, getType(context, right));
+			}
 		} 
 	}	
+	return result;
+}
+
+set[Message] validateValvePositions(Context context, Statement S, str element, connections(list[str] connections)) {
+	set[Message] result = {};
+	list[str] allowedPositions = context.valvePositions[element];
+	for(conn <- connections) {
+		conn = substring(conn, 1); //to remove leading colon
+		if(conn notin allowedPositions) {
+			str msg = "Invalid position <conn>. 
+					  'Valve <element> can have positions <intercalate(", ", allowedPositions)>";
+			result += { error(msg, S@location) };
+		}
+	}
 	return result;
 }
 

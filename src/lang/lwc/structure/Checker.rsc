@@ -200,7 +200,7 @@ Context checkSensorPoints(Context context, Structure ast) {
 	return context;
 }
 
-private set[Message] getErrorNonExistent(loc where) = { error("Sensorpoint does not exist or to many points defined", where) };
+private set[Message] getErrorNonExistent(loc where) = { error("Sensorpoint does not exist or too many points defined", where) };
 private set[Message] getErrorUnits(loc where) = { error("Sensorpoint not compatible with sensor or no modifier", where) };
 private set[Message] getErrorNoOn(loc where) = { error("Sensor not connected", where) };
 

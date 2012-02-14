@@ -52,6 +52,7 @@ public Tree check(Tree tree) {
 	context = checkConnectionPoints(context, ast);
 	context = checkSensorPoints(context, ast);
 	context = checkModifiers(context, ast);
+	context = checkRequiredAttribs(context, ast);
 	
 	return tree[@messages = context.messages];
 }
@@ -254,7 +255,7 @@ private Context checkModifiers(Context context, Structure ast) {
 	return context;
 }
 
-set[Message] checkModifiers(Statement S, list[Modifier] modifiers, str elementType) {
+private set[Message] checkModifiers(Statement S, list[Modifier] modifiers, str elementType) {
 	if(elementType notin Elements) {
 		return {};
 	}
@@ -286,4 +287,27 @@ set[Message] checkModifiers(Statement S, list[Modifier] modifiers, str elementTy
 	}
 	
 	return result;
+}
+
+private Context checkRequiredAttribs(Context context, Structure ast) {
+	ast = propagateAliasses(ast);
+
+	visit(ast) {
+		case E:element(modifiers, elementname(str elementType), _, attributes) : context.messages += checkElementAttribs(elementType, attributes, E@location);
+		case P:pipe(_, _, _, _, attributes) : context.messages += checkElementAttribs("Pipe", attributes, P@location);
+	}
+
+	return context;
+}
+
+private set[Message] checkElementAttribs (str elementType, list[Attribute] attributes, loc where) {
+	set[Message] msgs = {};
+	
+	for (requiredAttrib(str attribName, _) <- RequiredAttribs[elementType]) {
+		if ( !any(attribute(attributename(attribName), _) <- attributes) ) {
+			msgs += error("Missing required attribute <attribName>", where);
+		} 
+	}
+	
+	return msgs;
 }

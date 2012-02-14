@@ -183,8 +183,8 @@ Context checkConnectionPoints(Context context, Structure ast) {
 Context checkSensorPoints(Context context, Structure ast) {	
 	ast = propagate(ast);
 	
-	for (X:element(list[Modifier] modifiers, E:elementname("Sensor"), str ename, list[Attribute] attributes) <- ast.body) {
-		if (/attribute(attributename("on"), VL:valuelist(list[Value] val)) := attributes) {
+	for (X:element(modifiers, E:elementname("Sensor"), ename, attributes) <- ast.body) {
+		if (attribute(attributename("on"), VL:valuelist(val)) <- attributes) {
 			if ([V:variable(_)] := val) {
 				context = checkSensorVar(context, V, modifiers);
 			} else if ([P:property(_, propname(_))] := val) {
@@ -205,52 +205,44 @@ private set[Message] getErrorUnits(loc where) = { error("Sensorpoint not compati
 private set[Message] getErrorNoOn(loc where) = { error("Sensor not connected", where) };
 
 private Context checkSensorVar(Context ctx, V:variable(str name), list[Modifier] modifiers) {
-	if (ctx.namemap[name]? && /selfPoint(_) !:= DefinedSensorPoints[ctx.namemap[name]] ) {//variation
-		ctx.messages += getErrorNonExistent(V@location);
-		
-	} if (name in ctx.pipenames && /selfPoint(_) !:= DefinedSensorPoints["Pipe"] ) {//variation
-		ctx.messages += getErrorNonExistent(V@location);
-		
-	} else if (ctx.namemap[name]? && /selfPoint(list[list[Unit]] unitlist) := DefinedSensorPoints[ctx.namemap[name]] ) {//variation
-		ctx = checkElementModifierUnits(ctx, V, modifiers, unitlist);
-
-	} else if (name in ctx.pipenames && /selfPoint(list[list[Unit]] unitlist) := DefinedSensorPoints["Pipe"] ) {//variation
-		ctx = checkElementModifierUnits(ctx, V, modifiers, unitlist);
-		
-	} else {
-		ctx.messages += getErrorNonExistent(V@location);
-	}
+		//check if the element type of the name var has selfpoint defined, if not error!
+	ctx.messages += ( {} | it + getErrorNonExistent(V@location) | ctx.namemap[name]?, !any(selfPoint(_) <- DefinedSensorPoints[ctx.namemap[name]]) )
+		//check if the name var is a pipe and has selfpoint defined, if not error!	
+		+ ( {} | it + getErrorNonExistent(V@location) | name in ctx.pipenames,  !any(selfPoint(_) <- DefinedSensorPoints["Pipe"]) )
+		//check if the element type of the name var has selfpoint defined, if so check units with sensor modifiers
+ 		+ ( {} | it + checkElementModifierUnits(V, modifiers, unitlist) | ctx.namemap[name]?, selfPoint(unitlist) <- DefinedSensorPoints[ctx.namemap[name]] )
+ 		//check if the the name var is a pipe and has selfpoint defined, if so check units with sensor modifiers
+		+ ( {} | it + checkElementModifierUnits(V, modifiers, unitlist) | name in ctx.pipenames, selfPoint(unitlist) <- DefinedSensorPoints["Pipe"] )
+		//check if name does exist anyway, if not, error
+		+ ( {} | it + getErrorNonExistent(V@location) | name notin ctx.pipenames, !ctx.namemap[name]? );
 	return ctx;
 }
 
 private Context checkSensorProp(Context ctx, P:property(str vname, propname(str pname)), list[Modifier] modifiers) {
-	if (ctx.namemap[vname]? && /sensorPoint(pname, _) !:= DefinedSensorPoints[ctx.namemap[vname]] ) {//variation
-		ctx.messages += getErrorNonExistent(P@location);
-		
-	} else if (vname in ctx.pipenames && /sensorPoint(pname, _) !:= DefinedSensorPoints["Pipe"] ) {
-		ctx.messages += getErrorNonExistent(P@location);
-		
-	} else if (ctx.namemap[vname]? && /sensorPoint(pname, list[list[Unit]] unitlist) := DefinedSensorPoints[ctx.namemap[vname]] ) {
-		ctx = checkElementModifierUnits(ctx, P, modifiers, unitlist);
-		
-	} else if (vname in ctx.pipenames && /sensorPoint(pname, list[list[Unit]] unitlist) := DefinedSensorPoints["Pipe"] ) {//variation
-		ctx = checkElementModifierUnits(ctx, P, modifiers, unitlist);
-		
-	} else {
-		ctx.messages += getErrorNonExistent(P@location);
-	}
+		//check if the element type of the name var has property pname defined, if not error!
+	ctx.messages += ( {} | it + getErrorNonExistent(P@location) | ctx.namemap[vname]?,  !any(sensorPoint(pname, _) <- DefinedSensorPoints[ctx.namemap[vname]]) )
+		//check if the name var is a pipe and has property pname defined, if not error!
+		+ ( {} | it + getErrorNonExistent(P@location) | vname in ctx.pipenames, !any(sensorPoint(pname, _) <- DefinedSensorPoints["Pipe"]) )
+		//check if the element type of the name var has property pname defined, if so check units with sensor modifiers
+		+ ( {} | it + checkElementModifierUnits(P, modifiers, unitlist) | ctx.namemap[vname]?, sensorPoint(pname, unitlist) <- DefinedSensorPoints[ctx.namemap[vname]] )
+		//check if the the name var is a pipe and has property pname defined, if so check units with sensor modifiers
+		+ ( {} | it + checkElementModifierUnits(P, modifiers, unitlist) | vname in ctx.pipenames, sensorPoint(pname, list[list[Unit]] unitlist) <- DefinedSensorPoints["Pipe"] )
+		//check if name does exist anyway, if not, error
+		+ ( {} | it + getErrorNonExistent(P@location) | vname notin ctx.pipenames, !ctx.namemap[vname]? );
 	return ctx;
 }
 
-private Context checkElementModifierUnits(Context ctx, Value V, list[Modifier] modifiers, list[list[Unit]] unitList) {
+private set[Message] checkElementModifierUnits(Value V, list[Modifier] modifiers, list[list[Unit]] unitList) {
 	str firstMod = "";
-	if([modifier(str \mod), M*] := modifiers) {
+	set[Message] msgs = {};
+	
+	if([modifier(\mod), M*] := modifiers) {
 		firstMod = \mod;
 	}
 	if(!SensorModifiers[firstMod]? || (SensorModifiers[firstMod]? && SensorModifiers[firstMod] != unitList) ) {
-		ctx.messages += getErrorUnits(V@location);
+		msgs += getErrorUnits(V@location);
 	}
-	return ctx;
+	return msgs;
 }
 
 private Context checkModifiers(Context context, Structure ast) {

@@ -48,6 +48,7 @@ str getValueType(listValue(_)) {
 
 public set[str] ElementNames = {key | key <- Elements};
 public map[str, list[AttributeDefinition]] OptionalAttribs = ( key : [ O | O:optionalAttrib(_,_,_) <- Elements[key].attributes ] | key <- Elements );
+public map[str, list[AttributeDefinition]] RequiredAttribs = ( key : [ O | O:requiredAttrib(_,_) <- Elements[key].attributes ] | key <- Elements );
 public map[str, list[ConnectionPointDefinition]] DefinedConnectionPoints = ( key : Elements[key].connectionpoints | key <- Elements);
 public map[str, list[SensorPointDefinition]] DefinedSensorPoints = ( key : Elements[key].sensorpoints | key <- Elements);
 public map[str, map[str,str]] ElementProperties = ( key : getProperties(key) | key <- Elements );

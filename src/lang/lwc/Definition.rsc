@@ -126,7 +126,7 @@ public map[str, ElementDefinition] Elements = (
 	
 	"Pump" : element(
 		[	//modifiers
-			{"Vacuum", "Venturi"}
+			{"Vacuum", "Venturi"} //default: regular
 		],
 		[	//attributes
 			requiredAttrib("capacity", [VolumeUnits, TimeUnits])
@@ -145,7 +145,8 @@ public map[str, ElementDefinition] Elements = (
 	"Radiator" : element(
 		[],	//modifiers
 		[	//attributes
-			requiredAttrib("heatcapacity", [PowerUnits])
+			requiredAttrib("heatcapacity", [PowerUnits]),
+			requiredAttrib("room", [])
 		],
 		[	//connectionpoints
 			liquidConnection("in"),
@@ -192,9 +193,9 @@ public map[str, ElementDefinition] Elements = (
 	
 	"Valve" : element(
 		[	//modifiers
-			{"Controlled"},
-			{"Pin"},
-			{"ThreeWay"},
+			{"Controlled"}, //default: Manual
+			{"Pin"}, //default: Discrete
+			{"ThreeWay"}, //default: TwoWay
 			{"Manual"}
 		],
 		[	//attributes
@@ -208,6 +209,18 @@ public map[str, ElementDefinition] Elements = (
 			
 		],
 		[]	//sensorpoints
+	),
+	
+	
+	"Room" : element(
+		[],	//modifiers
+		[	//attributes
+			requiredAttrib("volume", [VolumeUnits])
+		],
+		[],	//connectionpoints
+		[	//sensorpoints
+			selfPoint([TemperatureUnits])
+		]
 	)
 );
 

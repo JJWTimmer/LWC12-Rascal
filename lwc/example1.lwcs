@@ -14,6 +14,10 @@ FlowMeter is Flow Sensor
 SpeedMeter is Speed Sensor
 	- range: 0 [rpm], 500 [rpm];
 
+#Rooms
+Room LivingRoom
+	- volume: 80 [m3];
+
 #Elements
 Boiler B1
 	- capacity: 50 [liter];
@@ -22,9 +26,12 @@ Controlled ThreeWay Valve V1
 	- connections: pumpin, boilerout, radiatorout;
 
 Radiator R1
-	- power: 600 [watt];
+	- power: 600 [watt]
+	- heatcapacity: 2400 [watt]
+	- room: LivingRoom;
 
-Pump P1;
+Pump P1
+	- capacity: 50 [liter/hour];
 
 Joint J1
 	- connections: fromboiler, fromradiator, tocentralheating;
@@ -34,7 +41,8 @@ CentralHeatingUnit C1;
 #Elements to outside
 
 ##Gas
-Gas Source GasIn;
+Gas Source GasIn
+	- flowrate: 10 [m3/hour];
 
 Controlled Valve V2
 	- connections: gasin, gasout;
@@ -46,7 +54,8 @@ GasPipe G2 connects V2.b with C1.gasin
 	- length: 0.5 [m];
 
 ##Water
-Liquid Source ColdWaterIn;
+Liquid Source ColdWaterIn
+	- flowrate: 10 [m3/hour];
 
 Liquid Exhaust HotWaterOut;
 

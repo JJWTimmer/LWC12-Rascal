@@ -194,7 +194,8 @@ public map[str, ElementDefinition] Elements = (
 		[	//modifiers
 			{"Controlled"},
 			{"Pin"},
-			{"ThreeWay"}
+			{"ThreeWay"},
+			{"Manual"}
 		],
 		[	//attributes
 			optionalAttrib("position", [], listValue([":closed"])),

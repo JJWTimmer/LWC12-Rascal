@@ -15,7 +15,7 @@ public map[str,str] structureElements(loc input) {
 	return elementMap;
 }
 
-public map[str,list[str]] connections(loc input) {
+public map[str,list[str]] valvePositions(loc input) {
 	map[str,list[str]] result = ();
 	Structure ast = propagateConnectionPoints(load(input));
 	

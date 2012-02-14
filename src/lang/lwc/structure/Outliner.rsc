@@ -8,7 +8,7 @@ module lang::lwc::structure::Outliner
 import lang::lwc::structure::AST;
 import lang::lwc::structure::Load;
 import lang::lwc::structure::Propagate;
-import lang::lwc::Outline;
+import lang::lwc::util::Outline;
 
 import ParseTree;
 import util::IDE;

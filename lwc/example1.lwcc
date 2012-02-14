@@ -63,16 +63,16 @@ state RADIATOR:
 	goto RAMPUP
 	
 state BOILER:
-	V1.position = :boiler
+	V1.position = :a
 	goto RAMPUP
 	
 state BOTH:
-	V1.position = :radiators, :boiler
+	V1.position = :c, :b
 	goto RAMPUP
 	
 state RUNNING:
 	
-	V1.position = :radiators, :boiler
+	V1.position = :c, :b
 	C1.power = MIN_GAS
 	
 	# Idle, idle idle

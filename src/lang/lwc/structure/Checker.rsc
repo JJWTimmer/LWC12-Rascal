@@ -51,6 +51,7 @@ public Tree check(Tree tree) {
 	context = checkDuplicates(context, ast);
 	context = checkConnectionPoints(context, ast);
 	context = checkSensorPoints(context, ast);
+	context = checkModifiers(context, ast);
 	
 	return tree[@messages = context.messages];
 }
@@ -199,7 +200,7 @@ Context checkSensorPoints(Context context, Structure ast) {
 	return context;
 }
 
-private set[Message] getErrorNonExistent(loc where) = { error("Sensorpoint does not exist or to many points defined", where) };
+private set[Message] getErrorNonExistent(loc where) = { error("Sensorpoint does not exist or too many points defined", where) };
 private set[Message] getErrorUnits(loc where) = { error("Sensorpoint not compatible with sensor or no modifier", where) };
 private set[Message] getErrorNoOn(loc where) = { error("Sensor not connected", where) };
 
@@ -211,23 +212,11 @@ private Context checkSensorVar(Context ctx, V:variable(str name), list[Modifier]
 		ctx.messages += getErrorNonExistent(V@location);
 		
 	} else if (ctx.namemap[name]? && /selfPoint(list[list[Unit]] unitlist) := DefinedSensorPoints[ctx.namemap[name]] ) {//variation
-		str firstMod = "";
-		if ([modifier(str \mod), M*] := modifiers) {
-			firstMod = \mod;
-		}
-		if (!SensorModifiers[firstMod]? || (SensorModifiers[firstMod]? && SensorModifiers[firstMod] != unitlist) ) {
-			ctx.messages += getErrorUnits(V@location);
-		}
+		ctx = checkElementModifierUnits(ctx, V, modifiers, unitlist);
 
 	} else if (name in ctx.pipenames && /selfPoint(list[list[Unit]] unitlist) := DefinedSensorPoints["Pipe"] ) {//variation
-		str firstMod = "";
-		if ([modifier(str \mod), M*] := modifiers) {
-			firstMod = \mod;
-		}
+		ctx = checkElementModifierUnits(ctx, V, modifiers, unitlist);
 		
-		if (!SensorModifiers[firstMod]? || (SensorModifiers[firstMod]? && SensorModifiers[firstMod] != unitlist) ) {
-			ctx.messages += getErrorUnits(V@location);
-		}
 	} else {
 		ctx.messages += getErrorNonExistent(V@location);
 	}
@@ -237,28 +226,72 @@ private Context checkSensorVar(Context ctx, V:variable(str name), list[Modifier]
 private Context checkSensorProp(Context ctx, P:property(str vname, propname(str pname)), list[Modifier] modifiers) {
 	if (ctx.namemap[vname]? && /sensorPoint(pname, _) !:= DefinedSensorPoints[ctx.namemap[vname]] ) {//variation
 		ctx.messages += getErrorNonExistent(P@location);
-	} else if (vname in ctx.pipenames && /sensorPoint(pname, _) !:= DefinedSensorPoints["Pipe"] ) {//variation
+		
+	} else if (vname in ctx.pipenames && /sensorPoint(pname, _) !:= DefinedSensorPoints["Pipe"] ) {
 		ctx.messages += getErrorNonExistent(P@location);
-	} else if (ctx.namemap[vname]? && /sensorPoint(pname, list[list[Unit]] unitlist) := DefinedSensorPoints[ctx.namemap[vname]] ) {//variation
-		str firstMod = "";
-		if ([modifier(str \mod), M*] := modifiers) {
-			firstMod = \mod;
-		}
-		if (!SensorModifiers[firstMod]? || (SensorModifiers[firstMod]? && SensorModifiers[firstMod] != unitlist) ) {
-			ctx.messages += getErrorUnits(P@location);
-		}
+		
+	} else if (ctx.namemap[vname]? && /sensorPoint(pname, list[list[Unit]] unitlist) := DefinedSensorPoints[ctx.namemap[vname]] ) {
+		ctx = checkElementModifierUnits(ctx, P, modifiers, unitlist);
 		
 	} else if (vname in ctx.pipenames && /sensorPoint(pname, list[list[Unit]] unitlist) := DefinedSensorPoints["Pipe"] ) {//variation
-		str firstMod = "";
-		if ([modifier(str \mod), M*] := modifiers) {
-			firstMod = \mod;
-		}
-		if (!SensorModifiers[firstMod]? || (SensorModifiers[firstMod]? && SensorModifiers[firstMod] != unitlist) ) {
-			ctx.messages += getErrorUnits(P@location);
-		}
+		ctx = checkElementModifierUnits(ctx, P, modifiers, unitlist);
 		
 	} else {
 		ctx.messages += getErrorNonExistent(P@location);
 	}
 	return ctx;
+}
+
+private Context checkElementModifierUnits(Context ctx, Value V, list[Modifier] modifiers, list[list[Unit]] unitList) {
+	str firstMod = "";
+	if([modifier(str \mod), M*] := modifiers) {
+		firstMod = \mod;
+	}
+	if(!SensorModifiers[firstMod]? || (SensorModifiers[firstMod]? && SensorModifiers[firstMod] != unitList) ) {
+		ctx.messages += getErrorUnits(V@location);
+	}
+	return ctx;
+}
+
+private Context checkModifiers(Context context, Structure ast) {
+	visit(ast) {
+		case E:element(modifiers, elementname(str elementType), _, _) : context.messages += checkModifiers(E, modifiers, elementType);
+		case A:aliaselem(_, modifiers, elementname(str elementType), _) : context.messages += checkModifiers(A, modifiers, elementType);
+	}
+
+	return context;
+}
+
+set[Message] checkModifiers(Statement S, list[Modifier] modifiers, str elementType) {
+	if(elementType notin Elements) {
+		return {};
+	}
+	set[Message] result = {};
+	bool flag = false;
+	list[set[str]] allowedModifiers = ElementModifiers[elementType];
+	map[set[str], int] usedModSets = ( modSet : 0 | modSet <- allowedModifiers );
+	for(M:modifier(str id) <- modifiers) {
+		for(modSet <- allowedModifiers) {
+			if(id in modSet) {
+				flag = true;
+				usedModSets[modSet] += 1;
+			}
+		}
+		if(!flag) {
+			str msg = "Invalid modifier. Possible modifiers are 
+					  '<intercalate(", ", [ x | s <- allowedModifiers, x <- s ])>";
+			result += { error(msg, M@location) };
+		}
+		flag = false;
+	}
+	
+	for(modSet <- usedModSets) {
+		if(usedModSets[modSet] > 1) {
+			str msg = "You can use at most one of the following modifiers:
+					  '<intercalate(", ", toList(modSet))>";
+			result += { error(msg, S@location) };
+		}
+	}
+	
+	return result;
 }

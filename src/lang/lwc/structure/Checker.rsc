@@ -182,7 +182,7 @@ Context checkConnectionPoints(Context context, Structure ast) {
 Context checkSensorPoints(Context context, Structure ast) {	
 	ast = propagate(ast);
 	
-	for (/X:element(list[Modifier] modifiers, E:elementname("Sensor"), str ename, list[Attribute] attributes) := ast) {
+	for (X:element(list[Modifier] modifiers, E:elementname("Sensor"), str ename, list[Attribute] attributes) <- ast.body) {
 		if (/attribute(attributename("on"), VL:valuelist(list[Value] val)) := attributes) {
 			if ([V:variable(_)] := val) {
 				context = checkSensorVar(context, V, modifiers);
@@ -204,13 +204,13 @@ private set[Message] getErrorUnits(loc where) = { error("Sensorpoint not compati
 private set[Message] getErrorNoOn(loc where) = { error("Sensor not connected", where) };
 
 private Context checkSensorVar(Context ctx, V:variable(str name), list[Modifier] modifiers) {
-	if (ctx.namemap[name]? && /selfPoint(_) !:= DefinedSensorPoints[ctx.namemap[name]] ) {
+	if (ctx.namemap[name]? && /selfPoint(_) !:= DefinedSensorPoints[ctx.namemap[name]] ) {//variation
 		ctx.messages += getErrorNonExistent(V@location);
 		
-	} if (name in ctx.pipenames && /selfPoint(_) !:= DefinedSensorPoints["Pipe"] ) {
+	} if (name in ctx.pipenames && /selfPoint(_) !:= DefinedSensorPoints["Pipe"] ) {//variation
 		ctx.messages += getErrorNonExistent(V@location);
 		
-	} else if (ctx.namemap[name]? && /selfPoint(list[list[Unit]] unitlist) := DefinedSensorPoints[ctx.namemap[name]] ) {
+	} else if (ctx.namemap[name]? && /selfPoint(list[list[Unit]] unitlist) := DefinedSensorPoints[ctx.namemap[name]] ) {//variation
 		str firstMod = "";
 		if ([modifier(str \mod), M*] := modifiers) {
 			firstMod = \mod;
@@ -219,7 +219,7 @@ private Context checkSensorVar(Context ctx, V:variable(str name), list[Modifier]
 			ctx.messages += getErrorUnits(V@location);
 		}
 
-	} else if (name in ctx.pipenames && /selfPoint(list[list[Unit]] unitlist) := DefinedSensorPoints["Pipe"] ) {
+	} else if (name in ctx.pipenames && /selfPoint(list[list[Unit]] unitlist) := DefinedSensorPoints["Pipe"] ) {//variation
 		str firstMod = "";
 		if ([modifier(str \mod), M*] := modifiers) {
 			firstMod = \mod;
@@ -235,11 +235,11 @@ private Context checkSensorVar(Context ctx, V:variable(str name), list[Modifier]
 }
 
 private Context checkSensorProp(Context ctx, P:property(str vname, propname(str pname)), list[Modifier] modifiers) {
-	if (ctx.namemap[vname]? && /sensorPoint(pname, _) !:= DefinedSensorPoints[ctx.namemap[vname]] ) {
+	if (ctx.namemap[vname]? && /sensorPoint(pname, _) !:= DefinedSensorPoints[ctx.namemap[vname]] ) {//variation
 		ctx.messages += getErrorNonExistent(P@location);
-	} else if (vname in ctx.pipenames && /sensorPoint(pname, _) !:= DefinedSensorPoints["Pipe"] ) {
+	} else if (vname in ctx.pipenames && /sensorPoint(pname, _) !:= DefinedSensorPoints["Pipe"] ) {//variation
 		ctx.messages += getErrorNonExistent(P@location);
-	} else if (ctx.namemap[vname]? && /sensorPoint(pname, list[list[Unit]] unitlist) := DefinedSensorPoints[ctx.namemap[vname]] ) {
+	} else if (ctx.namemap[vname]? && /sensorPoint(pname, list[list[Unit]] unitlist) := DefinedSensorPoints[ctx.namemap[vname]] ) {//variation
 		str firstMod = "";
 		if ([modifier(str \mod), M*] := modifiers) {
 			firstMod = \mod;
@@ -248,7 +248,7 @@ private Context checkSensorProp(Context ctx, P:property(str vname, propname(str 
 			ctx.messages += getErrorUnits(P@location);
 		}
 		
-	} else if (vname in ctx.pipenames && /sensorPoint(pname, list[list[Unit]] unitlist) := DefinedSensorPoints["Pipe"] ) {
+	} else if (vname in ctx.pipenames && /sensorPoint(pname, list[list[Unit]] unitlist) := DefinedSensorPoints["Pipe"] ) {//variation
 		str firstMod = "";
 		if ([modifier(str \mod), M*] := modifiers) {
 			firstMod = \mod;

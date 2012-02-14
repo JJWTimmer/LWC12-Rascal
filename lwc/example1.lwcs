@@ -36,7 +36,7 @@ CentralHeatingUnit C1;
 ##Gas
 Gas Source GasIn;
 
-Controlled Discrete Valve V2
+Controlled Valve V2
 	- connections: gasin, gasout;
 
 GasPipe G1 connects GasIn with V2.a

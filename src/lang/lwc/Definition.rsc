@@ -129,7 +129,8 @@ public map[str, ElementDefinition] Elements = (
 			{"Vacuum", "Venturi"}
 		],
 		[	//attributes
-			requiredAttrib("capacity", [VolumeUnits, TimeUnits])
+			requiredAttrib("capacity", [VolumeUnits, TimeUnits]),
+			optionalAttrib("enabled", [], boolValue(false))
 		],
 		[	//connectionpoints
 			liquidConnection("in"),
@@ -168,8 +169,9 @@ public map[str, ElementDefinition] Elements = (
 			}
 		], 
 		[	//attributes
-			requiredAttrib("on", []),   //sensorpoint
-			requiredAttrib("range", []) //depends on modifier
+			requiredAttrib("on", []),   	// sensorpoint
+			requiredAttrib("range", []), 	// depends on modifier
+			requiredAttrib("value", []) 	// the value this sensor reads
 		],
 		[],	//connectionpoints
 		[]	//sensorpoints
@@ -192,7 +194,7 @@ public map[str, ElementDefinition] Elements = (
 	
 	"Valve" : element(
 		[	//modifiers
-			{"Controlled"},
+			{"Controlled", "Manual"},
 			{"Pin"},
 			{"ThreeWay"}
 		],

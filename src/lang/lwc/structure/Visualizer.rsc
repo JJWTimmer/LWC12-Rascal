@@ -132,18 +132,66 @@ Figure jointFigure(str name) =
 	ellipse(
 		text(name, fontColor("white"), fontSize(8)), fillColor("black"), id(name)
 	);
-			
+
+
 //
 // Render a valve figure
 //
 
-Figure valveFigure(str N, list[Modifier] M) = box(
-	vcat([
-		text(N, fontSize(9)),
-		valveSymbol(modifier("ThreeWay") in M  ? 3 : 2)
-	]),
-	lineWidth(0),
-	id(N));
+Figure valveFigure(str N, list[Modifier] M) {
+
+	Figure symbol = valveSymbol(modifier("ThreeWay") in M  ? 3 : 2);
+	
+	visit (M)
+	{
+		case modifier("Manual"): 
+			symbol = augmentManualValveSymbol(symbol);
+			
+		case modifier("Controlled"):
+			symbol = augmentControlledValveSymbol(symbol);
+	}
+
+	return box(
+		vcat([
+			text(N, fontSize(9)),
+			symbol
+		], gap(5)),
+		lineWidth(0),
+		id(N));
+}
+
+Figure augmentManualValveSymbol(Figure symbol)
+{
+	Figure controlSymbol = overlay([
+		point(0, 0), 
+		point(1, 0),
+		point(0.5, 0),
+		point(0.5, 0.5)
+	], shapeConnected(true), width(20), height(40));
+		
+	return overlay([controlSymbol, symbol]);
+}
+
+Figure augmentControlledValveSymbol(Figure symbol) 
+{
+	Figure controlSymbol = 
+		vcat([
+			overlay(
+				[ thetaPoint(<0.5, 1>, - angle, <0.5, 1>) | angle <- [ 0 .. 180 ], angle % 10 == 0],
+				shapeConnected(true), width(20), height(10)),
+			
+			overlay([
+				point(0, 0), 
+				point(1, 0),
+				point(0.5, 0),
+				point(0.5, 0.5)
+			], shapeConnected(true), width(20), height(40)),
+			
+			box(width(20), height(10), lineWidth(0))
+		]);
+	
+	return overlay([controlSymbol, symbol]);
+}
 				
 Figure valveSymbol(int ways)
 {
@@ -176,6 +224,14 @@ Figure valveSymbol(int ways)
 //
 
 private Figure point(num x, num y) = ellipse(align(x, y));
+
+private Figure thetaPoint(tuple[num, num] r, int deg, tuple[num, num] offset) = point(
+		cos(deg * PI() / 180) * r[0] + offset[0], 
+		sin(deg * PI() / 180) * r[1] + offset[1]
+	);
+
+private Figure thetaPoint(num r, int deg) = thetaPoint(r, deg, <0,0>);
+private Figure thetaPoint(num r, int deg) = thetaPoint(<r, r>, deg, <0,0>);
 
 private list[str] collectSensorConnections(Statement sensor)
 {

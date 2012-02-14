@@ -79,7 +79,7 @@ Figure sensorFigure(str N, list[Modifier] modifiers)
 	 
 	return ellipse(
 		vcat([
-			text(name, fontSize(9)), 
+			text(abbreviateSensorType(name), fontSize(9)), 
 			text(N)
 		]), 
 		id(N), lineColor("blue"));
@@ -233,14 +233,11 @@ private Figure thetaPoint(tuple[num, num] r, int deg, tuple[num, num] offset) = 
 private Figure thetaPoint(num r, int deg) = thetaPoint(r, deg, <0,0>);
 private Figure thetaPoint(num r, int deg) = thetaPoint(<r, r>, deg, <0,0>);
 
-private list[str] collectSensorConnections(Statement sensor)
-{
+private list[str] collectSensorConnections(Statement sensor) {
 	list[str] points = [];
 	
-	if ([_*, A:attribute(attributename("on"), _*), _*] := sensor.attributes)
-	{
-		top-down-break visit (A.val.values)
-		{
+	if ([_*, A:attribute(attributename("on"), _*), _*] := sensor.attributes) {
+		top-down-break visit (A.val.values) {
 			case variable(str name): points += name;
 			case property(str name, _): points += name;
 		}
@@ -248,3 +245,17 @@ private list[str] collectSensorConnections(Statement sensor)
 	
 	return points;
 }
+
+private str abbreviateSensorType(str T)
+{
+	map[str,str] m = (
+		"Temperature": 	"Temp",
+		"Flow": 		"Flow",
+		"Level": 		"Lvl",
+		"Pressure":		"Pres",
+		"Speed":		"Speed"
+	);
+	
+	return m[T];
+}
+

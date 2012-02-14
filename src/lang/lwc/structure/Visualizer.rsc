@@ -160,7 +160,7 @@ Figure valveFigure(str N, list[Modifier] M) {
 		id(N));
 }
 
-Figure augmentControlledValveSymbol(Figure symbol)
+Figure augmentManualValveSymbol(Figure symbol)
 {
 	Figure controlSymbol = overlay([
 		point(0, 0), 
@@ -172,7 +172,7 @@ Figure augmentControlledValveSymbol(Figure symbol)
 	return overlay([controlSymbol, symbol]);
 }
 
-Figure augmentManualValveSymbol(Figure symbol) 
+Figure augmentControlledValveSymbol(Figure symbol) 
 {
 	Figure controlSymbol = 
 		vcat([

@@ -142,13 +142,13 @@ Figure valveFigure(str N, list[Modifier] M) {
 
 	Figure symbol = valveSymbol(modifier("ThreeWay") in M  ? 3 : 2);
 	
-	if (modifier("Manual") in M)
+	visit (M)
 	{
-		symbol = augmentManualValveSymbol(symbol);
-	} 
-	else if (modifier("Controlled") in M)
-	{
-		symbol = augmentControlledValveSymbol(symbol);
+		case modifier("Manual"): 
+			symbol = augmentManualValveSymbol(symbol);
+			
+		case modifier("Controlled"):
+			symbol = augmentControlledValveSymbol(symbol);
 	}
 
 	return box(

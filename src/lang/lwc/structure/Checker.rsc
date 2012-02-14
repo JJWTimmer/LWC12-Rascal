@@ -254,6 +254,8 @@ private Context checkElementModifierUnits(Context ctx, Value V, list[Modifier] m
 }
 
 private Context checkModifiers(Context context, Structure ast) {
+	ast = propagateAliasses(ast);
+
 	visit(ast) {
 		case E:element(modifiers, elementname(str elementType), _, _) : context.messages += checkModifiers(E, modifiers, elementType);
 		case A:aliaselem(_, modifiers, elementname(str elementType), _) : context.messages += checkModifiers(A, modifiers, elementType);

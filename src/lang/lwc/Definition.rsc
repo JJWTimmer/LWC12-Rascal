@@ -130,7 +130,7 @@ public map[str, ElementDefinition] Elements = (
 		],
 		[	//attributes
 			requiredAttrib("capacity", [VolumeUnits, TimeUnits]),
-			optinalAttrib("enabled", [], boolValue(false))
+			optionalAttrib("enabled", [], boolValue(false))
 		],
 		[	//connectionpoints
 			liquidConnection("in"),

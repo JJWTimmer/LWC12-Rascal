@@ -27,8 +27,8 @@ DESIRED_WATER_TEMP = 60
 #  - bool: run
 #
 
-condition roomTempLow: TM6.self < DESIRED_RADIATOR_TEMP - RADIATOR_MARGIN
-condition roomTempHigh: TM6.self > DESIRED_RADIATOR_TEMP
+condition roomTempLow: TM6.value < DESIRED_RADIATOR_TEMP - RADIATOR_MARGIN
+condition roomTempHigh: TM6.value > DESIRED_RADIATOR_TEMP
 condition boilerTempLow: B1.watertemp < DESIRED_WATER_TEMP - WATER_MARGIN
 condition boilerTempHigh: B1.watertemp > DESIRED_WATER_TEMP
 condition heatNeeded: roomTempLow or boilerTempLow
@@ -41,7 +41,7 @@ state IGNITE:
 	
 	C1.ignite = true
 	C1.power = MIN_GAS
-	P1.self = true
+	P1.enabled = true
 	goto DISPATCH
 	
 state DISPATCH:
@@ -54,7 +54,7 @@ state RAMPUP:
 	
 	C1.ignite = true
 	C1.power = C1.power + BURNER_RAMPUP
-	P1.self = true
+	P1.enabled = true
 		
 	goto DISPATCH
 

@@ -305,7 +305,7 @@ private Context checkRequiredAttribs(Context context, Structure ast) {
 private set[Message] checkElementAttribs (str elementType, list[Attribute] attributes, loc where) {
 	set[Message] msgs = {};
 	
-	for (requiredAttrib(str attribName, _) <- RequiredAttribs[elementType]) {
+	for (requiredAttrib(str attribName, _, _) <- RequiredAttribs[elementType]) {
 		if ( !any(attribute(attributename(attribName), _) <- attributes) ) {
 			msgs += error("Missing required attribute <attribName>", where);
 		} 

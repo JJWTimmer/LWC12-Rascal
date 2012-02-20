@@ -23,9 +23,9 @@ public data ElementDefinition = element(
 );
 
 public data AttributeDefinition 
-	= requiredAttrib(str name, list[list[Unit]] unit)
-	| optionalAttrib(str name, list[list[Unit]] unit, ValueDefinition defaultvalue)
-	| optionalModifierAttrib(str name, str modifier, list[list[Unit]] unit, ValueDefinition defaultvalue);
+	= requiredAttrib(str name, list[list[Unit]] unit, bool editable)
+	| optionalAttrib(str name, list[list[Unit]] unit, ValueDefinition defaultvalue, bool editable)
+	| optionalModifierAttrib(str name, str modifier, list[list[Unit]] unit, ValueDefinition defaultvalue, bool editable);
 
 public data ValueDefinition 
 	= numValue(num val, list[Unit] unit)
@@ -52,8 +52,8 @@ public map[str, ElementDefinition] Elements = (
 	"Boiler" : element(
 		[],	//modifiers
 		[	//attributes
-			optionalAttrib("capacity", [VolumeUnits], numValue(50, ["liter"])),
-			optionalAttrib("watertemp", [TemperatureUnits], numValue(80, ["Celsius"]))
+			optionalAttrib("capacity", [VolumeUnits], numValue(50, ["liter"]), false),
+			optionalAttrib("watertemp", [TemperatureUnits], numValue(80, ["Celsius"]), true)
 		],
 		[	//connectionpoints
 			liquidConnection("centralheatingin"),
@@ -69,9 +69,9 @@ public map[str, ElementDefinition] Elements = (
 	"CentralHeatingUnit" : element(
 		[],	//modifiers
 		[	//attributes
-			optionalAttrib("burnertemp", [TemperatureUnits], numValue(90, ["Celcius"])),
-			optionalAttrib("power", [PowerUnits], numValue(24000, ["watt"])),
-			optionalAttrib("ignite", [], boolValue(false))
+			optionalAttrib("burnertemp", [TemperatureUnits], numValue(90, ["Celcius"]), true),
+			optionalAttrib("power", [PowerUnits], numValue(2400, ["watt"]), false),
+			optionalAttrib("ignite", [], boolValue(false), true)
 		],
 		[	//connectionpoints
 			gasConnection("gasin"),
@@ -101,7 +101,7 @@ public map[str, ElementDefinition] Elements = (
 	"Joint" : element(
 		[],	//modifiers
 		[	//attributes
-			optionalAttrib("connections", [], listValue(["in", "out"]))
+			optionalAttrib("connections", [], listValue(["in", "out"]), false)
 		],
 		[	//connectionpoints
 			attribConnections()
@@ -113,8 +113,8 @@ public map[str, ElementDefinition] Elements = (
 	"Pipe" : element(
 		[],	//modifiers
 		[	//attributes
-			optionalAttrib("diameter", [LengthUnits], numValue(15, ["mm"])),
-			requiredAttrib("length", [LengthUnits])
+			optionalAttrib("diameter", [LengthUnits], numValue(15, ["mm"]), false),
+			requiredAttrib("length", [LengthUnits], false)
 		],
 		[],	//connectionpoints
 		[	//sensorpoints
@@ -129,8 +129,8 @@ public map[str, ElementDefinition] Elements = (
 			{"Vacuum", "Venturi"} //default: regular
 		],
 		[	//attributes
-			requiredAttrib("capacity", [VolumeUnits, TimeUnits]),
-			optionalAttrib("enabled", [], boolValue(false))
+			requiredAttrib("capacity", [VolumeUnits, TimeUnits], false),
+			optionalAttrib("enabled", [], boolValue(false), true)
 		],
 		[	//connectionpoints
 			liquidConnection("in"),
@@ -146,8 +146,8 @@ public map[str, ElementDefinition] Elements = (
 	"Radiator" : element(
 		[],	//modifiers
 		[	//attributes
-			requiredAttrib("heatcapacity", [PowerUnits]),
-			requiredAttrib("room", [])
+			requiredAttrib("heatcapacity", [PowerUnits], false),
+			requiredAttrib("room", [], false)
 		],
 		[	//connectionpoints
 			liquidConnection("in"),
@@ -170,8 +170,8 @@ public map[str, ElementDefinition] Elements = (
 			}
 		], 
 		[	//attributes
-			requiredAttrib("on", []),   	// sensorpoint
-			requiredAttrib("range", [])		// depends on modifier
+			requiredAttrib("on", [], false),   	// sensorpoint
+			requiredAttrib("range", [], false) 	// depends on modifier
 		],
 		[],	//connectionpoints
 		[]	//sensorpoints
@@ -183,7 +183,7 @@ public map[str, ElementDefinition] Elements = (
 			{"Gas", "Liquid"}
 		],
 		[	//attributes
-			requiredAttrib("flowrate", [VolumeUnits, TimeUnits])
+			requiredAttrib("flowrate", [VolumeUnits, TimeUnits], true)
 		],
 		[	//connectionpoints
 			unknownConnection("[self]")
@@ -199,8 +199,8 @@ public map[str, ElementDefinition] Elements = (
 			{"ThreeWay"}				//default: TwoWay
 		],
 		[	//attributes
-			optionalAttrib("position", [], listValue([":closed"])),
-			optionalModifierAttrib("flowrate", "Pin", [VolumeUnits, TimeUnits], numValue(1, ["m3", "hour"])) // only for pin-valve
+			optionalAttrib("position", [], listValue([":closed"]), true),
+			optionalModifierAttrib("flowrate", "Pin", [VolumeUnits, TimeUnits], numValue(1, ["m3", "hour"]), true) // only for pin-valve
 		],
 		[	//connectionpoints
 			unknownConnection("a"),
@@ -215,7 +215,7 @@ public map[str, ElementDefinition] Elements = (
 	"Room" : element(
 		[],	//modifiers
 		[	//attributes
-			requiredAttrib("volume", [VolumeUnits])
+			requiredAttrib("volume", [VolumeUnits], false)
 		],
 		[],	//connectionpoints
 		[	//sensorpoints

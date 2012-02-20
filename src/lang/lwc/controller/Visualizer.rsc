@@ -34,18 +34,9 @@ public Figure buildControllerGraph(Controller ast)
 	return graph(nodes, edges, gap(40));
 }
 
-private Figure point(num x, num y)
-{
-	return ellipse(shrink(0), align(x, y));
-}
+private Figure point(num x, num y) = ellipse(shrink(0), align(x, y));
 
-private Figure arrow()
-{
-	return overlay(
-		[point(0,1), point(1,1), point(0.5, 0)], 
-		shapeConnected(true), 
-		shapeClosed(true),
-		fillColor(color("black")), 
-		size(10)
-	);
-}
+private Figure arrow() = overlay([point(0,1), point(1,1), point(0.5, 0)], 
+		shapeConnected(true), shapeClosed(true),
+		fillColor(color("black")), size(10));
+

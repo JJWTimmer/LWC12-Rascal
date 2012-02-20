@@ -17,9 +17,9 @@ public void registerController() {
 		popup(
 			menu("LWC", [
 				menu("Visualize", [
-					action("Visualize Controller", 
+					action("Controller", 
 						(ParseTree::Tree tree, loc selection) { visualizeController(tree); }),
-					action("Visualize Both", 
+					action("Both", 
 						(ParseTree::Tree tree, loc selection) { visualizeBoth(selection); })
 				])
 			])

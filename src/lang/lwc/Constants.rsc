@@ -53,3 +53,4 @@ public map[str, list[ConnectionPointDefinition]] DefinedConnectionPoints = ( key
 public map[str, list[SensorPointDefinition]] DefinedSensorPoints = ( key : Elements[key].sensorpoints | key <- Elements);
 public map[str, map[str,str]] ElementProperties = ( key : getProperties(key) | key <- Elements );
 public map[str, list[set[str]]] ElementModifiers = ( key : Elements[key].modifiers | key <- Elements );
+public map[str, list[AttributeDefinition]] EditableAttribs = (  |  );

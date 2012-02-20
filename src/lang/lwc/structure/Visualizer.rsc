@@ -33,22 +33,22 @@ public Figure buildStructureGraph(Structure ast)
 			nodes += jointFigure(N);
 		
 		// Handle Pumps
-		case element(_, elementname("Pump"), N, _):
-			nodes += pumpFigure(N);
+		case element(_, elementname("Pump"), N, A):
+			nodes += pumpFigure(N, A);
 		
 		// Handle Valves
 		case element(M, elementname("Valve"), N, A): 	
-			nodes += valveFigure(N, M); 
+			nodes += valveFigure(N, M, A); 
 		
 		// Handle radiators
 		case E:element(M, elementname("Radiator"), N, A): {
 			edges += radiatorEdges(E, N);
-			nodes += radiatorFigure(N);
+			nodes += radiatorFigure(N, A);
 		}
 			
 		// Other elements
-		case element(_, elementname(T), N, _): 			
-			nodes += elementFigure(T, N);
+		case element(_, elementname(T), N, A): 			
+			nodes += elementFigure(T, N, A);
 		
 		// Match pipes
 		case pipe(_, str N, Value from, Value to, _): {
@@ -102,7 +102,7 @@ list[Edge] radiatorEdges(Statement E, str to) {
 	return [];
 }
 
-Figure radiatorFigure(str name)
+Figure radiatorFigure(str name, list[Attribute] attributes)
 {
 	Figure symbol = overlay([
 		ellipse(size(40)),
@@ -119,7 +119,7 @@ Figure radiatorFigure(str name)
 // Render an element
 //
 
-Figure elementFigure(str typ, str name) = 
+Figure elementFigure(str typ, str name, list[Attribute] attributes) = 
 	box(
 		vcat([
 			text(typ, fontSize(9)),
@@ -131,7 +131,7 @@ Figure elementFigure(str typ, str name) =
 // Render a pump figure
 //
 
-Figure pumpFigure(str name) = 
+Figure pumpFigure(str name, list[Attribute] attributes) = 
 	box(
 		vcat([
 			text(name, fontSize(9)),
@@ -168,7 +168,7 @@ Figure jointFigure(str name) =
 // Render a valve figure
 //
 
-Figure valveFigure(str N, list[Modifier] M) {
+Figure valveFigure(str N, list[Modifier] M, list[Attribute] attributes) {
 
 	Figure symbol = valveSymbol(modifier("ThreeWay") in M  ? 3 : 2);
 	

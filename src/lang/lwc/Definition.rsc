@@ -70,7 +70,7 @@ public map[str, ElementDefinition] Elements = (
 		[],	//modifiers
 		[	//attributes
 			optionalAttrib("burnertemp", [TemperatureUnits], numValue(90, ["Celcius"])),
-			optionalAttrib("power", [PowerUnits], numValue(2400, ["watt"])),
+			optionalAttrib("power", [PowerUnits], numValue(24000, ["watt"])),
 			optionalAttrib("ignite", [], boolValue(false))
 		],
 		[	//connectionpoints
@@ -171,8 +171,7 @@ public map[str, ElementDefinition] Elements = (
 		], 
 		[	//attributes
 			requiredAttrib("on", []),   	// sensorpoint
-			requiredAttrib("range", []), 	// depends on modifier
-			requiredAttrib("value", []) 	// the value this sensor reads
+			requiredAttrib("range", [])		// depends on modifier
 		],
 		[],	//connectionpoints
 		[]	//sensorpoints

@@ -22,15 +22,6 @@ public void registerStructure() {
 						(ParseTree::Tree tree, loc selection) {
 							visualize(tree);
 						}
-					),
-					menu("Debug",
-						[
-							action("Re-register",
-								(ParseTree::Tree tree, loc file) {
-									registerStructure();
-								}
-							)
-						]
 					)
 				]
 			)

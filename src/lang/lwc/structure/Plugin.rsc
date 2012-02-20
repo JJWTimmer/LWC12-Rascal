@@ -5,6 +5,7 @@ import lang::lwc::structure::Parser;
 import lang::lwc::structure::Outliner;
 import lang::lwc::structure::Checker;
 import lang::lwc::structure::Visualizer;
+import lang::lwc::vis::Visualizer;
 
 import util::IDE;
 
@@ -16,15 +17,22 @@ public void registerStructure() {
 
 	set[Contribution] contribution = { 
 		popup(
-			menu("LWC",
-				[
-					action("Visualize",
-						(ParseTree::Tree tree, loc selection) {
-							visualize(tree);
-						}
+			menu("LWC", [
+				menu("Visualize", [
+					action("Structure",
+						(ParseTree::Tree tree, loc selection) { visualizeStructure(tree); }
+					),
+					action("Both",
+						(ParseTree::Tree tree, loc selection) { visualizeBoth(selection); }
 					)
-				]
-			)
+				]),
+				
+				menu("Debug", [
+					action("Re-register",
+						(ParseTree::Tree tree, loc selection) { registerStructure(); }
+					)
+				])
+			])
 		)
 	};
 	

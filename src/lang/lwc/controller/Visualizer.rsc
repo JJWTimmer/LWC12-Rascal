@@ -5,13 +5,12 @@ import lang::lwc::controller::AST;
 
 import vis::Figure;
 import vis::Render;
-import IO;
 import List;
 
-public void visualize(ParseTree::Tree tree)
+public void visualizeController(ParseTree::Tree tree) = render(buildControllerGraph(implode(tree)));
+
+public Figure buildControllerGraph(Controller ast)
 {
-	Controller ast = implode(tree);
-	
 	// Build the graph
 	list[Figure] nodes = [];
 	list[Edge] edges = [];
@@ -26,14 +25,13 @@ public void visualize(ParseTree::Tree tree)
 		transitions += toSet([<name,G> | /goto(statename(G)) <- L]);
 	}
 	
-	
 	for (str state <- states)
 		nodes += ellipse(text(state), id(state));
 		
 	for (<str from, str to> <- transitions)
 		edges += edge(from, to, toArrow(arrow()));
 	
-	render(graph(nodes, edges, gap(40)));
+	return graph(nodes, edges, gap(40));
 }
 
 private Figure point(num x, num y)

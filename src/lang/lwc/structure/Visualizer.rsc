@@ -12,10 +12,10 @@ import IO;
 import ParseTree;
 import util::Math;
 
-public void visualize(Tree tree)
+public void visualizeStructure(Tree tree) = render(buildStructureGraph(propagate(implode(tree))));
+
+public Figure buildStructureGraph(Structure ast)
 {
-	Structure ast = propagate(implode(tree));
-	
 	// Build the graph
 	list[Figure] nodes = [];
 	list[Edge] edges = [];
@@ -64,9 +64,9 @@ public void visualize(Tree tree)
 		}
 	}
 	
-	render(graph(nodes, edges, gap(40)));
+	return graph(nodes, edges, gap(40));
 }
-
+ 
 //
 // Render sensors
 //

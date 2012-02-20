@@ -4,9 +4,11 @@ import lang::lwc::structure::Load;
 import lang::lwc::structure::AST;
 import lang::lwc::structure::Propagate;
 
+public Structure loadStructure(loc input) = propagateAliasses(load(input));
+
 public map[str,str] structureElements(loc input) {
 	map[str,str] elementMap = ();
-	Structure ast = propagateAliasses(load(input));
+	Structure ast = loadStructure(input);
 	
 	for(/element(_, ElementName etype, str name, _) := ast) {
 		elementMap[name] = etype.id;

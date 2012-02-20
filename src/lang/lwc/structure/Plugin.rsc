@@ -24,8 +24,7 @@ public void registerStructure() {
 				),
 				action("Simulate",
 					(ParseTree::Tree tree, loc selection) { simulate(selection); }
-				),
-				])
+				)
 			])
 		)
 	};

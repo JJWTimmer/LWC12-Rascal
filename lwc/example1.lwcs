@@ -83,7 +83,7 @@ WaterPipe W9 connects J1.tocentralheating with C1.coldwaterin
 
 #Sensors
 TempMeter TM6
-	- on: W3.temperature; 
+	- on: LivingRoom; 
 
 TempMeter TM5
 	- on: C1.internaltemp;

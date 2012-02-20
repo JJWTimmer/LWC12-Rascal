@@ -40,6 +40,12 @@ public Figure buildStructureGraph(Structure ast)
 		case element(M, elementname("Valve"), N, A): 	
 			nodes += valveFigure(N, M); 
 		
+		// Handle radiators
+		case E:element(M, elementname("Radiator"), N, A): {
+			edges += radiatorEdges(E, N);
+			nodes += radiatorFigure(N);
+		}
+			
 		// Other elements
 		case element(_, elementname(T), N, _): 			
 			nodes += elementFigure(T, N);
@@ -84,6 +90,26 @@ Figure sensorFigure(str N, list[Modifier] modifiers)
 		]), 
 		id(N), lineColor("blue"));
 }
+
+//
+// Render a Radiator
+//
+
+list[Edge] radiatorEdges(Statement E, str to) {
+	if (/attribute(attributename("room"), valuelist(L)) <- E)
+		return [edge(roomName, to, lineColor("gray"), lineStyle("dash")) | /variable(str roomName) <- L ];
+		
+	return [];
+}
+
+Figure radiatorFigure(str name) = 
+	box(
+		vcat([
+			text("Radiator", fontSize(9)),
+			text(name)
+		]), grow(1.5), id(name)
+	);
+
 
 //
 // Render an element

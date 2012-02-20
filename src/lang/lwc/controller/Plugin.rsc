@@ -4,7 +4,7 @@ import lang::lwc::controller::Parser;
 import lang::lwc::controller::Outliner;
 import lang::lwc::controller::Checker;
 import lang::lwc::controller::Visualizer;
-import lang::lwc::vis::Visualizer;
+import lang::lwc::sim::Simulator;
 
 import util::IDE;
 
@@ -16,12 +16,10 @@ public void registerController() {
 	set[Contribution] contribution = { 
 		popup(
 			menu("LWC", [
-				menu("Visualize", [
-					action("Controller", 
-						(ParseTree::Tree tree, loc selection) { visualizeController(tree); }),
-					action("Both", 
-						(ParseTree::Tree tree, loc selection) { visualizeBoth(selection); })
-				])
+				action("Visualize", 
+					(ParseTree::Tree tree, loc selection) { visualizeController(tree); }),
+				action("Simulate", 
+					(ParseTree::Tree tree, loc selection) { simulate(selection); })
 			])
 		)
 	};

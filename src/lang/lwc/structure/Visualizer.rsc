@@ -102,14 +102,18 @@ list[Edge] radiatorEdges(Statement E, str to) {
 	return [];
 }
 
-Figure radiatorFigure(str name) = 
-	box(
-		vcat([
-			text("Radiator", fontSize(9)),
-			text(name)
-		]), grow(1.5), id(name)
-	);
-
+Figure radiatorFigure(str name)
+{
+	Figure symbol = overlay([
+		ellipse(size(40)),
+		overlay([point(0, 0.5), point(0.25, 0.3), point(0.75, 0.7), point(1, 0.5)], shapeConnected(true), size(40))
+	], id(name));
+ 
+	return vcat([
+		text(name, fontSize(9)),
+		symbol
+	], id(name), gap(5));
+}
 
 //
 // Render an element
@@ -132,7 +136,7 @@ Figure pumpFigure(str name) =
 		vcat([
 			text(name, fontSize(9)),
 			pumpSymbol()
-		]), 
+		], gap(5)), 
 		id(name), lineWidth(0)
 	);
 	

@@ -1,12 +1,5 @@
 module lang::lwc::controller::AST
 extend lang::lwc::expressions::AST;
-/*
-	TODO:
-		make Expression abstraction
-		remove paren-case
-		add prim-case to Expression
-		rename slt to leq and sgt to geq
-*/
 
 anno loc TopStatement@location;
 anno loc StateName@location;

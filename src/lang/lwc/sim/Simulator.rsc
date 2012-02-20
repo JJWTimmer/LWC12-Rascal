@@ -1,4 +1,4 @@
-module lang::lwc::vis::Visualizer
+module lang::lwc::sim::Simulator
 
 import lang::lwc::controller::Extern;
 import lang::lwc::controller::AST;
@@ -14,7 +14,7 @@ import IO;
 import String;
 import ParseTree;
 
-public void visualizeBoth(loc baseName)
+public void simulate(loc baseName)
 {
 	loc structureName = baseName;
 	loc controllerName = baseName;

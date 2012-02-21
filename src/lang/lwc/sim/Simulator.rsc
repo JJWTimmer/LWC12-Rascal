@@ -2,7 +2,7 @@ module lang::lwc::sim::Simulator
 
 import lang::lwc::controller::Extern;
 import lang::lwc::controller::AST;
-import lang::lwc::controller::Visualizer;
+import lang::lwc::sim::RunnableController;
 
 import lang::lwc::structure::Extern;
 import lang::lwc::structure::AST;
@@ -29,7 +29,7 @@ public void simulate(loc baseName)
 	Controller controllerAst = loadController(controllerName);
 	
 	render(hcat([
-		box(buildControllerGraph(controllerAst), gap(10)),
+		box(buildRunnableControllerGraph(controllerAst), gap(10)),
 		box(buildStructureGraph(structureAst), gap(10))
 	]));	
 }

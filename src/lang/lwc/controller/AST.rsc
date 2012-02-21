@@ -9,9 +9,11 @@ anno loc Expression@location;
 anno loc Assignable@location;
 anno loc Primary@location;
 
+alias Statements = list[Statement];
+
 data Controller = controller(list[TopStatement] topstatements);
 
-data TopStatement = state(StateName state, list[Statement] statements)
+data TopStatement = state(StateName state, Statements statements)
                   | condition(str name, Expression expression)
                   | declaration(str name, Primary val);
                   

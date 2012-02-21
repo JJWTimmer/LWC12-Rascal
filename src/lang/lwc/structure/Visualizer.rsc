@@ -8,38 +8,69 @@ import lang::lwc::Constants;
 
 import vis::Figure;
 import vis::Render;
+import vis::KeySym;
 
 import List;
 import IO;
 import ParseTree;
 import util::Math;
 
+alias StructureMouseHandler = bool(int butnr, str \type, str name, list[value] attributes);
+
 public void visualizeStructure(Tree tree) = render(buildStructureGraph(propagate(implode(tree))));
 
-Figure sidebar = buildSidebar("", []);
+public void visualizeStructureWithSidebar(Tree tree) {
 
-public Figure buildSidebar(str etype, str name, list[Attribute] attributes) {
-/*	list[Attribute] editableAttribs = [];
-	if(EditableProps[etype]?) {
-		list[str] editables = EditableProps[etype];
-		for(A:attribute(attributename(str aname), _) <- attributes) {
-			if(aname in editables) {
-				editableAttribs += A;
-			}
-		} 
-	}
+	Structure ast = propagate(implode(tree));
+	Figure sidebar = buildSidebar("", "", []);
 	
-	for(attribute <- editableAttribs) {
+	StructureMouseHandler mouseHandler = bool(int butnr, str \type, str name, list[value] attributes) {
+		if (butnr == 1)
+			sidebar = buildSidebar(\type, name, attributes);
+			
+		return true;
+	};
 	
-	}
-	attribField = buildField(
-*/
-	return box(vcat([text(name, fontSize(20))
-					
-					]));
+	render(hcat([
+		buildInteractiveStructureGraph(ast, mouseHandler),
+		computeFigure(Figure () { return sidebar; })
+	]));
 }
 
-public Figure buildStructureGraph(Structure ast)
+public void visualizeStructure(Tree tree) = render(hcat([buildStructureGraph(propagate(implode(tree))),computeFigure(Figure () { return sidebar; })]));
+
+public Figure buildSidebar(str etype, str name, list[Attribute] attributes) {
+
+	list[Attribute] editableAttribs = [];
+	if(EditableProps[etype]?) {
+		editableAttribs = [ A | A:attribute(attributename(str aname, _)) <- attributes, aname in EditableProps(etype) ];
+	}
+	
+	list[Figure] attribFields = [];
+	for(attribute <- editableAttribs) {
+		attribFields += buildField(attribute);
+	}
+
+	return box(vcat(text(name, fontSize(20))
+					+ attribFields					
+					));
+}
+
+Figure buildField(attribute(attributename(str name), valuelist(list[Value] values))) {	
+	
+	return vcat([text(name, fontSize(14))
+				,buildEdit(name, values)
+			]);
+}
+
+Figure buildEdit(str name, [bool boolean]) {
+	return checkbox(name, void (bool state) { state = boolean; } );
+}
+	
+public Figure buildInteractiveStructureGraph(Structure ast, StructureMouseHandler mouseHandler) = buildGraph(ast, mouseHandler);
+public Figure buildStructureGraph(Structure ast) = buildGraph(ast, bool(int butnr, str \type, str name, list[value] attributes) { return false; });
+
+private Figure buildGraph(Structure ast, StructureMouseHandler mouseHandler)
 {
 	// Build the graph
 	list[Figure] nodes = [];
@@ -59,21 +90,21 @@ public Figure buildStructureGraph(Structure ast)
 		
 		// Handle Pumps
 		case element(_, elementname("Pump"), N, A):
-			nodes += pumpFigure(N, A);
+			nodes += pumpFigure(N, A, mouseHandler);
 		
 		// Handle Valves
 		case element(M, elementname("Valve"), N, A): 	
-			nodes += valveFigure(N, M, A); 
+			nodes += valveFigure(N, M, A, mouseHandler); 
 		
 		// Handle radiators
 		case E:element(M, elementname("Radiator"), N, A): {
 			edges += radiatorEdges(E, N);
-			nodes += radiatorFigure(N, A);
+			nodes += radiatorFigure(N, A, mouseHandler);
 		}
 			
 		// Other elements
 		case element(_, elementname(T), N, A): 			
-			nodes += elementFigure(T, N, A);
+			nodes += elementFigure(T, N, A, mouseHandler);
 		
 		// Match pipes
 		case pipe(_, str N, Value from, Value to, _): {
@@ -127,16 +158,15 @@ list[Edge] radiatorEdges(Statement E, str to) {
 	return [];
 }
 
-Figure radiatorFigure(str name, list[Attribute] attributes)
+Figure radiatorFigure(str name, list[Attribute] attributes, StructureMouseHandler mouseHandler)
 {
 	Figure symbol = overlay([
-		ellipse(size(40)),
-		overlay([point(0, 0.5), point(0.25, 0.3), point(0.75, 0.7), point(1, 0.5)], shapeConnected(true), size(40))
-	], id(name)
-	, onMouseDown(bool (int butnr, map[KeyModifier,bool] modifiers) {
-		if(butnr == 1) {
-			sidebar = buildSidebar("Radiator", name, attributes);
-		}
+			ellipse(size(40)),
+			overlay([point(0, 0.5), point(0.25, 0.3), point(0.75, 0.7), point(1, 0.5)], shapeConnected(true), size(40))
+		], 
+		id(name), 
+		onMouseDown(bool(int butnr, map[KeyModifier,bool] modifiers) {
+			return mouseHandler(butnr, "Radiator", name, attributes);
 		})
 	);
  
@@ -150,16 +180,16 @@ Figure radiatorFigure(str name, list[Attribute] attributes)
 // Render an element
 //
 
-Figure elementFigure(str \type, str name, list[Attribute] attributes) = 
+Figure elementFigure(str \type, str name, list[Attribute] attributes, StructureMouseHandler mouseHandler) = 
 	box(
 		vcat([
 			text(\type, fontSize(9)),
 			text(name)
-		]), grow(1.5), id(name)
-		, onMouseDown(bool (int butnr, map[KeyModifier,bool] modifiers) {
-			if(butnr == 1) {
-				sidebar = buildSidebar(\type, name, attributes);
-			}
+		]), 
+		grow(1.5), 
+		id(name), 
+		onMouseDown(bool (int butnr, map[KeyModifier,bool] modifiers) {
+			return mouseHandler(butnr, \type, name, attributes);
 		})
 	);
 
@@ -167,19 +197,21 @@ Figure elementFigure(str \type, str name, list[Attribute] attributes) =
 // Render a pump figure
 //
 
-Figure pumpFigure(str name, list[Attribute] attributes) = 
-	box(
+Figure pumpFigure(str name, list[Attribute] attributes, StructureMouseHandler mouseHandler)
+{ 
+	return box(
 		vcat([
 			text(name, fontSize(9)),
 			pumpSymbol()
 		], gap(5)), 
-		id(name), lineWidth(0)
-		,onMouseDown(bool (int butnr, map[KeyModifier,bool] modifiers) {
-			if(butnr == 1) {
-				sidebar = buildSidebar("Pump", name, attributes);
-			}
+		id(name), 
+		lineWidth(0),
+		onMouseDown(bool (int butnr, map[KeyModifier,bool] modifiers) {
+			mouseHandler(butnr, "Pump", name, attributes);
+			return true;
 		})
 	);
+}
 	
 Figure pumpSymbol()
 {
@@ -209,7 +241,7 @@ Figure jointFigure(str name) =
 // Render a valve figure
 //
 
-Figure valveFigure(str N, list[Modifier] M, list[Attribute] attributes) {
+Figure valveFigure(str N, list[Modifier] M, list[Attribute] attributes, StructureMouseHandler mouseHandler) {
 
 	Figure symbol = valveSymbol(modifier("ThreeWay") in M  ? 3 : 2);
 	
@@ -228,22 +260,22 @@ Figure valveFigure(str N, list[Modifier] M, list[Attribute] attributes) {
 			symbol
 		], gap(5)),
 		lineWidth(0),
-		id(N));
+		id(N),
+		onMouseDown(bool(int butnr, map[KeyModifier,bool] modifiers) {
+			return mouseHandler(butnr, "Valve", N, attributes);
+		})
+	);
 }
 
 Figure augmentManualValveSymbol(Figure symbol, str name, list[Attribute] attributes)
 {
 	Figure controlSymbol = overlay([
-		point(0, 0), 
-		point(1, 0),
-		point(0.5, 0),
-		point(0.5, 0.5)
-	], shapeConnected(true), width(20), height(40)
-	, onMouseDown(bool (int butnr, map[KeyModifier,bool] modifiers) {
-		if(butnr == 1) {
-			sidebar = buildSidebar("Valve", name, attributes);
-		}
-	}));
+			point(0, 0), 
+			point(1, 0),
+			point(0.5, 0),
+			point(0.5, 0.5)
+		], shapeConnected(true), width(20), height(40)
+	);
 		
 	return overlay([controlSymbol, symbol]);
 }
@@ -264,11 +296,7 @@ Figure augmentControlledValveSymbol(Figure symbol, str name, list[Attribute] att
 			], shapeConnected(true), width(20), height(40)),
 			
 			box(width(20), height(10), lineWidth(0))
-		],onMouseDown(bool (int butnr, map[KeyModifier,bool] modifiers) {
-			if(butnr == 1) {
-				sidebar = buildSidebar("Valve", name, attributes);
-			}
-		}));
+		]);
 	
 	return overlay([controlSymbol, symbol]);
 }

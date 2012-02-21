@@ -6,7 +6,9 @@ import lang::lwc::sim::RunnableController;
 
 import lang::lwc::structure::Extern;
 import lang::lwc::structure::AST;
-import lang::lwc::structure::Visualizer;
+
+import lang::lwc::sim::Sidebar;
+import lang::lwc::sim::Context;
 
 import vis::Render;
 import vis::Figure;
@@ -32,7 +34,6 @@ public void simulate(loc baseName)
 	
 	render(hcat([
 		box(buildRunnableControllerGraph(controllerAst), gap(10)),
-		box(buildStructureGraph(structureAst), gap(10))
+		box(buildInteractiveStructureGraphWithSidebar(structureAst), gap(10))
 	]));	
 }
-

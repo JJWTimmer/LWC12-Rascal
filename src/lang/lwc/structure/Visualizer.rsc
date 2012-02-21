@@ -4,71 +4,20 @@ import lang::lwc::structure::Load;
 import lang::lwc::structure::Propagate;
 import lang::lwc::structure::AST;
 
-import lang::lwc::Constants;
+import lang::lwc::sim::Sidebar;
 
 import vis::Figure;
 import vis::Render;
-import vis::KeySym;
 
 import List;
 import IO;
 import ParseTree;
 import util::Math;
 
-alias StructureMouseHandler = bool(int butnr, str \type, str name, list[value] attributes);
-
 public void visualizeStructure(Tree tree) = render(buildStructureGraph(propagate(implode(tree))));
 
-public void visualizeStructureWithSidebar(Tree tree) {
-
-	Structure ast = propagate(implode(tree));
-	Figure sidebar = buildSidebar("", "", []);
-	
-	StructureMouseHandler mouseHandler = bool(int butnr, str \type, str name, list[value] attributes) {
-		if (butnr == 1)
-			sidebar = buildSidebar(\type, name, attributes);
-			
-		return true;
-	};
-	
-	render(hcat([
-		buildInteractiveStructureGraph(ast, mouseHandler),
-		computeFigure(Figure () { return sidebar; })
-	]));
-}
-
-public void visualizeStructure(Tree tree) = render(hcat([buildStructureGraph(propagate(implode(tree))),computeFigure(Figure () { return sidebar; })]));
-
-public Figure buildSidebar(str etype, str name, list[Attribute] attributes) {
-
-	list[Attribute] editableAttribs = [];
-	if(EditableProps[etype]?) {
-		editableAttribs = [ A | A:attribute(attributename(str aname, _)) <- attributes, aname in EditableProps(etype) ];
-	}
-	
-	list[Figure] attribFields = [];
-	for(attribute <- editableAttribs) {
-		attribFields += buildField(attribute);
-	}
-
-	return box(vcat(text(name, fontSize(20))
-					+ attribFields					
-					));
-}
-
-Figure buildField(attribute(attributename(str name), valuelist(list[Value] values))) {	
-	
-	return vcat([text(name, fontSize(14))
-				,buildEdit(name, values)
-			]);
-}
-
-Figure buildEdit(str name, [bool boolean]) {
-	return checkbox(name, void (bool state) { state = boolean; } );
-}
-	
 public Figure buildInteractiveStructureGraph(Structure ast, StructureMouseHandler mouseHandler) = buildGraph(ast, mouseHandler);
-public Figure buildStructureGraph(Structure ast) = buildGraph(ast, bool(int butnr, str \type, str name, list[value] attributes) { return false; });
+public Figure buildStructureGraph(Structure ast) = buildGraph(ast, bool(int butnr, str \type, str name) { return true; });
 
 private Figure buildGraph(Structure ast, StructureMouseHandler mouseHandler)
 {
@@ -89,22 +38,22 @@ private Figure buildGraph(Structure ast, StructureMouseHandler mouseHandler)
 			nodes += jointFigure(N);
 		
 		// Handle Pumps
-		case element(_, elementname("Pump"), N, A):
-			nodes += pumpFigure(N, A, mouseHandler);
+		case element(_, elementname("Pump"), N, _):
+			nodes += pumpFigure(N, mouseHandler);
 		
 		// Handle Valves
-		case element(M, elementname("Valve"), N, A): 	
-			nodes += valveFigure(N, M, A, mouseHandler); 
+		case element(M, elementname("Valve"), N, _): 	
+			nodes += valveFigure(N, M, mouseHandler); 
 		
 		// Handle radiators
-		case E:element(M, elementname("Radiator"), N, A): {
+		case E:element(M, elementname("Radiator"), N, _): {
 			edges += radiatorEdges(E, N);
-			nodes += radiatorFigure(N, A, mouseHandler);
+			nodes += radiatorFigure(N, mouseHandler);
 		}
 			
 		// Other elements
-		case element(_, elementname(T), N, A): 			
-			nodes += elementFigure(T, N, A, mouseHandler);
+		case element(_, elementname(T), N, _): 			
+			nodes += elementFigure(T, N, mouseHandler);
 		
 		// Match pipes
 		case pipe(_, str N, Value from, Value to, _): {
@@ -158,7 +107,7 @@ list[Edge] radiatorEdges(Statement E, str to) {
 	return [];
 }
 
-Figure radiatorFigure(str name, list[Attribute] attributes, StructureMouseHandler mouseHandler)
+Figure radiatorFigure(str name, StructureMouseHandler mouseHandler)
 {
 	Figure symbol = overlay([
 			ellipse(size(40)),
@@ -166,7 +115,7 @@ Figure radiatorFigure(str name, list[Attribute] attributes, StructureMouseHandle
 		], 
 		id(name), 
 		onMouseDown(bool(int butnr, map[KeyModifier,bool] modifiers) {
-			return mouseHandler(butnr, "Radiator", name, attributes);
+			return mouseHandler(butnr, "Radiator", name);
 		})
 	);
  
@@ -180,7 +129,7 @@ Figure radiatorFigure(str name, list[Attribute] attributes, StructureMouseHandle
 // Render an element
 //
 
-Figure elementFigure(str \type, str name, list[Attribute] attributes, StructureMouseHandler mouseHandler) = 
+Figure elementFigure(str \type, str name, StructureMouseHandler mouseHandler) = 
 	box(
 		vcat([
 			text(\type, fontSize(9)),
@@ -189,7 +138,7 @@ Figure elementFigure(str \type, str name, list[Attribute] attributes, StructureM
 		grow(1.5), 
 		id(name), 
 		onMouseDown(bool (int butnr, map[KeyModifier,bool] modifiers) {
-			return mouseHandler(butnr, \type, name, attributes);
+			return mouseHandler(butnr, \type, name);
 		})
 	);
 
@@ -197,7 +146,7 @@ Figure elementFigure(str \type, str name, list[Attribute] attributes, StructureM
 // Render a pump figure
 //
 
-Figure pumpFigure(str name, list[Attribute] attributes, StructureMouseHandler mouseHandler)
+Figure pumpFigure(str name, StructureMouseHandler mouseHandler)
 { 
 	return box(
 		vcat([
@@ -207,7 +156,7 @@ Figure pumpFigure(str name, list[Attribute] attributes, StructureMouseHandler mo
 		id(name), 
 		lineWidth(0),
 		onMouseDown(bool (int butnr, map[KeyModifier,bool] modifiers) {
-			mouseHandler(butnr, "Pump", name, attributes);
+			mouseHandler(butnr, "Pump", name);
 			return true;
 		})
 	);
@@ -241,17 +190,17 @@ Figure jointFigure(str name) =
 // Render a valve figure
 //
 
-Figure valveFigure(str N, list[Modifier] M, list[Attribute] attributes, StructureMouseHandler mouseHandler) {
+Figure valveFigure(str N, list[Modifier] M, StructureMouseHandler mouseHandler) {
 
 	Figure symbol = valveSymbol(modifier("ThreeWay") in M  ? 3 : 2);
 	
 	visit (M)
 	{
 		case modifier("Manual"): 
-			symbol = augmentManualValveSymbol(symbol, N, attributes);
+			symbol = augmentManualValveSymbol(symbol, N);
 			
 		case modifier("Controlled"):
-			symbol = augmentControlledValveSymbol(symbol, N, attributes);
+			symbol = augmentControlledValveSymbol(symbol, N);
 	}
 
 	return box(
@@ -262,12 +211,12 @@ Figure valveFigure(str N, list[Modifier] M, list[Attribute] attributes, Structur
 		lineWidth(0),
 		id(N),
 		onMouseDown(bool(int butnr, map[KeyModifier,bool] modifiers) {
-			return mouseHandler(butnr, "Valve", N, attributes);
+			return mouseHandler(butnr, "Valve", N);
 		})
 	);
 }
 
-Figure augmentManualValveSymbol(Figure symbol, str name, list[Attribute] attributes)
+Figure augmentManualValveSymbol(Figure symbol, str name)
 {
 	Figure controlSymbol = overlay([
 			point(0, 0), 
@@ -280,7 +229,7 @@ Figure augmentManualValveSymbol(Figure symbol, str name, list[Attribute] attribu
 	return overlay([controlSymbol, symbol]);
 }
 
-Figure augmentControlledValveSymbol(Figure symbol, str name, list[Attribute] attributes) 
+Figure augmentControlledValveSymbol(Figure symbol, str name) 
 {
 	Figure controlSymbol = 
 		vcat([

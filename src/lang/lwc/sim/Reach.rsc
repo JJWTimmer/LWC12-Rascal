@@ -6,6 +6,7 @@ import lang::lwc::sim::Context;
 import Graph;
 import util::Maybe;
 import Set;
+import List;
 
 data ElementNode = elementNode(str name, Maybe[str] property);
 
@@ -44,7 +45,29 @@ public bool isReachable(Graph[ElementNode] graph, SimContext context, str fromNa
 	fromNode = elementNode(fromName, fromProperty);
 	toNode = elementNode(toName, toProperty);
 	
-	path = shortestPathPair(graph, fromNode, toNode);
+	for (elem <- context.elems) {
+		if (elem.etype == "Valve") {
+			if ([H*,simProp("position", val),T*] := elem.props) {
+				if (size(val.values) == 2) {
+					a = elementNode(elem.name, val.values[0] );
+					b = elementNode(elem.name, val.values[1] );
+					graph += <a, b>;
+					graph += <b, a>;
+				}
+				if (size(val.values) == 3) {
+					a = elementNode(elem.name, val.values[0] );
+					b = elementNode(elem.name, val.values[1] );
+					c = elementNode(elem.name, val.values[2] );
+					graph += <a, b>;
+					graph += <b, a>;
+					graph += <a, c>;
+					graph += <c, a>;
+					graph += <b, c>;
+					graph += <c, b>;
+				}
+			}
+		}
+	}
 	
 	set[ElementNode] reachable = reach(graph, {fromNode});
 	

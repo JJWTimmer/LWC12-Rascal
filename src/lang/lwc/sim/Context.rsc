@@ -3,7 +3,7 @@ module lang::lwc::sim::Context
 import lang::lwc::structure::AST;
 
 data SimContext = simContext(list[ElementState] elems, list[SensorValue] sensors, list[ManualValue] manuals);
-data ElementState = state(str name, list[SimProperty] props);
+data ElementState = state(str name, str etype, list[SimProperty] props);
 data SimProperty = simProp(str name, ValueList val);
 data SensorValue = sensor(str name, ValueList val);
 data ManualValue = manual(str name, ValueList val);
@@ -19,7 +19,7 @@ public SimContext createContext(Structure ast) {
 			if (etype != "Sensor") {
 				list[SimProperty] props = [simProp(pname, pval) | attribute(attributename(pname), pval)  <- attributes]
 				+ [simProp(pname, pval) | realproperty(pname, pval)  <- attributes];
-				elems += state(name, props);	
+				elems += state(name, etype, props);	
 			} else {
 				sensors += sensor(name, valuelist([]));
 			}

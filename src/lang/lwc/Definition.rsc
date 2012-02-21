@@ -210,7 +210,6 @@ public map[str, ElementDefinition] Elements = (
 			unknownConnection("a"),
 			unknownConnection("b"),
 			unknownConnectionModifier("c", "ThreeWay")
-			
 		],
 		[]	//sensorpoints
 	),

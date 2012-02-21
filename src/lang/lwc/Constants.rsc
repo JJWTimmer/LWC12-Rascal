@@ -48,7 +48,7 @@ str getValueType(listValue(_)) {
 
 list[str] getEditableProps(str elementName) {
 	ElementDefinition elemDef = Elements[elementName];
-	list[AttributeDefinition] result = [];
+	list[str] result = [];
 	
 	visit(elemDef) {
 		case requiredAttrib(str name, _, true) : result += name;

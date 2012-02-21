@@ -9,7 +9,7 @@ import util::Math;
 
 data Action = \continue() | transition(str state);
 
-data RuntimeContext = runtimeContext(
+data RuntimeContext = createRuntimeContext(
 	bool initialized,
 	str state,
 	str transition,
@@ -22,7 +22,7 @@ data RuntimeContext = runtimeContext(
 public RuntimeContext initRuntimeContext(Controller ast)
 {
 	// Collect states
-	RuntimeContext ctx = runtimeContext(
+	RuntimeContext ctx = createRuntimeContext(
 		false,
 		firstState(ast),
 		"",

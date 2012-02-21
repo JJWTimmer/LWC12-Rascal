@@ -19,24 +19,27 @@ public void visualizeStructure(Tree tree) = render(buildStructureGraph(propagate
 Figure sidebar = buildSidebar("", []);
 
 public Figure buildSidebar(str etype, str name, list[Attribute] attributes) {
-/*	list[Attribute] editableAttribs = [];
+	list[Attribute] editableAttribs = [];
 	if(EditableProps[etype]?) {
-		list[str] editables = EditableProps[etype];
-		for(A:attribute(attributename(str aname), _) <- attributes) {
-			if(aname in editables) {
-				editableAttribs += A;
-			}
-		} 
+		editableAttribs = [ A | A:attribute(attributename(str aname, _)) <- attributes, aname in EditableProps(etype) ];
 	}
 	
+	list[Figure] attribFields = [];
 	for(attribute <- editableAttribs) {
-	
+		attribFields += buildField(attribute);
 	}
-	attribField = buildField(
-*/
+
 	return box(vcat([text(name, fontSize(20))
-					
+					+ attribFields					
 					]));
+}
+
+Figure buildField(attribute(attributename(str name), valuelist(list[Value] values))) {
+	
+	
+	
+	return vcat([text(name, fontSize(14))
+			]);
 }
 
 public Figure buildStructureGraph(Structure ast)

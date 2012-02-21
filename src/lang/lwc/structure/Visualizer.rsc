@@ -8,15 +8,14 @@ import lang::lwc::Constants;
 
 import vis::Figure;
 import vis::Render;
+import vis::KeySym;
 
 import List;
 import IO;
 import ParseTree;
 import util::Math;
 
-public void visualizeStructure(Tree tree) = render(buildStructureGraph(propagate(implode(tree))));
-
-Figure sidebar = buildSidebar("", []);
+public void visualizeStructure(Tree tree) = render(hcat([buildStructureGraph(propagate(implode(tree))),computeFigure(Figure () { return sidebar; })]));
 
 public Figure buildSidebar(str etype, str name, list[Attribute] attributes) {
 	list[Attribute] editableAttribs = [];
@@ -29,9 +28,9 @@ public Figure buildSidebar(str etype, str name, list[Attribute] attributes) {
 		attribFields += buildField(attribute);
 	}
 
-	return box(vcat([text(name, fontSize(20))
+	return box(vcat(text(name, fontSize(20))
 					+ attribFields					
-					]));
+					));
 }
 
 Figure buildField(attribute(attributename(str name), valuelist(list[Value] values))) {
@@ -41,6 +40,8 @@ Figure buildField(attribute(attributename(str name), valuelist(list[Value] value
 	return vcat([text(name, fontSize(14))
 			]);
 }
+
+Figure sidebar = buildSidebar("", "", []);
 
 public Figure buildStructureGraph(Structure ast)
 {
@@ -140,6 +141,7 @@ Figure radiatorFigure(str name, list[Attribute] attributes)
 		if(butnr == 1) {
 			sidebar = buildSidebar("Radiator", name, attributes);
 		}
+		return true;
 		})
 	);
  
@@ -163,6 +165,7 @@ Figure elementFigure(str \type, str name, list[Attribute] attributes) =
 			if(butnr == 1) {
 				sidebar = buildSidebar(\type, name, attributes);
 			}
+			return true;
 		})
 	);
 
@@ -181,6 +184,7 @@ Figure pumpFigure(str name, list[Attribute] attributes) =
 			if(butnr == 1) {
 				sidebar = buildSidebar("Pump", name, attributes);
 			}
+			return true;
 		})
 	);
 	
@@ -246,6 +250,7 @@ Figure augmentManualValveSymbol(Figure symbol, str name, list[Attribute] attribu
 		if(butnr == 1) {
 			sidebar = buildSidebar("Valve", name, attributes);
 		}
+		return true;
 	}));
 		
 	return overlay([controlSymbol, symbol]);
@@ -271,6 +276,7 @@ Figure augmentControlledValveSymbol(Figure symbol, str name, list[Attribute] att
 			if(butnr == 1) {
 				sidebar = buildSidebar("Valve", name, attributes);
 			}
+			return true;
 		}));
 	
 	return overlay([controlSymbol, symbol]);

@@ -10,7 +10,7 @@ data SimContext = simContext(
 );
 
 data ElementState = state(str name, str \type, list[SimProperty] props);
-data SimProperty = simProp(str name, Bucket bucket);
+data SimProperty = simProp(str name, SimBucket bucket);
 data SensorValue = sensorVal(str name);
 data ManualValue = manualVal(str name);
 
@@ -27,8 +27,8 @@ public SimContext createSimContext(Structure ast)
 			{
 				list[str] ignoredAttributes = ["sensorpoints", "connections"];
 				
-				props = [ simProp(N, createBucket(V)) | attribute(attributename(N), valuelist([V, _*])) <- attributes, N notin ignoredAttributes ]
-					+ [simProp(N,  createBucket(V)) | realproperty(N, valuelist([V, _*]))  <- attributes]
+				props = [ simProp(N, createSimBucket(V)) | attribute(attributename(N), valuelist([V, _*])) <- attributes, N notin ignoredAttributes ]
+					+ [simProp(N,  createSimBucket(V)) | realproperty(N, valuelist([V, _*]))  <- attributes]
 				;
 				
 				elements += state(name, \type, props);	
@@ -44,29 +44,46 @@ public SimContext createSimContext(Structure ast)
 	return simContext(elements, sensors, manuals);
 }
 
-data Bucket 
-	= bucketBoolean(bool b)
-	| bucketNumber(num n)
-	| bucketVariable(str v);
+data SimBucket 
+	= simBucketBoolean(bool b)
+	| simBucketNumber(num n)
+	| simBucketVariable(str v);
 
-Bucket createBucket(Value v)
+SimBucket createSimBucket(Value v)
 {
 	switch (v)
 	{
-		case \false(): 	return bucketBoolean(false);
-		case \true(): 	return bucketBoolean(true);
-		case metric(integer(N), _): return bucketNumber(N);
-		case variable(str N): return bucketVariable(N);
+		case \false(): 				return simBucketBoolean(false);
+		case \true(): 				return simBucketBoolean(true);
+		case metric(integer(N), _): return simBucketNumber(N);
+		case variable(str N): 		return simBucketVariable(N);
 		
 		default: throw "Unsupported value <v>";
 	}
 }
 	
-public value getSimContextProperty(str element, str property, SimContext ctx)
+public SimBucket getSimContextBucket(str element, str property, SimContext ctx)
 {
 	if (/state(element, _, L) := ctx.elements)
 		if (/simProp(property, V) := L)
 			return V;
 	
 	throw "Property not found in simulation context";
+}
+
+public value getSimContextBucketValue(str element, str property, SimContext ctx)
+{
+	switch (getSimContextBucket(element, property, ctx))
+	{
+		case simBucketBoolean(V): return V;
+		case simBucketNumber(V): return V;
+		case simBucketVariable(V): return V;
+		
+		default: throw "Unsupported property <v>";
+	}
+}
+
+// This is a prototyp only, implementation follows
+public SimContext setSimContextBucket(str element, str property, SimBucket val, SimContext ctx) {
+	return ctx;
 }

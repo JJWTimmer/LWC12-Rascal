@@ -1,6 +1,7 @@
 module lang::lwc::sim::Context
 
 import lang::lwc::structure::AST;
+import IO;
 
 data SimContext = simContext(list[ElementState] elems, list[SensorValue] sensors, list[ManualValue] manuals);
 data ElementState = state(str name, list[SimProperty] props);
@@ -23,8 +24,18 @@ public SimContext createContext(Structure ast) {
 				sensors += sensor(name, valuelist([]));
 			}
 		}
-	}
-	
+	}	
 	
 	return simContext(elems, sensors, manuals);
+}
+
+public value getSimContextProperty(str element, str property, SimContext ctx)
+{
+	if (/state(element, L) := ctx.elems)
+	{
+		if (/simProp(property, valuelist([V, _*])) := L)
+			iprintln(V);
+	}
+	
+	return 0;
 }

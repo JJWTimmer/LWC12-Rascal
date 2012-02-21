@@ -77,9 +77,8 @@ private RuntimeContext evaluateState(ctx)
 			}
 			
 			case \continue():
-				println("Do nothing");
 				// do nothing
-				
+				println("Do nothing");
 				
 			default: throw "Unsupported action!";
 		}

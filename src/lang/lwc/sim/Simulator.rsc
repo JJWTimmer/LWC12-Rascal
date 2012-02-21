@@ -24,9 +24,11 @@ public void simulate(loc baseName)
 	
 	structureName.path = basePath + "lwcs";
 	controllerName.path = basePath + "lwcc"; 
-	 
+	
 	Structure structureAst = loadStructure(structureName);
 	Controller controllerAst = loadController(controllerName);
+	
+	SimContext simCtx = createSimContext(structureAst);
 	
 	render(hcat([
 		box(buildRunnableControllerGraph(controllerAst), gap(10)),

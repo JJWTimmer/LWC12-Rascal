@@ -15,32 +15,54 @@ import IO;
 import ParseTree;
 import util::Math;
 
+alias StructureMouseHandler = bool(int butnr, str \type, str name, list[value] attributes);
+
 public void visualizeStructure(Tree tree) = render(buildStructureGraph(propagate(implode(tree))));
 
-// Figure sidebar = buildSidebar("", []);
+public void visualizeStructureWithSidebar(Tree tree) {
 
-public Figure buildSidebar(str etype, str name, list[Attribute] attributes) {
-/*	list[Attribute] editableAttribs = [];
-	if(EditableProps[etype]?) {
-		list[str] editables = EditableProps[etype];
-		for(A:attribute(attributename(str aname), _) <- attributes) {
-			if(aname in editables) {
-				editableAttribs += A;
-			}
-		} 
-	}
+	Figure sidebar = buildSidebar("", "", []);
 	
-	for(attribute <- editableAttribs) {
+	StructureMouseHandler mouseHandler = bool(int butnr, str \type, str name, list[value] attributes) {
 	
-	}
-	attribField = buildField(
-*/
-	return box(vcat([text(name, fontSize(20))
-					
-					]));
+		if (butnr == 1)
+			sidebar = buildSidebar(\type, name, attributes);
+			
+		return true;
+	};
+	
+	ast = propagate(implode(tree));
+	
+	render(hcat([
+		buildInteractiveStructureGraph(ast, mouseHandler),
+		computeFigure(Figure () { return sidebar; })
+	]));
 }
 
-alias StructureMouseHandler = bool(int butnr, str \type, str name, list[value] attributes);
+public Figure buildSidebar(str etype, str name, list[Attribute] attributes) {
+	list[Attribute] editableAttribs = [];
+	if(EditableProps[etype]?) {
+		editableAttribs = [ A | A:attribute(attributename(str aname, _)) <- attributes, aname in EditableProps(etype) ];
+	}
+	
+	list[Figure] attribFields = [];
+	for(attribute <- editableAttribs) {
+		attribFields += buildField(attribute);
+	}
+
+	return box(vcat(text(name, fontSize(20))
+					+ attribFields					
+					));
+}
+
+Figure buildField(attribute(attributename(str name), valuelist(list[Value] values))) {
+	
+	
+	
+	return vcat([text(name, fontSize(14))
+			]);
+}
+
 	
 public Figure buildInteractiveStructureGraph(Structure ast, StructureMouseHandler mouseHandler) = buildGraph(ast, mouseHandler);
 public Figure buildStructureGraph(Structure ast) = buildGraph(ast, bool(int butnr, str \type, str name, list[value] attributes) { return false; });

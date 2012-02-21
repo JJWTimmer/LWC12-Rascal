@@ -8,9 +8,9 @@ map[str,str] getProperties(str elementName) {
 	ElementDefinition elemDef = Elements[elementName];
 	
 	visit(elemDef) {
-		case requiredAttrib(str name, list[list[Unit]] unitList) : result += (name : getValueType(unitList));
-	 	case optionalAttrib(str name, list[list[Unit]] unitList, ValueDefinition defaultValue) : result += (name : getValueType(unitList, defaultValue));
-	 	case optionalModifierAttrib(str name, _, list[list[Unit]] unitList, ValueDefinition defaultValue) : result += (name : getValueType(unitList, defaultValue));
+		case requiredAttrib(str name, list[list[Unit]] unitList, _) : result += (name : getValueType(unitList));
+	 	case optionalAttrib(str name, list[list[Unit]] unitList, ValueDefinition defaultValue, _) : result += (name : getValueType(unitList, defaultValue));
+	 	case optionalModifierAttrib(str name, _, list[list[Unit]] unitList, ValueDefinition defaultValue, _) : result += (name : getValueType(unitList, defaultValue));
 	 	case sensorPoint(str name, list[list[Unit]] unitList) : result += (name : getValueType(unitList));
 	 	case selfPoint(list[list[Unit]] unitList) : result += ("self" : getValueType(unitList));
 	}
@@ -46,10 +46,26 @@ str getValueType(listValue(_)) {
 	return "list";
 }
 
+list[str] getEditableProps(str elementName) {
+	ElementDefinition elemDef = Elements[elementName];
+	list[str] result = [];
+	
+	visit(elemDef) {
+		case requiredAttrib(str name, _, true) : result += name;
+		case optionalAttrib(str name, _, _, true) : result += name;
+		case optionalModifierAttrib(str name, _, _, _, true) : result += name;
+		case sensorPoint(str name, _) : result += name;
+		case selfPoint(_) : result += "self";
+	}
+	
+	return result;
+}
+
 public set[str] ElementNames = {key | key <- Elements};
-public map[str, list[AttributeDefinition]] OptionalAttribs = ( key : [ O | O:optionalAttrib(_,_,_) <- Elements[key].attributes ] | key <- Elements );
-public map[str, list[AttributeDefinition]] RequiredAttribs = ( key : [ O | O:requiredAttrib(_,_) <- Elements[key].attributes ] | key <- Elements );
+public map[str, list[AttributeDefinition]] OptionalAttribs = ( key : [ O | O:optionalAttrib(_,_,_,_) <- Elements[key].attributes ] | key <- Elements );
+public map[str, list[AttributeDefinition]] RequiredAttribs = ( key : [ O | O:requiredAttrib(_,_,_) <- Elements[key].attributes ] | key <- Elements );
 public map[str, list[ConnectionPointDefinition]] DefinedConnectionPoints = ( key : Elements[key].connectionpoints | key <- Elements);
 public map[str, list[SensorPointDefinition]] DefinedSensorPoints = ( key : Elements[key].sensorpoints | key <- Elements);
 public map[str, map[str,str]] ElementProperties = ( key : getProperties(key) | key <- Elements );
 public map[str, list[set[str]]] ElementModifiers = ( key : Elements[key].modifiers | key <- Elements );
+public map[str, list[str]] EditableProps = ( key : getEditableProps(key) | key <- Elements );

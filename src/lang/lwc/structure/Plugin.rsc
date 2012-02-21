@@ -24,13 +24,7 @@ public void registerStructure() {
 				),
 				action("Simulate",
 					(ParseTree::Tree tree, loc selection) { simulate(selection); }
-				),
-				
-				menu("Debug", [
-					action("Re-register",
-						(ParseTree::Tree tree, loc selection) { registerStructure(); }
-					)
-				])
+				)
 			])
 		)
 	};

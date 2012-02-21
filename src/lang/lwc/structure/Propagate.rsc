@@ -115,7 +115,7 @@ public Structure propagateSensorPoints(Structure ast) {
 private list[Attribute] getDefaults(list[AttributeDefinition] optionalAttribs, list[Attribute] existingAttribs) =
 	[
 		attribute(attributename(attribname), getValue(defaultvalue)) 
-		| optionalAttrib(str attribname, _, ValueDefinition defaultvalue) <- optionalAttribs,
+		| optionalAttrib(str attribname, _, ValueDefinition defaultvalue, _) <- optionalAttribs,
 		attribname notin [ existingattrib | attribute(attributename(str existingattrib), _) <- existingAttribs]
 	];
 

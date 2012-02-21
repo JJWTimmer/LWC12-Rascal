@@ -249,11 +249,10 @@ private set[Message] checkElementModifierUnits(Value V, list[Modifier] modifiers
 private Context checkModifiers(Context context, Structure ast) {
 	ast = propagateAliasses(ast);
 
-	visit(ast) {
-		case E:element(modifiers, elementname(str elementType), _, _) : context.messages += checkModifiers(E, modifiers, elementType);
-		case A:aliaselem(_, modifiers, elementname(str elementType), _) : context.messages += checkModifiers(A, modifiers, elementType);
+	for(\E:element(modifiers, elementname(str elementType), _, _) <- ast) {
+		context.messages += checkModifiers(E, modifiers, elementType);
 	}
-
+	
 	return context;
 }
 
@@ -305,7 +304,7 @@ private Context checkRequiredAttribs(Context context, Structure ast) {
 private set[Message] checkElementAttribs (str elementType, list[Attribute] attributes, loc where) {
 	set[Message] msgs = {};
 	
-	for (requiredAttrib(str attribName, _) <- RequiredAttribs[elementType]) {
+	for (requiredAttrib(str attribName, _, _) <- RequiredAttribs[elementType]) {
 		if ( !any(attribute(attributename(attribName), _) <- attributes) ) {
 			msgs += error("Missing required attribute <attribName>", where);
 		} 

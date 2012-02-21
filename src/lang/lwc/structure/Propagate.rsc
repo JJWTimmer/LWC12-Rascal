@@ -12,6 +12,7 @@ public Structure propagate(Structure ast) {
 	ast = propagateDefaults(ast);
 	ast = propagateConnectionPoints(ast);
 	ast = propagateSensorPoints(ast);
+	ast = propagateProps(ast);
 	
 	return ast;
 }
@@ -63,6 +64,24 @@ public Structure propagateDefaults(Structure ast) {
 				P.attributes += getDefaults(OptionalAttribs[ElemName], Attributes);	
 				insert P;
 			}
+		}
+	}
+	
+	return ast;
+}
+
+//add defaults to the elements in the ast
+public Structure propagateProps(Structure ast) {
+	ast = top-down-break visit(ast) {
+		case E:element(_, elementname(str ElemName), _, _) : {
+			
+			E.attributes += [ realproperty(name, getValue(defaultvalue)) | hiddenProperty(name, _, defaultvalue) <- HiddenProps[ElemName]];
+			insert E;
+		}
+		
+		case P:pipe(_, _, _,  _, _) : {
+			P.attributes += [ realproperty(name, defaultvalue) | hiddenProperty(name, _, defaultvalue) <- HiddenProps["Pipe"]];;	
+			insert P;
 		}
 	}
 	
@@ -125,6 +144,7 @@ private ValueList getValue(numValue(real val, list[Unit] un)) = valuelist([metri
 private ValueList getValue(boolValue(true)) = valuelist([\true()]);
 private ValueList getValue(boolValue(false)) = valuelist([\false()]);
 private ValueList getValue(listValue(list[str] lst)) = valuelist([variable(var) | var <- lst]);
+private ValueList getValue(none()) = valuelist([]);
 
 
 //retrieve the connectionpoints that are defined to replace them in the tree

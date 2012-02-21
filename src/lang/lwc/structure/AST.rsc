@@ -15,7 +15,8 @@ data Statement = element(list[Modifier] modifiers, ElementName etype, str name, 
 
 data Modifier = modifier(str id);
 
-data Attribute = attribute(AttributeName name, ValueList val);
+data Attribute = attribute(AttributeName name, ValueList val)
+			   | realproperty(str pname, ValueList val);
 
 data AttributeName = attributename(str name);
 

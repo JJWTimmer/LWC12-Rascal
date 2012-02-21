@@ -25,12 +25,14 @@ public data ElementDefinition = element(
 public data AttributeDefinition 
 	= requiredAttrib(str name, list[list[Unit]] unit, bool editable)
 	| optionalAttrib(str name, list[list[Unit]] unit, ValueDefinition defaultvalue, bool editable)
-	| optionalModifierAttrib(str name, str modifier, list[list[Unit]] unit, ValueDefinition defaultvalue, bool editable);
+	| optionalModifierAttrib(str name, str modifier, list[list[Unit]] unit, ValueDefinition defaultvalue, bool editable)
+	| hiddenProperty(str name, list[list[Unit]] unit, ValueDefinition defaultvalue);
 
 public data ValueDefinition 
 	= numValue(num val, list[Unit] unit)
 	| boolValue(bool boolean)
-	| listValue(list[str] contents);
+	| listValue(list[str] contents)
+	| none();
 				  	   
 public data SensorPointDefinition 
 	= sensorPoint(str name, list[list[Unit]] unit)
@@ -70,8 +72,9 @@ public map[str, ElementDefinition] Elements = (
 		[],	//modifiers
 		[	//attributes
 			optionalAttrib("burnertemp", [TemperatureUnits], numValue(90, ["Celcius"]), true),
-			optionalAttrib("power", [PowerUnits], numValue(2400, ["watt"]), false),
-			optionalAttrib("ignite", [], boolValue(false), true)
+			optionalAttrib("maxpower", [PowerUnits], numValue(2400, ["watt"]), false),
+			hiddenProperty("ignite", [], boolValue(false)),
+			hiddenProperty("power", [PowerUnits], numValue(2400, ["watt"]))
 		],
 		[	//connectionpoints
 			gasConnection("gasin"),
@@ -130,7 +133,7 @@ public map[str, ElementDefinition] Elements = (
 		],
 		[	//attributes
 			requiredAttrib("capacity", [VolumeUnits, TimeUnits], false),
-			optionalAttrib("enabled", [], boolValue(false), true)
+			hiddenProperty("enabled", [], boolValue(false))
 		],
 		[	//connectionpoints
 			liquidConnection("in"),
@@ -171,7 +174,8 @@ public map[str, ElementDefinition] Elements = (
 		], 
 		[	//attributes
 			requiredAttrib("on", [], false),   	// sensorpoint
-			requiredAttrib("range", [], false) 	// depends on modifier
+			requiredAttrib("range", [], false), // depends on modifier
+			hiddenProperty("value", [], none())
 		],
 		[],	//connectionpoints
 		[]	//sensorpoints

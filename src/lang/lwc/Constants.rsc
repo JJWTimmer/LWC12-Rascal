@@ -56,14 +56,54 @@ list[str] getEditableProps(str elementName) {
 		case optionalModifierAttrib(str name, _, _, _, true) : result += name;
 		case sensorPoint(str name, _) : result += name;
 		case selfPoint(_) : result += "self";
+		case hiddenProperty(str name, _, _) : result += name;
 	}
 	
 	return result;
 }
 
 public set[str] ElementNames = {key | key <- Elements};
-public map[str, list[AttributeDefinition]] OptionalAttribs = ( key : [ O | O:optionalAttrib(_,_,_,_) <- Elements[key].attributes ] | key <- Elements );
-public map[str, list[AttributeDefinition]] RequiredAttribs = ( key : [ O | O:requiredAttrib(_,_,_) <- Elements[key].attributes ] | key <- Elements );
+
+public map[str, list[AttributeDefinition]] OptionalAttribs = {
+	map[str, list[AttributeDefinition]] pmap = ();
+	for (key <- Elements) {
+		list[AttributeDefinition] plist = [];
+		for (H:optionalAttrib(_,_,_,_)   <- Elements[key].attributes) {
+			plist += H;
+		}
+		pmap[key] = plist;
+	}
+	
+	pmap;
+};
+
+public map[str, list[AttributeDefinition]] RequiredAttribs = {
+	map[str, list[AttributeDefinition]] pmap = ();
+	for (key <- Elements) {
+		list[AttributeDefinition] plist = [];
+		for (H:requiredAttrib(_,_,_)  <- Elements[key].attributes) {
+			plist += H;
+		}
+		pmap[key] = plist;
+	}
+	
+	pmap;
+};
+
+public map[str, list[AttributeDefinition]] HiddenProps     = {
+	map[str, list[AttributeDefinition]] pmap = ();
+	for (key <- Elements) {
+		list[AttributeDefinition] plist = [];
+		for (H:hiddenProperty(_,_,_)   <- Elements[key].attributes) {
+			plist += H;
+		}
+		pmap[key] = plist;
+
+	}
+	
+	pmap;
+};
+
 public map[str, list[ConnectionPointDefinition]] DefinedConnectionPoints = ( key : Elements[key].connectionpoints | key <- Elements);
 public map[str, list[SensorPointDefinition]] DefinedSensorPoints = ( key : Elements[key].sensorpoints | key <- Elements);
 public map[str, map[str,str]] ElementProperties = ( key : getProperties(key) | key <- Elements );

@@ -21,6 +21,7 @@ public SimContext createSimContext(Structure ast)
 	list[ManualValue] manuals = [];
 	
 	visit(ast) {
+
 		case element(modifiers, elementname(\type), name, attributes) : {
 			if (\type != "Sensor") 
 			{

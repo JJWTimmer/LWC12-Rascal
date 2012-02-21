@@ -15,6 +15,8 @@ import IO;
 import ParseTree;
 import util::Math;
 
+Structure ast;
+
 public void visualizeStructure(Tree tree) = render(hcat([buildStructureGraph(propagate(implode(tree))),computeFigure(Figure () { return sidebar; })]));
 
 public Figure buildSidebar(str etype, str name, list[Attribute] attributes) {
@@ -33,18 +35,23 @@ public Figure buildSidebar(str etype, str name, list[Attribute] attributes) {
 					));
 }
 
-Figure buildField(attribute(attributename(str name), valuelist(list[Value] values))) {
-	
-	
+Figure buildField(attribute(attributename(str name), valuelist(list[Value] values))) {	
 	
 	return vcat([text(name, fontSize(14))
+				,buildEdit(name, values)
 			]);
+}
+
+Figure buildEdit(str name, [bool boolean]) {
+	return checkbox(name, void (bool state) { state = boolean; } );
 }
 
 Figure sidebar = buildSidebar("", "", []);
 
-public Figure buildStructureGraph(Structure ast)
+public Figure buildStructureGraph(Structure input)
 {
+	ast = input;
+
 	// Build the graph
 	list[Figure] nodes = [];
 	list[Edge] edges = [];

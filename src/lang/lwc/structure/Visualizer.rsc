@@ -4,6 +4,8 @@ import lang::lwc::structure::Load;
 import lang::lwc::structure::Propagate;
 import lang::lwc::structure::AST;
 
+import lang::lwc::Constants;
+
 import vis::Figure;
 import vis::Render;
 
@@ -13,6 +15,29 @@ import ParseTree;
 import util::Math;
 
 public void visualizeStructure(Tree tree) = render(buildStructureGraph(propagate(implode(tree))));
+
+Figure sidebar = buildSidebar("", []);
+
+public Figure buildSidebar(str etype, str name, list[Attribute] attributes) {
+/*	list[Attribute] editableAttribs = [];
+	if(EditableProps[etype]?) {
+		list[str] editables = EditableProps[etype];
+		for(A:attribute(attributename(str aname), _) <- attributes) {
+			if(aname in editables) {
+				editableAttribs += A;
+			}
+		} 
+	}
+	
+	for(attribute <- editableAttribs) {
+	
+	}
+	attribField = buildField(
+*/
+	return box(vcat([text(name, fontSize(20))
+					
+					]));
+}
 
 public Figure buildStructureGraph(Structure ast)
 {
@@ -107,7 +132,13 @@ Figure radiatorFigure(str name, list[Attribute] attributes)
 	Figure symbol = overlay([
 		ellipse(size(40)),
 		overlay([point(0, 0.5), point(0.25, 0.3), point(0.75, 0.7), point(1, 0.5)], shapeConnected(true), size(40))
-	], id(name));
+	], id(name)
+	, onMouseDown(bool (int butnr, map[KeyModifier,bool] modifiers) {
+		if(butnr == 1) {
+			sidebar = buildSidebar("Radiator", name, attributes);
+		}
+		})
+	);
  
 	return vcat([
 		text(name, fontSize(9)),
@@ -119,12 +150,17 @@ Figure radiatorFigure(str name, list[Attribute] attributes)
 // Render an element
 //
 
-Figure elementFigure(str typ, str name, list[Attribute] attributes) = 
+Figure elementFigure(str \type, str name, list[Attribute] attributes) = 
 	box(
 		vcat([
-			text(typ, fontSize(9)),
+			text(\type, fontSize(9)),
 			text(name)
 		]), grow(1.5), id(name)
+		, onMouseDown(bool (int butnr, map[KeyModifier,bool] modifiers) {
+			if(butnr == 1) {
+				sidebar = buildSidebar(\type, name, attributes);
+			}
+		})
 	);
 
 //
@@ -138,6 +174,11 @@ Figure pumpFigure(str name, list[Attribute] attributes) =
 			pumpSymbol()
 		], gap(5)), 
 		id(name), lineWidth(0)
+		,onMouseDown(bool (int butnr, map[KeyModifier,bool] modifiers) {
+			if(butnr == 1) {
+				sidebar = buildSidebar("Pump", name, attributes);
+			}
+		})
 	);
 	
 Figure pumpSymbol()
@@ -175,10 +216,10 @@ Figure valveFigure(str N, list[Modifier] M, list[Attribute] attributes) {
 	visit (M)
 	{
 		case modifier("Manual"): 
-			symbol = augmentManualValveSymbol(symbol);
+			symbol = augmentManualValveSymbol(symbol, N, attributes);
 			
 		case modifier("Controlled"):
-			symbol = augmentControlledValveSymbol(symbol);
+			symbol = augmentControlledValveSymbol(symbol, N, attributes);
 	}
 
 	return box(
@@ -190,19 +231,24 @@ Figure valveFigure(str N, list[Modifier] M, list[Attribute] attributes) {
 		id(N));
 }
 
-Figure augmentManualValveSymbol(Figure symbol)
+Figure augmentManualValveSymbol(Figure symbol, str name, list[Attribute] attributes)
 {
 	Figure controlSymbol = overlay([
 		point(0, 0), 
 		point(1, 0),
 		point(0.5, 0),
 		point(0.5, 0.5)
-	], shapeConnected(true), width(20), height(40));
+	], shapeConnected(true), width(20), height(40)
+	, onMouseDown(bool (int butnr, map[KeyModifier,bool] modifiers) {
+		if(butnr == 1) {
+			sidebar = buildSidebar("Valve", name, attributes);
+		}
+	}));
 		
 	return overlay([controlSymbol, symbol]);
 }
 
-Figure augmentControlledValveSymbol(Figure symbol) 
+Figure augmentControlledValveSymbol(Figure symbol, str name, list[Attribute] attributes) 
 {
 	Figure controlSymbol = 
 		vcat([
@@ -218,7 +264,11 @@ Figure augmentControlledValveSymbol(Figure symbol)
 			], shapeConnected(true), width(20), height(40)),
 			
 			box(width(20), height(10), lineWidth(0))
-		]);
+		],onMouseDown(bool (int butnr, map[KeyModifier,bool] modifiers) {
+			if(butnr == 1) {
+				sidebar = buildSidebar("Valve", name, attributes);
+			}
+		}));
 	
 	return overlay([controlSymbol, symbol]);
 }

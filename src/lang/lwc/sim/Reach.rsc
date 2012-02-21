@@ -1,6 +1,7 @@
 module lang::lwc::sim::Reach
 
 import lang::lwc::structure::AST;
+import lang::lwc::sim::Context;
 
 import Graph;
 import util::Maybe;
@@ -39,9 +40,11 @@ public Graph[ElementNode] buildGraph(Structure ast) {
 	return graph;
 }
 
-public bool isReachable(Graph[ElementNode] graph, str fromName, Maybe[str] fromProperty, str toName, Maybe[str] toProperty) {
+public bool isReachable(Graph[ElementNode] graph, SimContext context, str fromName, Maybe[str] fromProperty, str toName, Maybe[str] toProperty) {
 	fromNode = elementNode(fromName, fromProperty);
 	toNode = elementNode(toName, toProperty);
+	
+	path = shortestPathPair(graph, fromNode, toNode);
 	
 	set[ElementNode] reachable = reach(graph, {fromNode});
 	

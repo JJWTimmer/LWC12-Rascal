@@ -18,7 +18,8 @@ public SimContext createContext(Structure ast) {
 		case element(modifiers, elementname(etype), name, attributes) : {
 		
 			if (etype != "Sensor") {
-				list[SimProperty] props = [simProp(pname, pval) | attribute(attributename(pname), pval)  <- attributes];
+				list[SimProperty] props = [simProp(pname, pval) | attribute(attributename(pname), pval)  <- attributes]
+				+ [simProp(pname, pval) | realproperty(pname, pval)  <- attributes];
 				elems += state(name, props);	
 			} else {
 				sensors += sensor(name, valuelist([]));

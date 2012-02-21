@@ -14,14 +14,17 @@ public SimContext createContext(Structure ast) {
 	list[ManualValue] manuals = [];
 	
 	visit(ast) {
-		case element(modifiers, etype, name, attributes) : {
-			
-			list[SimProperty] props = [simProp(pname, pval) | attribute(pname, pval)  <- attributes];
-			ElementState newState = state(name, props);
-			
-			elems += newState;
+		case element(modifiers, elementname(etype), name, attributes) : {
+		
+			if (etype != "Sensor") {
+				list[SimProperty] props = [simProp(pname, pval) | attribute(attributename(pname), pval)  <- attributes];
+				elems += state(name, props);	
+			} else {
+				sensors += sensor(name, valuelist([]));
+			}
 		}
 	}
+	
 	
 	return simContext(elems, sensors, manuals);
 }

@@ -21,17 +21,15 @@ public void visualizeStructure(Tree tree) = render(buildStructureGraph(propagate
 
 public void visualizeStructureWithSidebar(Tree tree) {
 
+	Structure ast = propagate(implode(tree));
 	Figure sidebar = buildSidebar("", "", []);
 	
 	StructureMouseHandler mouseHandler = bool(int butnr, str \type, str name, list[value] attributes) {
-	
 		if (butnr == 1)
 			sidebar = buildSidebar(\type, name, attributes);
 			
 		return true;
 	};
-	
-	ast = propagate(implode(tree));
 	
 	render(hcat([
 		buildInteractiveStructureGraph(ast, mouseHandler),
@@ -39,7 +37,10 @@ public void visualizeStructureWithSidebar(Tree tree) {
 	]));
 }
 
+public void visualizeStructure(Tree tree) = render(hcat([buildStructureGraph(propagate(implode(tree))),computeFigure(Figure () { return sidebar; })]));
+
 public Figure buildSidebar(str etype, str name, list[Attribute] attributes) {
+
 	list[Attribute] editableAttribs = [];
 	if(EditableProps[etype]?) {
 		editableAttribs = [ A | A:attribute(attributename(str aname, _)) <- attributes, aname in EditableProps(etype) ];
@@ -55,14 +56,16 @@ public Figure buildSidebar(str etype, str name, list[Attribute] attributes) {
 					));
 }
 
-Figure buildField(attribute(attributename(str name), valuelist(list[Value] values))) {
-	
-	
+Figure buildField(attribute(attributename(str name), valuelist(list[Value] values))) {	
 	
 	return vcat([text(name, fontSize(14))
+				,buildEdit(name, values)
 			]);
 }
 
+Figure buildEdit(str name, [bool boolean]) {
+	return checkbox(name, void (bool state) { state = boolean; } );
+}
 	
 public Figure buildInteractiveStructureGraph(Structure ast, StructureMouseHandler mouseHandler) = buildGraph(ast, mouseHandler);
 public Figure buildStructureGraph(Structure ast) = buildGraph(ast, bool(int butnr, str \type, str name, list[value] attributes) { return false; });
@@ -256,7 +259,7 @@ Figure valveFigure(str N, list[Modifier] M, list[Attribute] attributes, Structur
 			text(N, fontSize(9)),
 			symbol
 		], gap(5)),
-		lineWidth(1),
+		lineWidth(0),
 		id(N),
 		onMouseDown(bool(int butnr, map[KeyModifier,bool] modifiers) {
 			return mouseHandler(butnr, "Valve", N, attributes);

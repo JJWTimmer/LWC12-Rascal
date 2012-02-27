@@ -83,15 +83,8 @@ public SimContext initSimContext(Structure sAst, Controller cAst)
 	);
 }
 
-public list[SimProperty] getSimContextProperties(SimContext simCtx, str element) {
-	list[ElementState] elements = simCtx.elements;
-	list[SimProperty] result = [];
-	
-	if(/state(element, _, props) := elements) {
-		result = props;
-	}
-	return result;
-}
+public list[SimProperty] getSimContextProperties(SimContext ctx, str element) 
+	= [ p | state(element, _, P:props) <- ctx.\data.elements, p <- P ];
 
 public SimBucket getSimContextBucket(str element, str property, SimContext ctx)
 {

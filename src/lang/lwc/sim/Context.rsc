@@ -73,6 +73,8 @@ public SimBucket getSimContextBucket(str element, str property, SimContext ctx)
 
 public value getSimContextBucketValue(str element, str property, SimContext ctx)
 {
+	println("SimContext: get bucket value (<element>.<property>)");
+	
 	switch (getSimContextBucket(element, property, ctx))
 	{
 		case simBucketBoolean(V): return V;

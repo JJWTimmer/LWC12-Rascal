@@ -2,11 +2,12 @@ module lang::lwc::sim::Simulator
 
 import lang::lwc::controller::Extern;
 import lang::lwc::controller::AST;
-import lang::lwc::sim::RunnableController;
-
 import lang::lwc::structure::Extern;
 import lang::lwc::structure::AST;
 import lang::lwc::structure::Visualizer;
+
+import lang::lwc::sim::RunnableController;
+import lang::lwc::sim::Context;
 
 import vis::Render;
 import vis::Figure;
@@ -31,7 +32,7 @@ public void simulate(loc baseName)
 	SimContext simCtx = createSimContext(structureAst);
 	
 	render(hcat([
-		box(buildRunnableControllerGraph(controllerAst), gap(10)),
+		box(buildRunnableControllerGraph(controllerAst, simCtx), gap(10)),
 		box(buildStructureGraph(structureAst), gap(10))
 	]));	
 }

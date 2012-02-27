@@ -25,7 +25,7 @@ DESIRED_WATER_TEMP = 60
 #  - bool: run
 #
 
-condition roomTempLow: TM6.value < DESIRED_RADIATOR_TEMP - RADIATOR_MARGIN
+condition roomTempLow: TM6 < DESIRED_RADIATOR_TEMP - RADIATOR_MARGIN
 condition roomTempHigh: TM6.value > DESIRED_RADIATOR_TEMP
 condition boilerTempLow: B1.watertemp < DESIRED_WATER_TEMP - WATER_MARGIN
 condition boilerTempHigh: B1.watertemp > DESIRED_WATER_TEMP

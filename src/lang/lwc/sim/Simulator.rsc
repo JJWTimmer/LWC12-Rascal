@@ -30,7 +30,7 @@ public void simulate(loc baseName)
 	Structure structureAst = loadStructure(structureName);
 	Controller controllerAst = loadController(controllerName);
 	
-	SimContext simCtx = createSimContext(structureAst);
+	SimContext simCtx = initSimContext(structureAst, controllerAst);
 	
 	updateSimContext = void(str element, str property, SimBucket val) {
 		simCtx = setSimContextBucket(element, property, val, simCtx);

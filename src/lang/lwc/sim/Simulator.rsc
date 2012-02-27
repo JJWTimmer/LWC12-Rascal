@@ -6,7 +6,9 @@ import lang::lwc::sim::Context;
 import lang::lwc::sim::RunnableController;
 import lang::lwc::structure::Extern;
 import lang::lwc::structure::AST;
-import lang::lwc::structure::Visualizer;
+
+import lang::lwc::sim::Sidebar;
+import lang::lwc::sim::Context;
 
 import vis::Render;
 import vis::Figure;
@@ -28,11 +30,14 @@ public void simulate(loc baseName)
 	Structure structureAst = loadStructure(structureName);
 	Controller controllerAst = loadController(controllerName);
 	
-	SimContext simCtx = createSimContext(structureAst);
+	SimContext simCtx = initSimContext(structureAst, controllerAst);
+	
+	updateSimContext = void(str element, str property, SimBucket val) {
+		simCtx = setSimContextBucket(element, property, val, simCtx);
+	}; 
 	
 	render(hcat([
 		box(buildRunnableControllerGraph(controllerAst, simCtx), gap(10)),
-		box(buildStructureGraph(structureAst), gap(10))
+		box(buildInteractiveStructureGraphWithSidebar(structureAst, simCtx.\data, updateSimContext), gap(10))
 	]));	
 }
-

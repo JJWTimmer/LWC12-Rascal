@@ -3,118 +3,114 @@ module lang::lwc::controller::runtime::Run
 import IO;
 import lang::lwc::controller::Load;
 import lang::lwc::controller::AST;
+import lang::lwc::controller::runtime::Data;
 import lang::lwc::sim::Context;
+
 import Relation;
 import Set;
 import IO;
 import util::Math;
 
-data Action = \continue() | transition(str state);
+data Action = actionNoop()
+			| actionTransition(str state)
+			| actionData(SimData \data);
 
-data RuntimeContext = createRuntimeContext(
-	bool initialized,
-	str state,
-	str transition,
-	
-	rel[str, value] declarations,
-	rel[str, Expression] conditions,
-	rel[str, list[Statement]] states 
-);
-
-public RuntimeContext initRuntimeContext(Controller ast, SimContext simCtx)
+public SimContext step(SimContext ctx)
 {
-	// Collect states
-	RuntimeContext runtimeCtx = createRuntimeContext(
-		false,
-		firstState(ast),
-		"",
-		
-		{},
-		{ <N, E> | /condition(N, E) <- ast },
-		{ <N, S> | /state(statename(str N), Statements S) <- ast }
-	);
-	
-	runtimeCtx.declarations = { <N, valueOf(P, runtimeCtx, simCtx)> | /declaration(N, P) <- ast };
-	runtimeCtx.initialized = true;
-	
-	return runtimeCtx;
-}
-
-public RuntimeContext step(RuntimeContext runtimeCtx, SimContext simCtx)
-{
-	if (inState(runtimeCtx)) {
-		runtimeCtx = evaluateState(runtimeCtx, simCtx);
+	if (inState(ctx.runtime)) {
+		ctx = evaluateState(ctx);
 	}
 	
-	else if (inTransition(runtimeCtx))
+	else if (inTransition(ctx.runtime))
 	{
-		runtimeCtx.state = runtimeCtx.transition;
-		runtimeCtx.transition = "";
+		ctx.runtime.state = ctx.runtime.transition;
+		ctx.runtime.transition = "";
 	}
 	
-	return runtimeCtx;
+	return ctx;
 }
 
-public bool inState(RuntimeContext ctx) = ctx.transition == "" && ctx.state != "";
-public bool inTransition(RuntimeContext ctx) = ctx.transition != "" && ctx.state != "";
-
-private str firstState(Controller ast) {
-	for (/state(statename(str N), Statements S) <- ast) return N;
-}
-
-private RuntimeContext evaluateState(RuntimeContext runtimeCtx, SimContext simCtx)
+private SimContext evaluateState(SimContext ctx)
 {
-	for (statement <- getOneFrom(runtimeCtx.states[runtimeCtx.state]))
+	for (statement <- getOneFrom(ctx.runtime.states[ctx.runtime.state]))
 	{
-		switch (evaluateStatement(statement, runtimeCtx, simCtx))
+		switch (evaluateStatement(statement, ctx))
 		{
-			case transition(str T): {
-				iprintln("We\'re going to: <T>");
-				runtimeCtx.transition = T; 
-				return runtimeCtx;
+			case actionTransition(str T): {
+				ctx.runtime.transition = T; 
+				return ctx;
 			}
 			
-			case \continue():
+			case actionData(D):
+				ctx.\data = D;
+				
+			case actionNoop(): ;
 				// do nothing
-				println("Do nothing");
+				
 				
 			default: throw "Unsupported action!";
 		}
 	}
 	
-	return runtimeCtx;
+	return ctx;
 }
 
-private Action evaluateStatement(Statement statement, RuntimeContext runtimeCtx, SimContext simCtx)
+private Action evaluateStatement(Statement statement, SimContext ctx)
 {
 	switch (statement)
 	{
 		case ifstatement(expr, stmt):
-			if (boolValueOf(evaluateExpression(expr, runtimeCtx, simCtx)))
-				return evaluateStatement(stmt, runtimeCtx, simCtx);	
+			if (boolValueOf(evaluateExpression(expr, ctx)))
+				return evaluateStatement(stmt, ctx);	
 		
 		case goto(statename(str T)):
-			return transition(T);
+			return actionTransition(T);
 		
 		case assign(Assignable left, Value right): {
-			println("ASSIGN");
+			return assignStatement(left, right, ctx);
 		}
 		
 		default: throw "Unsupported AST node <statement>";
 	}
 	
-	return \continue();
+	return actionNoop();
 }
 
-private value evaluateExpression(Expression expr, RuntimeContext runtimeCtx, SimContext simCtx)
+private Action assignStatement(left, right, ctx)
 {
-	eval = value(V) { return evaluateExpression(V, runtimeCtx, simCtx); };
+	str elementName= "";
+	str propName = "";
+	
+	
+	if (/property(str E, str P) := left)
+	{
+		elementName = E;
+		propName = P; 
+	}
+	
+	value v;
+	
+	if (expression(E) := right)
+		v = evaluateExpression(E, ctx);
+	else if (connections(L) := right)
+		v = L;
+	else
+		throw "Unsupported right handside for assignment: <right>";
+	
+	ctx = setSimContextBucketValue(elementName, propName, v, ctx);
+
+	return actionData(ctx.\data);
+}
+
+private value evaluateExpression(Expression expr, SimContext ctx)
+{
+	eval = value(V) { return evaluateExpression(V, ctx); };
 	boolEval = bool(V) { return boolValueOf(eval(V)); };
 	numEval = num(V) { return numValueOf(eval(V)); };
 	
 	switch (expr)
 	{
-		case expvalue(Primary p): return boolValueOf(p, runtimeCtx, simCtx);
+		case expvalue(Primary p): return valueOf(p, ctx);
 		
 		case \or(lhs, rhs): 	return boolEval(lhs) || boolEval(rhs);
 		case \and(lhs, rhs): 	return boolEval(lhs) && boolEval(rhs);
@@ -137,47 +133,43 @@ private value evaluateExpression(Expression expr, RuntimeContext runtimeCtx, Sim
 	}
 }
 
-public value valueOf(Primary p, RuntimeContext runtimeCtx, SimContext simCtx)
+public value valueOf(Primary p, SimContext ctx)
 {
 	switch (p)
 	{
 		case integer(int I): 
 			return I;
-		
+			
+		case boolean(\true()):
+			return true;
+			
 		case rhsvariable(variable(str N)): 
-			return lookup(N, runtimeCtx, simCtx);
+			return lookup(N, ctx);
 		
 		case rhsproperty(property(str element, str attribute)):
-		{
-			println("ControllerRuntime: valueof(rhsproperty(property(<element>, <attribute>)))");
-			
-			return getSimContextBucketValue(element, attribute, simCtx);
-		}
+			return getSimContextBucketValue(element, attribute, ctx);
 			
 		default: throw "Unsupported type: <p>";
 	}
 }
 
-public value lookup(str symbol, RuntimeContext runtimeCtx, SimContext simCtx)
+public value lookup(str symbol, SimContext ctx)
 {
 	// Is the give symbol a condition?
-	if (symbol in domain(runtimeCtx.conditions))
+	if (symbol in domain(ctx.runtime.conditions))
 	{
-		Expression E = getOneFrom(runtimeCtx.conditions[symbol]);
-		value V = evaluateExpression(E, runtimeCtx, simCtx);
+		Expression E = getOneFrom(ctx.runtime.conditions[symbol]);
+		value V = evaluateExpression(E, ctx);
 		
 		println("Condition <symbol> = <V>");
 		
 		return V;
 	}
 	
-	if (symbol in domain(runtimeCtx.declarations))
-		return getOneFrom(runtimeCtx.declarations[symbol]);
-	
-	throw "Symbol not found <symbol>";
+	return getSimContextBucketValue(symbol, ctx);
 }
 
-public bool boolValueOf(Primary p, RuntimeContext runtimeCtx, SimContext simCtx) = boolValueOf(valueOf(p, runtimeCtx, simCtx));
+public bool boolValueOf(Primary p, SimContext ctx) = boolValueOf(valueOf(p, ctx));
 
 public bool boolValueOf(value v) 
 {
@@ -193,7 +185,9 @@ public num numValueOf(value v)
 {
 	switch (v)
 	{
+		case num V:_: return V;
 		case bool V:_: return V ? 1 : 0;
+		
 		default: throw "Could not convert to numeric <v>";
 	}
 }

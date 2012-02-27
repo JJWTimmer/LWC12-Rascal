@@ -32,8 +32,12 @@ public void simulate(loc baseName)
 	
 	SimContext simCtx = createSimContext(structureAst);
 	
+	updateSimContext = void(str element, str property, SimBucket val) {
+		simCtx = setSimContextBucket(element, property, val, simCtx);
+	}; 
+	
 	render(hcat([
 		box(buildRunnableControllerGraph(controllerAst), gap(10)),
-		box(buildInteractiveStructureGraphWithSidebar(structureAst), gap(10))
+		box(buildInteractiveStructureGraphWithSidebar(structureAst, updateSimContext), gap(10))
 	]));	
 }

@@ -12,9 +12,9 @@ import vis::Figure;
 import vis::Render;
 import vis::KeySym;
 
-alias StructureMouseHandler = bool(int butnr, str \type, str name, list[value] attributes);
+alias StructureMouseHandler = bool(int butnr, str \type, str name);
 
-public Figure buildInteractiveStructureGraphWithSidebar(Structure ast) {
+public Figure buildInteractiveStructureGraphWithSidebar(Structure ast, void(str, str, SimBucket) updateSimContext) {
 	Figure sidebar = buildSidebar("", "", updateSimContext);
 	SimContext simCtx; //maar hoe krijg je de geüpdated versie terug in Simulator.rsc?
 	
@@ -25,19 +25,15 @@ public Figure buildInteractiveStructureGraphWithSidebar(Structure ast) {
 		return true;
 	};
 	
-	updateSimContext = void(str element, str property, SimBucket val) {
-		setSimContextBucket(element, property, val, simCtx);
-	}; 
-	
 	return hcat([
 		buildInteractiveStructureGraph(ast, mouseHandler),
 		computeFigure(Figure () { return sidebar; })
 	]);
 }
 
-public void visualizeStructureWithSidebar(Structure ast) = render(buildInteractiveStructureWithSidebar(ast));
+public void visualizeStructureWithSidebar(Structure ast, void(str, str, SimBucket) updateSimContext) = render(buildInteractiveStructureWithSidebar(ast, updateSimContext));
 
-public Figure buildSidebar(str etype, str name, void() updateSimContext) {
+public Figure buildSidebar(str etype, str name, void(str, str, SimBucket) updateSimContext) {
 	/*
 	list[Attribute] editableAttribs = [];
 	if(EditableProps[etype]?) {
@@ -54,18 +50,18 @@ public Figure buildSidebar(str etype, str name, void() updateSimContext) {
 					));
 }
 
-Figure buildField(attribute(attributename(str name), valuelist(list[Value] values)), void() updateSimContext) {	
+Figure buildField(attribute(attributename(str name), valuelist(list[Value] values)), void(str, str, SimBucket) updateSimContext) {	
 	
 	return vcat([text(name, fontSize(14))
 				,buildEdit(name, values, updateSimContext)
 			]);
 }
 
-Figure buildEdit(str name, [bool boolean, R*], void() updateSimContext) {
+Figure buildEdit(str name, [bool boolean, R*], void(str, str, SimBucket) updateSimContext) {
 	return checkbox(name, void (bool state) { updateSimContext(); } );
 }
 
-Figure buildEdit(str name, [metric(Value size, _), R*], void() updateSimContext) {
+Figure buildEdit(str name, [metric(Value size, _), R*], void(str, str, SimBucket) updateSimContext) {
 	int current; //get from SimContext
 	return scaleSlider(int() { return 0; }
 					  ,int() { return 100; }
@@ -73,6 +69,6 @@ Figure buildEdit(str name, [metric(Value size, _), R*], void() updateSimContext)
 					  ,void(int i) { current = i; updateSimContext(); });
 }
 
-Figure buildEdit(str name, [position(str p1), position(str p2)], void() updateSimContext) {
+Figure buildEdit(str name, [position(str p1), position(str p2)], void(str, str, SimBucket) updateSimContext) {
 	;
 }

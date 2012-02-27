@@ -8,6 +8,7 @@ import lang::lwc::sim::Sidebar;
 
 import vis::Figure;
 import vis::Render;
+import vis::KeySym;
 
 import List;
 import IO;

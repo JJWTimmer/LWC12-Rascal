@@ -14,13 +14,12 @@ import vis::KeySym;
 
 alias StructureMouseHandler = bool(int butnr, str \type, str name);
 
-public Figure buildInteractiveStructureGraphWithSidebar(Structure ast, void(str, str, SimBucket) updateSimContext) {
-	Figure sidebar = buildSidebar("", "", updateSimContext);
-	SimContext simCtx; //maar hoe krijg je de geüpdated versie terug in Simulator.rsc?
+public Figure buildInteractiveStructureGraphWithSidebar(Structure ast, SimContext simCtx, void(str, str, SimBucket) updateSimContext) {
+	Figure sidebar = buildSidebar("", "", simCtx, updateSimContext);
 	
 	StructureMouseHandler mouseHandler = bool(int butnr, str \type, str name) {
 		if (butnr == 1)
-			sidebar = buildSidebar(\type, name, updateSimContext);
+			sidebar = buildSidebar(\type, name, simCtx, updateSimContext);
 			
 		return true;
 	};
@@ -33,42 +32,43 @@ public Figure buildInteractiveStructureGraphWithSidebar(Structure ast, void(str,
 
 public void visualizeStructureWithSidebar(Structure ast, void(str, str, SimBucket) updateSimContext) = render(buildInteractiveStructureWithSidebar(ast, updateSimContext));
 
-public Figure buildSidebar(str etype, str name, void(str, str, SimBucket) updateSimContext) {
-	/*
-	list[Attribute] editableAttribs = [];
+public Figure buildSidebar(str etype, str name, SimContext simCtx, void(str, str, SimBucket) updateSimContext) {
+
+	list[SimProperty] simProps = getSimContextProperties(simCtx, name);
+	list[SimProperty] editableSimProps = [];
 	if(EditableProps[etype]?) {
-		editableAttribs = [ A | A:attribute(attributename(str aname, _)) <- attributes, aname in EditableProps(etype) ];
+		editableSimProps = [ A | A:simProp(str s, _) <- simProps, s in EditableProps[etype] ];
 	}
-	*/
-	list[Figure] attribFields = [];/*
-	for(attribute <- editableAttribs) {
-		attribFields += buildField(attribute, updateSimContext);
-	}*/
+	
+	list[Figure] fields = [];
+	for(simProp <- editableSimProps) {
+		fields += buildField(name, simProp, updateSimContext);
+	}
 
 	return box(vcat(text(name, fontSize(20))
-					+ attribFields					
+					+ fields					
 					));
 }
 
-Figure buildField(attribute(attributename(str name), valuelist(list[Value] values)), void(str, str, SimBucket) updateSimContext) {	
+Figure buildField(str element, simProp(str name, SimBucket bucket), void(str, str, SimBucket) updateSimContext) {	
 	
 	return vcat([text(name, fontSize(14))
-				,buildEdit(name, values, updateSimContext)
+				,buildEdit(element, name, bucket, updateSimContext)
 			]);
 }
 
-Figure buildEdit(str name, [bool boolean, R*], void(str, str, SimBucket) updateSimContext) {
-	return checkbox(name, void (bool state) { updateSimContext(); } );
+Figure buildEdit(str element, str name, B:simBucketBoolean(bool b), void(str, str, SimBucket) updateSimContext) {
+	return checkbox(name, void (bool state) { updateSimContext(element, name, createSimBucket(state)); } );
 }
 
-Figure buildEdit(str name, [metric(Value size, _), R*], void(str, str, SimBucket) updateSimContext) {
-	int current; //get from SimContext
+Figure buildEdit(str element, str name, B:simBucketNumber(int n), void(str, str, SimBucket) updateSimContext) {
+	int current = n;
 	return scaleSlider(int() { return 0; }
 					  ,int() { return 100; }
 					  ,int() { return current; }
-					  ,void(int i) { current = i; updateSimContext(); });
+					  ,void(int input) { current = input; updateSimContext(element, name, createSimBucket(current)); });
 }
 
-Figure buildEdit(str name, [position(str p1), position(str p2)], void(str, str, SimBucket) updateSimContext) {
+Figure buildEdit(str element, str name, B:simBucketList(list[SimBucket] l), void(str, str, SimBucket) updateSimContext) {
 	;
 }

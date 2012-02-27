@@ -46,9 +46,9 @@ str getValueType(listValue(_)) {
 	return "list";
 }
 
-list[str] getEditableProps(str elementName) {
+set[str] getEditableProps(str elementName) {
 	ElementDefinition elemDef = Elements[elementName];
-	list[str] result = [];
+	set[str] result = {};
 	
 	visit(elemDef) {
 		case requiredAttrib(str name, _, true) : result += name;
@@ -108,4 +108,4 @@ public map[str, list[ConnectionPointDefinition]] DefinedConnectionPoints = ( key
 public map[str, list[SensorPointDefinition]] DefinedSensorPoints = ( key : Elements[key].sensorpoints | key <- Elements);
 public map[str, map[str,str]] ElementProperties = ( key : getProperties(key) | key <- Elements );
 public map[str, list[set[str]]] ElementModifiers = ( key : Elements[key].modifiers | key <- Elements );
-public map[str, list[str]] EditableProps = ( key : getEditableProps(key) | key <- Elements );
+public map[str, set[str]] EditableProps = ( key : getEditableProps(key) | key <- Elements );

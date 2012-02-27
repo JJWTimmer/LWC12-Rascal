@@ -11,7 +11,9 @@ import Set;
 import IO;
 import util::Math;
 
-data Action = \continue() | transition(str state);
+data Action = actionNoop()
+			| actionTransition(str state)
+			| actionData(SimData \data);
 
 public SimContext step(SimContext ctx)
 {
@@ -34,12 +36,15 @@ private SimContext evaluateState(SimContext ctx)
 	{
 		switch (evaluateStatement(statement, ctx))
 		{
-			case transition(str T): {
+			case actionTransition(str T): {
 				ctx.runtime.transition = T; 
 				return ctx;
 			}
 			
-			case \continue(): ;
+			case actionData(D):
+				ctx.\data = D;
+				
+			case actionNoop(): ;
 				// do nothing
 				
 				
@@ -59,21 +64,42 @@ private Action evaluateStatement(Statement statement, SimContext ctx)
 				return evaluateStatement(stmt, ctx);	
 		
 		case goto(statename(str T)):
-			return transition(T);
+			return actionTransition(T);
 		
 		case assign(Assignable left, Value right): {
-			assignStatement(left, right, ctx);
+			return assignStatement(left, right, ctx);
 		}
 		
 		default: throw "Unsupported AST node <statement>";
 	}
 	
-	return \continue();
+	return actionNoop();
 }
 
-private void assignStatement(left, right, ctx)
+private Action assignStatement(left, right, ctx)
 {
-	println("Do assignment <left>");
+	str elementName= "";
+	str propName = "";
+	
+	
+	if (/property(str E, str P) := left)
+	{
+		elementName = E;
+		propName = P; 
+	}
+	
+	value v;
+	
+	if (expression(E) := right)
+		v = evaluateExpression(E, ctx);
+	else if (connections(L) := right)
+		v = L;
+	else
+		throw "Unsupported right handside for assignment: <right>";
+	
+	ctx = setSimContextBucketValue(elementName, propName, v, ctx);
+
+	return actionData(ctx.\data);
 }
 
 private value evaluateExpression(Expression expr, SimContext ctx)
@@ -113,7 +139,10 @@ public value valueOf(Primary p, SimContext ctx)
 	{
 		case integer(int I): 
 			return I;
-		
+			
+		case boolean(\true()):
+			return true;
+			
 		case rhsvariable(variable(str N)): 
 			return lookup(N, ctx);
 		

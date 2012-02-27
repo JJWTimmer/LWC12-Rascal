@@ -136,17 +136,56 @@ public list[value] getSimContextBucketList(SimBucket bucket)
 {
 	switch (bucket)
 	{
-		case simBucketList(V): return [getSimValue(x) | x <- V];
+		case simBucketList(V): return [bucketToValue(x) | x <- V];
 		default: throw "Bucket not a list";
 	}
 }
 
-// This is a prototype only, implementation follows
-public SimContext setSimContextBucket(str element, str property, SimBucket val, SimContext ctx) = ctx;
+public SimContext setSimContextBucket(str element, str property, SimBucket val, SimContext ctx) {
+
+	println("Setting <element>.<property> to <val>");
 	
+	bool done = false;
+	
+	\data = top-down-break visit (ctx.\data)
+	{
+		case S:state(E, _, [head*, P:simProp(property, _), tail*]):
+		{
+			P.bucket = val;
+			S.props = head + P + tail;
+			
+			done = true;
+			insert S;
+		}		
+	}
+	
+	if (! done)
+		throw "Could not set value";
+		
+	ctx.\data = \data;
+	
+	return ctx;
+}
+
+public SimContext setSimContextBucketValue(str element, str property, value val, SimContext ctx) =
+	setSimContextBucket(element, property, valueToBucket(val), ctx);
+	 
 //
 // Private functions
 //
+
+private SimBucket valueToBucket(value v)
+{
+	switch (v)
+	{
+		case bool V:_: 		return simBucketBoolean(V);
+		case num V:_: 		return simBucketNumber(V);
+		case str V:_:		return simBucketVariable(V);
+		case list[value] V: return simBucketList([ valueToBucket(e) | e <- V ]);
+		
+		default: throw "Could not convert value <v> to bucket";
+	} 
+}
 
 private value bucketToValue(SimBucket bucket) 
 {
@@ -155,7 +194,7 @@ private value bucketToValue(SimBucket bucket)
 		case simBucketBoolean(V): 	return V;
 		case simBucketNumber(V): 	return V;
 		case simBucketVariable(V): 	return V;
-		case simBucketList(V): 		throw "For the bucketlist use getSimList";
+		case simBucketList(V): 		throw "For the bucketlist use getSimContextBucketList()";
 		case simBucketNothing(): 	return nothing();
 		
 		default: throw "Unknown bucket type";

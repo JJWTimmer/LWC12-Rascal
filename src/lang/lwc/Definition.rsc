@@ -18,7 +18,7 @@ public alias ModifierSetDefinition = set[ModifierDefinition];
 public data ElementDefinition = element(
 	list[ModifierSetDefinition] modifiers,	//of every set, only one keyword is allowed
 	list[AttributeDefinition] attributes, 
-	list[ConnectionPointDefinition] connectionpoints, 
+	list[set[ConnectionPointDefinition]] connectionpoints, 
 	list[SensorPointDefinition] sensorpoints
 );
 
@@ -58,10 +58,14 @@ public map[str, ElementDefinition] Elements = (
 			optionalAttrib("watertemp", [TemperatureUnits], numValue(80, ["Celsius"]), true)
 		],
 		[	//connectionpoints
-			liquidConnection("centralheatingin"),
-			liquidConnection("centralheatingout"),
-			liquidConnection("hotwaterout"),
-			liquidConnection("coldwaterin")
+			{
+				liquidConnection("centralheatingin"),
+				liquidConnection("centralheatingout")
+			},
+			{
+				liquidConnection("hotwaterout"),
+				liquidConnection("coldwaterin")
+			}
 		],
 		[	//sensorpoints
 			selfPoint([TemperatureUnits])
@@ -77,9 +81,13 @@ public map[str, ElementDefinition] Elements = (
 			hiddenProperty("power", [PowerUnits], numValue(2400, ["watt"]))
 		],
 		[	//connectionpoints
-			gasConnection("gasin"),
-			liquidConnection("hotwaterout"),
-			liquidConnection("coldwaterin")
+			{
+				gasConnection("gasin")
+			},
+			{
+				liquidConnection("hotwaterout"),
+				liquidConnection("coldwaterin")
+			}
 		],
 		[	//sensorpoints
 			sensorPoint("ignitiondetect", [TemperatureUnits]),
@@ -94,7 +102,9 @@ public map[str, ElementDefinition] Elements = (
 		],
 		[],	//attributes
 		[	//connectionpoints
-			unknownConnection("[self]")
+			{
+				unknownConnection("[self]")
+			}
 		],
 		[]	//sensorpoints
 	),
@@ -106,7 +116,9 @@ public map[str, ElementDefinition] Elements = (
 			optionalAttrib("connections", [], listValue(["in", "out"]), false)
 		],
 		[	//connectionpoints
-			attribConnections()
+			{
+				attribConnections()
+			}
 		],
 		[]	//sensorpoints
 	),
@@ -135,9 +147,13 @@ public map[str, ElementDefinition] Elements = (
 			hiddenProperty("enabled", [], boolValue(false))
 		],
 		[	//connectionpoints
-			liquidConnection("in"),
-			liquidConnection("out"),
-			liquidConnectionModifier("suck", "Venturi")
+			{
+				liquidConnection("in"),
+				liquidConnection("out")
+			},
+			{
+				liquidConnectionModifier("suck", "Venturi")
+			}
 		],
 		[	//sensorpoints
 			selfPoint([SpeedUnits])
@@ -152,8 +168,10 @@ public map[str, ElementDefinition] Elements = (
 			requiredAttrib("room", [], false)
 		],
 		[	//connectionpoints
-			liquidConnection("in"),
-			liquidConnection("out")
+			{
+				liquidConnection("in"),
+				liquidConnection("out")
+			}
 		],
 		[	//sensorpoints
 			selfPoint([TemperatureUnits])
@@ -189,7 +207,9 @@ public map[str, ElementDefinition] Elements = (
 			requiredAttrib("flowrate", [VolumeUnits, TimeUnits], true)
 		],
 		[	//connectionpoints
-			unknownConnection("[self]")
+			{
+				unknownConnection("[self]")
+			}
 		],
 		[]	//sensorpoints
 	),
@@ -202,13 +222,15 @@ public map[str, ElementDefinition] Elements = (
 			{"ThreeWay"}				//default: TwoWay
 		],
 		[	//attributes
-			optionalAttrib("position", [], listValue([":closed"]), true),
+			optionalAttrib("position", [], listValue(["a", "b"]), true),
 			optionalModifierAttrib("flowrate", "Pin", [VolumeUnits, TimeUnits], numValue(1, ["m3", "hour"]), true) // only for pin-valve
 		],
 		[	//connectionpoints
-			unknownConnection("a"),
-			unknownConnection("b"),
-			unknownConnectionModifier("c", "ThreeWay")
+			{
+				unknownConnection("a"),
+				unknownConnection("b"),
+				unknownConnectionModifier("c", "ThreeWay")
+			}
 		],
 		[]	//sensorpoints
 	),

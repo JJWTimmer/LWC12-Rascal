@@ -3,6 +3,8 @@ module lang::lwc::Constants
 
 import lang::lwc::Definition;
 
+import Set;
+
 map[str,str] getProperties(str elementName) {
 	map[str,str] result = ();
 	ElementDefinition elemDef = Elements[elementName];
@@ -104,7 +106,10 @@ public map[str, list[AttributeDefinition]] HiddenProps     = {
 	pmap;
 };
 
-public map[str, list[ConnectionPointDefinition]] DefinedConnectionPoints = ( key : Elements[key].connectionpoints | key <- Elements);
+public map[str, list[ConnectionPointDefinition]] DefinedConnectionPoints = ( key : {
+		list[ConnectionPointDefinition] el = []; //workaround for list[void]
+		(el | it + toList(s) | s <- Elements[key].connectionpoints);
+	} | key <- Elements);
 public map[str, list[SensorPointDefinition]] DefinedSensorPoints = ( key : Elements[key].sensorpoints | key <- Elements);
 public map[str, map[str,str]] ElementProperties = ( key : getProperties(key) | key <- Elements );
 public map[str, list[set[str]]] ElementModifiers = ( key : Elements[key].modifiers | key <- Elements );

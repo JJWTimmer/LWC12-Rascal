@@ -74,7 +74,7 @@ public list[value] getSimContextBucketList(SimBucket bucket)
 {
 	switch (bucket)
 	{
-		case simBucketList(V): return [getSimValue(x) | x <- V];
+		case simBucketList(V): return [bucketToValue(x) | x <- V];
 		default: throw "Bucket not a list";
 	}
 }

@@ -25,7 +25,7 @@ public SimContext createSimContext(Structure ast)
 		case element(modifiers, elementname(\type), name, attributes) : {
 			if (\type != "Sensor") 
 			{
-				list[str] ignoredAttributes = ["sensorpoints", "connections"];
+				list[str] ignoredAttributes = ["sensorpoints", "connections", "position"];
 				
 				props = [ simProp(N, createSimBucket(V)) | attribute(attributename(N), valuelist([V, _*])) <- attributes, N notin ignoredAttributes ]
 					  + [ simProp(N, createSimBucket(V)) | realproperty(N, valuelist([V, _*]))  <- attributes]
@@ -55,8 +55,8 @@ SimBucket createSimBucket(\false()) = simBucketBoolean(false);
 SimBucket createSimBucket(\true()) = simBucketBoolean(true);
 SimBucket createSimBucket(metric(integer(N), _)) = simBucketNumber(N);
 SimBucket createSimBucket(variable(str N)) = simBucketVariable(N);
-SimBucket createSimBucket(list[Value] L) = simBucketList([ createSimBucket(v) | v <- L]);
 SimBucket createSimBucket([]) = simBucketNothing();
+SimBucket createSimBucket(list[Value] L) = simBucketList([ createSimBucket(v) | v <- L]);
 
 	
 public SimBucket getSimContextBucket(str element, str property, SimContext ctx)
@@ -72,21 +72,32 @@ public value getSimContextBucketValue(str element, str property, SimContext ctx)
 {
 	val = getSimContextBucket(element, property, ctx);
 	
-	value getValue(SimBucket bucket) 
-	{
-		switch (bucket)
-		{
-			case simBucketBoolean(V): return V;
-			case simBucketNumber(V): return V;
-			case simBucketVariable(V): return V;
-			case simBucketList(V): return [getValue(x) | x <- V];
-			case simBucketNothing(): return nothing();
-			
-			default: throw "Unknown bucket type";
-		}
-	}
 	
-	return getValue(val);
+	return getSimValue(val);
+}
+
+public value getSimValue(SimBucket bucket) 
+{
+	switch (bucket)
+	{
+		case simBucketBoolean(V): return V;
+		case simBucketNumber(V): return V;
+		case simBucketVariable(V): return V;
+		case simBucketList(V): throw "For the bucketlist use getSimList";
+		case simBucketNothing(): return nothing();
+		
+		default: throw "Unknown bucket type";
+	}
+}
+
+public list[value] getSimList(SimBucket bucket) 
+{
+	switch (bucket)
+	{
+		case simBucketList(V): return [getSimValue(x) | x <- V];
+		
+		default: throw "Bucket not a list";
+	}
 }
 
 // This is a prototyp only, implementation follows

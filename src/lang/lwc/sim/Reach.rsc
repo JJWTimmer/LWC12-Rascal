@@ -45,8 +45,8 @@ public bool isReachable(Graph[ElementNode] graph, SimContext context, str fromNa
 	fromNode = elementNode(fromName, fromProperty);
 	toNode = elementNode(toName, toProperty);
 	
-	for (elem <- context.elems) {
-		if (elem.etype == "Valve") {
+	for (elem <- context.elements) {
+		if (elem.\type == "Valve") {
 			if ([H*,simProp("position", val),T*] := elem.props) {
 				if (size(val.values) == 2) {
 					a = elementNode(elem.name, val.values[0] );

@@ -16,7 +16,6 @@ public data State =
 	| Done()
 ;
 
-
 public Figure buildStatefulControllerGraph(Controller ast, State() runState)
 {
 	// Keep track of the current state

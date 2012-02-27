@@ -2,8 +2,8 @@ module lang::lwc::sim::Simulator
 
 import lang::lwc::controller::Extern;
 import lang::lwc::controller::AST;
+import lang::lwc::sim::Context;
 import lang::lwc::sim::RunnableController;
-
 import lang::lwc::structure::Extern;
 import lang::lwc::structure::AST;
 
@@ -37,7 +37,7 @@ public void simulate(loc baseName)
 	}; 
 	
 	render(hcat([
-		box(buildRunnableControllerGraph(controllerAst), gap(10)),
+		box(buildRunnableControllerGraph(controllerAst, simCtx), gap(10)),
 		box(buildInteractiveStructureGraphWithSidebar(structureAst, updateSimContext), gap(10))
 	]));	
 }

@@ -4,6 +4,7 @@ import lang::lwc::controller::Visualizer;
 import lang::lwc::controller::Extern;
 import lang::lwc::controller::AST;
 import lang::lwc::controller::runtime::Run;
+import lang::lwc::sim::Context;
 
 import vis::Figure;
 import vis::Render;
@@ -20,21 +21,22 @@ State contextToGraphState(RuntimeContext ctx) {
 		return Done();
 }
 
-public Figure buildRunnableControllerGraph(Controller ast)
+public Figure buildRunnableControllerGraph(Controller ast, SimContext simCtx)
 {
-	RuntimeContext ctx = initRuntimeContext(ast);
-	State graphState = contextToGraphState(ctx);
+	RuntimeContext runtimeCtx = initRuntimeContext(ast, simCtx);
+	State graphState = contextToGraphState(runtimeCtx);
 	
 	bool automatic = false;
 	int interval = 300;
 	
+	// Visualization of the graph
 	Figure graph = buildStatefulControllerGraph(ast, State() { return graphState; });
 	
 	TimerAction timeAction(TimerInfo t) = (stopped(_) := t && automatic) ? restart(interval) : noChange();
 	
 	void stepSimulation() {
-		ctx = step(ctx);
-		graphState = contextToGraphState(ctx);
+		runtimeCtx = step(runtimeCtx, simCtx);
+		graphState = contextToGraphState(runtimeCtx);
 	};
 	
 	void() executeTimer = stepSimulation;

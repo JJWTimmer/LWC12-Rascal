@@ -1,7 +1,7 @@
-MIN_GAS=50
-BURNER_RAMPUP = 5
+MIN_GAS 		= 50
+BURNER_RAMPUP 	= 5
 RADIATOR_MARGIN = 2
-WATER_MARGIN = 5
+WATER_MARGIN 	= 5
 
 # 
 # Controls in diagram
@@ -25,14 +25,14 @@ DESIRED_WATER_TEMP = 60
 #  - bool: run
 #
 
-condition roomTempLow: TM6 < DESIRED_RADIATOR_TEMP - RADIATOR_MARGIN
+condition roomTempLow: TM6.value < DESIRED_RADIATOR_TEMP - RADIATOR_MARGIN
 condition roomTempHigh: TM6.value > DESIRED_RADIATOR_TEMP
 condition boilerTempLow: B1.watertemp < DESIRED_WATER_TEMP - WATER_MARGIN
 condition boilerTempHigh: B1.watertemp > DESIRED_WATER_TEMP
 condition heatNeeded: roomTempLow or boilerTempLow
 
 state OFF: 
-	if heatNeeded:goto IGNITE
+	if heatNeeded: goto IGNITE
 
 state IGNITE:
 	if C1.ignite: goto DISPATCH

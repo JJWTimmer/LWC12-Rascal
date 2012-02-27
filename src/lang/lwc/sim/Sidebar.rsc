@@ -12,8 +12,6 @@ import vis::Figure;
 import vis::Render;
 import vis::KeySym;
 
-alias StructureMouseHandler = bool(int butnr, str \type, str name);
-
 public Figure buildInteractiveStructureGraphWithSidebar(Structure ast, void(str, str, SimBucket) updateSimContext) {
 	Figure sidebar = buildSidebar("", "", updateSimContext);
 	SimContext simCtx; //maar hoe krijg je de geüpdated versie terug in Simulator.rsc?

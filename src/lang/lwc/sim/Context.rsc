@@ -1,9 +1,19 @@
 module lang::lwc::sim::Context
 
 import lang::lwc::structure::AST;
-import IO;
+import lang::lwc::controller::AST;
+import lang::lwc::controller::runtime::Data;
 
-data SimContext = simContext(
+import IO;
+import util::Maybe;
+import String;
+
+public data SimContext = createSimContext(
+	SimData \data,
+	RuntimeContext runtime
+);
+
+data SimData = simData(
 	list[ElementState] elements, 
 	list[SensorValue] sensors, 
 	list[ManualValue] manuals
@@ -27,16 +37,19 @@ SimBucket createSimBucket(metric(integer(N), _)) 	= simBucketNumber(N);
 SimBucket createSimBucket(variable(str N)) 			= simBucketVariable(N);
 SimBucket createSimBucket([]) 						= simBucketNothing();
 SimBucket createSimBucket(list[Value] L) 			= simBucketList([ createSimBucket(v) | v <- L]);
-
-public SimContext createSimContext(Structure ast) 
+SimBucket createSimBucket(integer(N))				= simBucketNumber(N);
+ 
+public SimContext initSimContext(Structure sAst, Controller cAst) 
 {
 	list[ElementState] elements = [];
 	list[SensorValue] sensors = [];
 	list[ManualValue] manuals = [];
-	
-	visit(ast) {
+		
+	// Visit the structure AST
+	visit(sAst) {
 
-		case element(modifiers, elementname(\type), name, attributes) : {
+		case E:element(modifiers, elementname(\type), name, attributes) : {
+			
 			if (\type != "Sensor") 
 			{
 				list[str] ignoredAttributes = ["sensorpoints", "connections", "position"];
@@ -46,27 +59,63 @@ public SimContext createSimContext(Structure ast)
 					  + [ simProp(N, createSimBucket(V)) | attribute(attributename(N), valuelist(V)) <- attributes, N in ignoredAttributes ]
 				;
 				
-				elements += state(name, \type, props);	
-			} 
-			else 
+				elements += state(name, \type, props);
+			}
+			else
 			{
 				sensors += sensorVal(name, createSimBucket([]));
 			}
 		}
 	}
 	
-	return simContext(elements, sensors, manuals);
+	// Visit the controller AST
+	visit (cAst) {
+		case declaration(N, P):
+			manuals += manualVal(N, createSimBucket(P));
+	}
+	
+	return createSimContext(
+		simData(elements, sensors, manuals),
+		initRuntimeContext(cAst)
+	);
 }
 
 public SimBucket getSimContextBucket(str element, str property, SimContext ctx)
 {
-	if (/state(element, _, L) := ctx.elements)
+	// Check if there's a regular element with the given element name
+	if (/state(element, T, L) := ctx.\data.elements)
+	{	
+	
 		if (/simProp(property, V) := L)
 			return V;
+			
+		str message = "Property <element>.<property> not found in simulation context.\n"
+			+ "The following properties are available:\n"
+			+ " - " + intercalate("\n - ", [ P | /simProp(P, _) <- L]); 
+			
+		throw message;
+	}
 	
-	throw "Property not found in simulation context";
+	// Check if there's a sensor with the given element name
+	else if (/sensorVal(element, B) := ctx.\data.sensors)
+	{
+		return B;
+	}
+	
+	// Check if there's a manual value with the given element name
+	else if (/manualVal(element, B) := ctx.\data.manuals)
+	{
+		return B;
+	}
+	else
+	{
+		throw "Property <element>.<property> not found in simulation context. The element is not defined in the structure.";
+	}
 }
 
+public value getSimContextBucketValue(str element, SimContext ctx)
+	= getSimContextBucketValue(element, "", ctx);
+	
 public value getSimContextBucketValue(str element, str property, SimContext ctx)
 	= bucketToValue(getSimContextBucket(element, property, ctx));
 
@@ -90,11 +139,11 @@ private value bucketToValue(SimBucket bucket)
 {
 	switch (bucket)
 	{
-		case simBucketBoolean(V): return V;
-		case simBucketNumber(V): return V;
-		case simBucketVariable(V): return V;
-		case simBucketList(V): throw "For the bucketlist use getSimList";
-		case simBucketNothing(): return nothing();
+		case simBucketBoolean(V): 	return V;
+		case simBucketNumber(V): 	return V;
+		case simBucketVariable(V): 	return V;
+		case simBucketList(V): 		throw "For the bucketlist use getSimList";
+		case simBucketNothing(): 	return nothing();
 		
 		default: throw "Unknown bucket type";
 	}

@@ -3,6 +3,7 @@ module lang::lwc::sim::RunnableController
 import lang::lwc::controller::Visualizer;
 import lang::lwc::controller::Extern;
 import lang::lwc::controller::AST;
+import lang::lwc::controller::runtime::Data;
 import lang::lwc::controller::runtime::Run;
 import lang::lwc::sim::Context;
 
@@ -21,10 +22,9 @@ State contextToGraphState(RuntimeContext ctx) {
 		return Done();
 }
 
-public Figure buildRunnableControllerGraph(Controller ast, SimContext simCtx)
+public Figure buildRunnableControllerGraph(Controller ast, SimContext ctx)
 {
-	RuntimeContext runtimeCtx = initRuntimeContext(ast, simCtx);
-	State graphState = contextToGraphState(runtimeCtx);
+	State graphState = contextToGraphState(ctx.runtime);
 	
 	bool automatic = false;
 	int interval = 300;
@@ -35,8 +35,8 @@ public Figure buildRunnableControllerGraph(Controller ast, SimContext simCtx)
 	TimerAction timeAction(TimerInfo t) = (stopped(_) := t && automatic) ? restart(interval) : noChange();
 	
 	void stepSimulation() {
-		runtimeCtx = step(runtimeCtx, simCtx);
-		graphState = contextToGraphState(runtimeCtx);
+		ctx = step(ctx);
+		graphState = contextToGraphState(ctx.runtime);
 	};
 	
 	void() executeTimer = stepSimulation;

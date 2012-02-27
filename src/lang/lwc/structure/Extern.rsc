@@ -4,7 +4,7 @@ import lang::lwc::structure::Load;
 import lang::lwc::structure::AST;
 import lang::lwc::structure::Propagate;
 
-public Structure loadStructure(loc input) = propagateAliasses(load(input));
+public Structure loadStructure(loc input) = propagate(load(input));
 
 public map[str,str] structureElements(loc input) {
 	map[str,str] elementMap = ();

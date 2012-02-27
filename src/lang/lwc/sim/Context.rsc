@@ -37,6 +37,9 @@ SimBucket createSimBucket(metric(integer(N), _)) 	= simBucketNumber(N);
 SimBucket createSimBucket(variable(str N)) 			= simBucketVariable(N);
 SimBucket createSimBucket([]) 						= simBucketNothing();
 SimBucket createSimBucket(list[Value] L) 			= simBucketList([ createSimBucket(v) | v <- L]);
+
+SimBucket createSimBucket(bool B)					= simBucketBoolean(B);
+SimBucket createSimBucket(int N)					= simBucketNumber(N);
 SimBucket createSimBucket(integer(N))				= simBucketNumber(N);
  
 public SimContext initSimContext(Structure sAst, Controller cAst) 
@@ -78,6 +81,16 @@ public SimContext initSimContext(Structure sAst, Controller cAst)
 		simData(elements, sensors, manuals),
 		initRuntimeContext(cAst)
 	);
+}
+
+public list[SimProperty] getSimContextProperties(SimContext simCtx, str element) {
+	list[ElementState] elements = simCtx.elements;
+	list[SimProperty] result = [];
+	
+	if(/state(element, _, props) := elements) {
+		result = props;
+	}
+	return result;
 }
 
 public SimBucket getSimContextBucket(str element, str property, SimContext ctx)

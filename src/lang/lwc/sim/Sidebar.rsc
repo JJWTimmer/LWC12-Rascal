@@ -14,12 +14,12 @@ import vis::KeySym;
 
 alias StructureMouseHandler = bool(int butnr, str \type, str name);
 
-public Figure buildInteractiveStructureGraphWithSidebar(Structure ast, SimContext simCtx, void(str, str, SimBucket) updateSimContext) {
-	Figure sidebar = buildSidebar("", "", simCtx, updateSimContext);
+public Figure buildInteractiveStructureGraphWithSidebar(Structure ast, SimData simData, void(str, str, SimBucket) updateSimContext) {
+	Figure sidebar = buildSidebar("", "", simData, updateSimContext);
 	
 	StructureMouseHandler mouseHandler = bool(int butnr, str \type, str name) {
 		if (butnr == 1)
-			sidebar = buildSidebar(\type, name, simCtx, updateSimContext);
+			sidebar = buildSidebar(\type, name, simData, updateSimContext);
 			
 		return true;
 	};
@@ -32,9 +32,9 @@ public Figure buildInteractiveStructureGraphWithSidebar(Structure ast, SimContex
 
 public void visualizeStructureWithSidebar(Structure ast, void(str, str, SimBucket) updateSimContext) = render(buildInteractiveStructureWithSidebar(ast, updateSimContext));
 
-public Figure buildSidebar(str etype, str name, SimContext simCtx, void(str, str, SimBucket) updateSimContext) {
+public Figure buildSidebar(str etype, str name, SimData simData, void(str, str, SimBucket) updateSimContext) {
 
-	list[SimProperty] simProps = getSimContextProperties(simCtx, name);
+	list[SimProperty] simProps = getSimContextProperties(simData, name);
 	list[SimProperty] editableSimProps = [];
 	if(EditableProps[etype]?) {
 		editableSimProps = [ A | A:simProp(str s, _) <- simProps, s in EditableProps[etype] ];
@@ -70,5 +70,13 @@ Figure buildEdit(str element, str name, B:simBucketNumber(int n), void(str, str,
 }
 
 Figure buildEdit(str element, str name, B:simBucketList(list[SimBucket] l), void(str, str, SimBucket) updateSimContext) {
-	;
+	list[Figure] checkBoxes = [];
+	for(bucket <- l) {
+		checkBoxes += buildEdit(element, name, bucket, l, updateSimContext);
+	}
+	return hcat(checkBoxes);
+}
+
+Figure buildEdit(str element, str name, B:simBucketVariable(str s), list[SimBucket] l, void(str, str, SimBucket) updateSimContext) {
+	return ellipse(fillColor(arbColor()));
 }

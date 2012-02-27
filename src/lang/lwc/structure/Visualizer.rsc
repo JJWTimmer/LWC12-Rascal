@@ -15,8 +15,6 @@ import IO;
 import ParseTree;
 import util::Math;
 
-alias StructureMouseHandler = bool(int butnr, str \type, str name);
-
 public void visualizeStructure(Tree tree) = render(buildStructureGraph(propagate(implode(tree))));
 
 public Figure buildInteractiveStructureGraph(Structure ast, StructureMouseHandler mouseHandler) = buildGraph(ast, mouseHandler);

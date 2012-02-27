@@ -83,8 +83,8 @@ public SimContext initSimContext(Structure sAst, Controller cAst)
 	);
 }
 
-public list[SimProperty] getSimContextProperties(SimContext simCtx, str element) {
-	list[ElementState] elements = simCtx.elements;
+public list[SimProperty] getSimContextProperties(SimData simData, str element) {
+	list[ElementState] elements = simData.elements;
 	list[SimProperty] result = [];
 	
 	if(/state(element, _, props) := elements) {

@@ -78,7 +78,6 @@ public map[str, ElementDefinition] Elements = (
 		],
 		[	//connectionpoints
 			gasConnection("gasin"),
-			liquidConnection("centralheatingout"),
 			liquidConnection("hotwaterout"),
 			liquidConnection("coldwaterin")
 		],

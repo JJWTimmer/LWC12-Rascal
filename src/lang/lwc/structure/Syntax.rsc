@@ -24,9 +24,10 @@ keyword Reserved = "is"
 				 ;
 
 lexical Identifier = ([a-zA-Z_][a-zA-Z0-9_]* !>> [a-zA-Z0-9_]) \ Reserved;
-
 lexical Real = "-"? [0-9]+ "." [0-9]+;
 lexical Int = "-"? [0-9]+ !>> [.0-9];
+lexical Position = ":" Identifier;
+
 syntax Boolean = @category="Constant" \true: "true"
 			   | @category="Constant" \false: "false"
 			   ;
@@ -49,8 +50,6 @@ syntax Value = Assignable
 			 ;
 
 syntax ValueList = valuelist: {Value  ","}+;
-
-lexical Position = ":" Identifier;
 
 syntax Metric = metric: Num Unit;
 

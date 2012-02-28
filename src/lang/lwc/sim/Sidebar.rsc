@@ -73,10 +73,7 @@ public Figure buildSidebar(str etype, str name, SimData simData, UpdateContextVa
 	list[Figure] fields = [ buildField(name, simProp, updateContextValue) | simProp <- editableSimProps ];
 	
 	return box(
-		vcat(
-			[text(name, fontSize(20))] + fields,
-			std(left())		
-		)
+		vcat([text(name, fontSize(20))] + fields)
 	);
 }
 
@@ -89,12 +86,19 @@ Figure buildField(str element, simProp(str name, SimBucket bucket), UpdateContex
 Figure buildEdit(str element, str name, B:simBucketBoolean(bool b), UpdateContextValue updateContextValue) 
 	= checkbox(name, void (bool state) { updateContextValue(element, name, createSimBucket(state)); } );
 
-Figure buildEdit(str element, str name, B:simBucketNumber(int n), UpdateContextValue updateContextValue) {
+Figure buildEdit(str element, str name, B:simBucketNumber(int n), UpdateContextValue updateContextValue) 
+{
 	int current = n;
-	return scaleSlider(int() { return 0; }
-					  ,int() { return 100; }
-					  ,int() { return current; }
-					  ,void(int input) { current = input; updateContextValue(element, name, createSimBucket(current)); });
+	
+	return scaleSlider(
+		int() { return 0; },
+		int() { return 100; },
+		int() { return current; },
+		void(int input) { 
+		  	current = input; 
+		  	updateContextValue(element, name, createSimBucket(current)); 
+		}
+	);
 }
 
 Figure buildEdit(str element, str name, B:simBucketList(list[SimBucket] l), UpdateContextValue updateContextValue) {

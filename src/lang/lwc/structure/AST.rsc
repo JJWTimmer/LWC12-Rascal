@@ -27,7 +27,6 @@ data Value = integer(int val)
 		   | \false()
 		   | property(str var, PropName property)
 		   | variable(str var)
-		   | position(str var)
 		   ;
 		   
 data Expression = expvalue(Value v); // extension of the imported one

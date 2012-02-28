@@ -65,7 +65,7 @@ private Figure buildGraph(Structure ast, StructureMouseHandler mouseHandler, Sim
 		// Handle radiators
 		case E:element(M, elementname("Radiator"), N, _): {
 			edges += radiatorEdges(E, N);
-			nodes += radiatorFigure(N, mouseHandler);
+			nodes += radiatorFigure(N, mouseHandler, context);
 		}
 			
 		// Other elements
@@ -124,10 +124,20 @@ list[Edge] radiatorEdges(Statement E, str to) {
 	return [];
 }
 
-Figure radiatorFigure(str name, StructureMouseHandler mouseHandler)
+num getSimContextBucketValueNum(str element, str property, SimContext context)
 {
+	if (num v := getSimContextBucketValue(element, property, context)) return v;
+	throw "Could not convert to num";
+}
+
+Figure radiatorFigure(str name, StructureMouseHandler mouseHandler, SimContext context)
+{
+	num temperature = getSimContextBucketValueNum(name, "temperature", context);
+	list[Color] colors = colorSteps(color("blue"), color("red"), 100);
+	Color color = colors[max(0, min(99, temperature))];
+	
 	Figure symbol = overlay([
-			ellipse(size(40)),
+			ellipse(size(40), fillColor(color)),
 			overlay([point(0, 0.5), point(0.25, 0.3), point(0.75, 0.7), point(1, 0.5)], shapeConnected(true), size(40))
 		], 
 		id(name), 
@@ -331,8 +341,12 @@ private Figure valveSymbolThreeWay(list[str] position)
 Figure chuFigure(str name, StructureMouseHandler mouseHandler, SimContext context)
 {
 	value ignited = getSimContextBucketValue(name, "ignite", context);
+	num temperature = getSimContextBucketValueNum(name, "burnertemp", context);
 	
-	FProperty determineColor(bool active) = fillColor(active ? color("red") : color("white"));
+	list[Color] colors = colorSteps(color("blue"), color("red"), 100);
+	Color ignitedColor = colors[max(0, min(99, temperature))];
+	
+	FProperty determineColor(bool active) = fillColor(active ? ignitedColor : color("white"));
 	 
 	return box(
 		vcat([

@@ -71,7 +71,7 @@ public Figure buildInteractiveContextAwareStructureGraphWithSidebar(
 			bool() { return recomputeSidebar; }, 
 			Figure () { 
 				recomputeSidebar = false;
-				return buildSidebar(currentType, currentName, lookupSimContext().\data, updateContextValue);
+				return buildSidebar(ast, currentType, currentName, lookupSimContext().\data, updateContextValue);
 			}
 		)
 	]);
@@ -94,7 +94,7 @@ public Figure buildSidebar(Structure ast, str etype, str name, SimData simData, 
 Figure buildField(Structure ast, str element, simProp(str name, SimBucket bucket), UpdateContextValue updateContextValue)
 	= vcat([
 			text(name, fontSize(14)),
-			buildEdit(astelement, name, bucket, updateContextValue)
+			buildEdit(ast, element, name, bucket, updateContextValue)
 		], 
 		gap(5)
 	);
@@ -119,24 +119,36 @@ Figure buildEdit(Structure ast, str element, str name, B:simBucketNumber(int n),
 	);
 }
 
-Figure buildEdit(Structure ast, str element, str name, B:simBucketList(list[SimBucket] bucketList), UpdateContextValue updateContextValue) {
-	Figure buildListElem(str v) = checkbox(v, void (bool state) { updateContextValue(element, name, newBucketList(v, state)); });
+Figure buildEdit(Structure ast, str elementName, str name, B:simBucketList(list[SimBucket] bucketList), UpdateContextValue updateContextValue) {
+	Figure buildCheckBox(str v) = checkbox(v, void (bool state) { updateContextValue(elementName, name, newBucketList(v, state)); });
 	
 	SimBucket newBucketList(str s, bool b) = createSimBucket(
 			[ B | B:simBucketVariable(str var) <- bucketList, (var==s && b) || var!=s ]);
 	
-	list[str] possiblePositions = [];
-	if(/element(_,_, element, list[Attribute] attributes) := ast) {
-		possiblePositions = [ v
+	set[str] variables = {};
+	
+	if(/element(_,elementname("Valve"), elementName, list[Attribute] attributes) := ast) {
+		variables = { v
 				| attribute("connections", valuelist(list[Value] values)) <- attributes,
 				variable(str v) <- values
-				]; 
+				}; 
 	}
-	iprint(possiblePositions);
+	for(simBucketVariable(str b) <- B) {
+		variables += b;
+	}
 	
 	list[Figure] checkBoxes = [];
-	for(p <- possiblePositions) {
-		checkBoxes += buildListElem(p);
+	for(var <- variables) {
+		checkBoxes += buildCheckBox(var);
 	}
 	return hcat(checkBoxes);
+}
+
+/*
+Figure buildEdit(Structure ast, str element, str name, B:simBucketNothing(), UpdateContextValue updateContextValue)
+	= buildEdit(ast, element, name, simBucketList([]), updateContextValue);
+*/
+
+default Figure buildEdit(Structure ast, str element, str name, B:SimBucket bucketList, UpdateContextValue updateContextValue) {
+	println("Could not match <bucketList>");
 }

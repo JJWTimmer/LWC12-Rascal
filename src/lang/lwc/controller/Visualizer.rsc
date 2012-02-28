@@ -75,7 +75,9 @@ private Figure stateFigure(str state, bool active) = ellipse(
 private Edge directedEdge(str from, str to, bool active)
 {
 	Color c = color(active ? "red" : "black");
-	return edge(from, to, toArrow(coloredArrow(c)), lineColor(c));	
+	
+	/* The toArrow() function is commented, because it leads to an extremely annoying bug, it hides inputs like checkboxes etc. */
+	return edge(from, to /*, toArrow(coloredArrow(c)) */ , lineColor(c));	
 }
 
 private Figure point(num x, num y) = 

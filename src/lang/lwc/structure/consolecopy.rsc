@@ -1,17 +1,20 @@
 import lang::lwc::structure::Load;
-ast = load(|project://lwc-uva/lwc/example1.lwcs|);
+sast = lang::lwc::structure::Load::load(|project://lwc-uva/lwc/example1.lwcs|);
+
+import lang::lwc::controller::Load;
+cast = lang::lwc::controller::Load::load(|project://lwc-uva/lwc/example1.lwcc|);
 
 import lang::lwc::structure::Propagate;
-ast2 = propagate(ast);
+sast2 = propagate(sast);
 
 import util::Maybe;
 import Graph;
 
 import lang::lwc::sim::Context;
-ctx = createSimContext(ast2);
+ctx = initSimContext(sast2, cast);
 
 import lang::lwc::sim::Reach;
-graph = buildGraph(ast2);
+graph = buildGraph(sast2);
 isReachable(graph, ctx, "C1", just("hotwaterout"), "V1", just("a"));
 
 import lang::lwc::structure::Parser;

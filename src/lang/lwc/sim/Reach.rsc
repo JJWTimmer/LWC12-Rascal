@@ -15,6 +15,7 @@ data ElementNode = elementNode(str name, Maybe[value] property);
 
 public Graph[ElementNode] buildGraph(Structure ast) {
 
+	//make links between all points in an object
 	Graph[ElementNode] makeInternalLinks(str nodename, set[set[str]] connectionpoints) {
 		Graph[ElementNode] graph = {};
 		set[ElementNode] nodes = {};
@@ -30,6 +31,7 @@ public Graph[ElementNode] buildGraph(Structure ast) {
 	
 	Graph[ElementNode] graph = {};
 	
+	//get all pipes (connections) between objects
 	visit (ast) {
 		case pipe(_, pipeName, from, to, _) : {
 		
@@ -58,6 +60,7 @@ public Graph[ElementNode] buildGraph(Structure ast) {
 	
 	cg = carrier(graph);
 	
+	//for every object check if there are internal connections
 	for (\node <- cg) {
 		nodename = \node.name;
 		
@@ -77,12 +80,18 @@ public Graph[ElementNode] buildGraph(Structure ast) {
 		
 		for (setOfPoints <- Elements[etype].connectionpoints) {
 			setOfNames = {c.name | c <- setOfPoints, c has name};
-			setConnections = setOfNames & connectionpoints;
-			connectionpoints -= setOfNames;
 				
 			if (attribConnections() in setOfPoints) {
-				connectUs += {setOfNames};
+				if (setOfNames != {}) {
+					connectionpoints -= setOfNames;
+					connectUs += {setOfNames};
+				}
+				else {
+					connectUs += {connectionpoints};
+				}
 			} else {
+				setConnections = setOfNames & connectionpoints;
+				connectionpoints -= setOfNames;
 				connectUs += {setConnections};
 			}
 		}
@@ -96,26 +105,30 @@ public Graph[ElementNode] buildGraph(Structure ast) {
 	return graph;
 }
 
-public bool isReachable(Graph[ElementNode] graph, SimContext context, str fromName, Maybe[str] fromProperty, str toName, Maybe[str] toProperty) {
+//is toNode reachable from fromNode, taking in account the position of the valves?
+public bool isReachable(Graph[ElementNode] staticgraph, SimContext context, str fromName, Maybe[str] fromProperty, str toName, Maybe[str] toProperty) {
 	fromNode = elementNode(fromName, fromProperty);
 	toNode = elementNode(toName, toProperty);
 	
-	for (elem <- context.elements) {
+	dynamicgraph = staticgraph;
+	
+	for (elem <- context.\data.elements) {
 		if (elem.\type == "Valve") {
 			if ([H*,simProp("position", val),T*] := elem.props) {
 				vl = getSimContextBucketList(val);
 				
 				if (size(vl) > 1) {
 					nl = {elementNode(elem.name, just(x)) | x <- vl };
-					graph += (nl*nl) - ident(nl);
+					dynamicgraph += (nl*nl) - ident(nl);
 				}
 			}
 		}
 	}
 	
-	//iprintln(graph);//debug
-	
-	set[ElementNode] reachable = reach(graph, {fromNode});
+	reachable = reach(dynamicgraph, {fromNode});
+	iprintln(dynamicgraph);
+	iprintln(fromNode);
+	iprintln(toNode);
 	iprintln(reachable);
 	
 	bool res = false;

@@ -23,12 +23,14 @@ public Figure buildStatefulControllerGraph(Controller ast, State() runState)
 	
 	return computeFigure(
 		bool () {
-			bool recompute = runState() != current;
-			current = runState();
+			State state = runState();
+			bool recompute = state != current;
+			current = state;
+			
 			return recompute;
 		},
 		Figure () {
-			return buildControllerGraph(ast, current); 
+			return buildControllerGraph(ast, current);
 		}
 	);
 }

@@ -9,6 +9,7 @@ import lang::lwc::structure::AST;
 
 import lang::lwc::sim::Sidebar;
 import lang::lwc::sim::Context;
+import lang::lwc::sim::Physics;
 
 import vis::Render;
 import vis::Figure;
@@ -32,6 +33,8 @@ public void simulate(loc baseName)
 
 	// Callbacks
 	SimContext context = initSimContext(structureAst, controllerAst);
+	
+	context = registerStepAction(physicsAction, context);
 	
 	void simContextUpdate(SimContext ctx) { context = ctx; };
 	SimContext simContextLookup() = { return context; };

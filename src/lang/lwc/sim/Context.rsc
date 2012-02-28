@@ -3,10 +3,13 @@ module lang::lwc::sim::Context
 import lang::lwc::structure::AST;
 import lang::lwc::controller::AST;
 import lang::lwc::controller::runtime::Data;
+import lang::lwc::sim::Graph;
 
 import IO;
 import util::Maybe;
 import String;
+import Graph;
+import Type;
 
 data SimData = simData(
 	list[ElementState] elements, 
@@ -21,19 +24,22 @@ public SimData createEmptyData() = simData([], [], []);
 public data SimContext = createSimContext(
 	SimData \data,
 	RuntimeContext runtime,
-	list[StepAction] stepActions
+	list[StepAction] stepActions,
+	Graph[ElementNode] reachGraph
 );
 
 public SimContext createEmptyContext() = createSimContext(
 	createEmptyData(),
 	createEmptyRuntimeContext(),
-	[]
+	[],
+	{}
 );
 
 alias SimContextUpdate = void(SimContext context);
 alias SimContextLookup = SimContext();
 
 data ElementState = state(str name, str \type, list[SimProperty] props);
+
 data SimProperty = simProp(str name, SimBucket bucket);
 data SensorValue = sensorVal(str name, SimBucket bucket);
 data ManualValue = manualVal(str name, SimBucket bucket);
@@ -49,6 +55,7 @@ data SimBucket
 public SimBucket createSimBucket(\false()) 					= simBucketBoolean(false);
 public SimBucket createSimBucket(\true()) 					= simBucketBoolean(true);
 public SimBucket createSimBucket(metric(integer(N), _)) 	= simBucketNumber(N);
+public SimBucket createSimBucket(metric(realnum(N), _)) 	= simBucketNumber(N);
 public SimBucket createSimBucket(variable(str N)) 			= simBucketVariable(N);
 public SimBucket createSimBucket(position(str N))			= simBucketPosition(N);
 public SimBucket createSimBucket([]) 						= simBucketNothing();
@@ -56,13 +63,20 @@ public SimBucket createSimBucket(list[Value] L) 			= simBucketList([ createSimBu
 public SimBucket createSimBucket(bool B)					= simBucketBoolean(B);
 public SimBucket createSimBucket(int N)						= simBucketNumber(N);
 public SimBucket createSimBucket(integer(N))				= simBucketNumber(N);
- 
+public default SimBucket createSimBucket(X)					{ println("<X> : <typeOf(X)>"); throw "Unknow type";}
+
 public SimContext initSimContext(Structure sAst, Controller cAst) 
 {
 	list[ElementState] elements = [];
 	list[SensorValue] sensors = [];
 	list[ManualValue] manuals = [];
-		
+	
+	list[str] ignoredAttributes = ["sensorpoints", "connections", "position"];	
+	
+	list[SimProperty] getProps(list[Attribute] attributes) = [ simProp(N, createSimBucket(V)) | attribute(attributename(N), valuelist([V, _*])) <- attributes, N notin ignoredAttributes ]
+				  + [ simProp(N, createSimBucket(V)) | realproperty(N, valuelist([V, _*]))  <- attributes]
+				  + [ simProp(N, createSimBucket(V)) | attribute(attributename(N), valuelist(V)) <- attributes, N in ignoredAttributes ];
+	
 	// Visit the structure AST
 	visit(sAst) {
 
@@ -70,12 +84,7 @@ public SimContext initSimContext(Structure sAst, Controller cAst)
 			
 			if (\type != "Sensor") 
 			{
-				list[str] ignoredAttributes = ["sensorpoints", "connections", "position"];
-				
-				props = [ simProp(N, createSimBucket(V)) | attribute(attributename(N), valuelist([V, _*])) <- attributes, N notin ignoredAttributes ]
-					  + [ simProp(N, createSimBucket(V)) | realproperty(N, valuelist([V, _*]))  <- attributes]
-					  + [ simProp(N, createSimBucket(V)) | attribute(attributename(N), valuelist(V)) <- attributes, N in ignoredAttributes ]
-				;
+				props = getProps(attributes);
 				
 				elements += state(name, \type, props);
 			}
@@ -83,6 +92,13 @@ public SimContext initSimContext(Structure sAst, Controller cAst)
 			{
 				sensors += sensorVal(name, createSimBucket([]));
 			}
+		}
+		
+		case pipe(_, str name, _, _, list[Attribute] attributes) : {
+			
+			props = getProps(attributes);
+			
+			elements += state(name, "Pipe", props);
 		}
 	}
 	
@@ -95,7 +111,8 @@ public SimContext initSimContext(Structure sAst, Controller cAst)
 	return createSimContext(
 		simData(elements, sensors, manuals),
 		initRuntimeContext(cAst),
-		[]
+		[],
+		buildGraph(sAst)
 	);
 }
 

@@ -39,14 +39,12 @@ data SimBucket
 	| simBucketNumber(num n)
 	| simBucketVariable(str v)
 	| simBucketList(list[SimBucket] l)
-	| simBucketPosition(str p)
 	| simBucketNothing();
 
 public SimBucket createSimBucket(\false()) 					= simBucketBoolean(false);
 public SimBucket createSimBucket(\true()) 					= simBucketBoolean(true);
 public SimBucket createSimBucket(metric(integer(N), _)) 	= simBucketNumber(N);
 public SimBucket createSimBucket(variable(str N)) 			= simBucketVariable(N);
-public SimBucket createSimBucket(position(str N))			= simBucketPosition(N);
 public SimBucket createSimBucket([]) 						= simBucketNothing();
 public SimBucket createSimBucket(list[Value] L) 			= simBucketList([ createSimBucket(v) | v <- L]);
 public SimBucket createSimBucket(bool B)					= simBucketBoolean(B);

@@ -135,12 +135,7 @@ private list[Attribute] getDefaults(list[AttributeDefinition] optionalAttribs, l
 	[
 		attribute(attributename(attribname), getValue(defaultvalue)) 
 		| optionalAttrib(str attribname, _, ValueDefinition defaultvalue, _) <- optionalAttribs,
-		attribname notin [ existingattrib | attribute(attributename(str existingattrib), _) <- existingAttribs ] + ["position"]
-	]
-	+
-	[
-		attribute(attributename("position"), valuelist([position(p) | p <- lst]))
-		| optionalAttrib("position", _, listValue(list[str] lst), _) <- optionalAttribs
+		attribname notin [ existingattrib | attribute(attributename(str existingattrib), _) <- existingAttribs ]
 	];
 
 //transforms definition ADT's to AST ADT's

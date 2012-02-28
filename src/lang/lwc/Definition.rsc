@@ -222,7 +222,7 @@ public map[str, ElementDefinition] Elements = (
 			{"ThreeWay"}				//default: TwoWay
 		],
 		[	//attributes
-			optionalAttrib("position", [], listValue(["a", "b"]), true),
+			optionalAttrib("position", [], listValue([]), true),
 			optionalModifierAttrib("flowrate", "Pin", [VolumeUnits, TimeUnits], numValue(1, ["m3", "hour"]), true) // only for pin-valve
 		],
 		[	//connectionpoints

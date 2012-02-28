@@ -14,25 +14,46 @@ import vis::KeySym;
 
 alias StructureMouseHandler = bool(int butnr, str \type, str name);
 
-public Figure buildInteractiveStructureGraphWithSidebar(Structure ast, SimData simData, void(str, str, SimBucket) updateSimContext) {
-	Figure sidebar = buildSidebar("", "", simData, updateSimContext);
+public Figure buildInteractiveContextAwareStructureGraphWithSidebar(
+	Structure ast, 
+	SimContextLookup lookupSimContext,
+	SimContextUpdate updateSimContext
+) {
 	
-	StructureMouseHandler mouseHandler = bool(int butnr, str \type, str name) {
-		if (butnr == 1)
-			sidebar = buildSidebar(\type, name, simData, updateSimContext);
+	str \type = "";
+	bool recompute = false;
+	Figure sidebar = box();
+	
+	StructureMouseHandler mouseHandler = bool(int butnr, str \T, str name) {
+		// left click?
+		if (butnr == 1) {
+			recompute = (T != \type);
+			\type = T;
 			
-		return true;
+			if (recompute)
+				sidebar = buildSidebar(\type, name, lookupSimContext().\data, updateSimContext);
+			
+			return true;
+		}
+		
+		return false;
 	};
 	
 	return hcat([
-		buildInteractiveStructureGraph(ast, mouseHandler),
-		computeFigure(Figure () { return sidebar; })
+		buildContextAwareInteractiveStructureGraph(ast, mouseHandler, lookupSimContext()),
+		computeFigure(
+			bool() { return recompute; }, 
+			Figure () { 
+				recompute = false;
+				return sidebar;
+			}
+		)
 	]);
 }
 
-public void visualizeStructureWithSidebar(Structure ast, void(str, str, SimBucket) updateSimContext) = render(buildInteractiveStructureWithSidebar(ast, updateSimContext));
+public void visualizeStructureWithSidebar(Structure ast, SimContextUpdate updateSimContext) = render(buildInteractiveStructureWithSidebar(ast, updateSimContext));
 
-public Figure buildSidebar(str etype, str name, SimData simData, void(str, str, SimBucket) updateSimContext) {
+public Figure buildSidebar(str etype, str name, SimData simData, SimContextUpdate updateSimContext) {
 
 	list[SimProperty] simProps = getSimContextProperties(simData, name);
 	list[SimProperty] editableSimProps = [];
@@ -50,18 +71,18 @@ public Figure buildSidebar(str etype, str name, SimData simData, void(str, str, 
 					));
 }
 
-Figure buildField(str element, simProp(str name, SimBucket bucket), void(str, str, SimBucket) updateSimContext) {	
+Figure buildField(str element, simProp(str name, SimBucket bucket), SimContextUpdate updateSimContext) {	
 	
 	return vcat([text(name, fontSize(14))
 				,buildEdit(element, name, bucket, updateSimContext)
 			]);
 }
 
-Figure buildEdit(str element, str name, B:simBucketBoolean(bool b), void(str, str, SimBucket) updateSimContext) {
+Figure buildEdit(str element, str name, B:simBucketBoolean(bool b), SimContextUpdate updateSimContext) {
 	return checkbox(name, void (bool state) { updateSimContext(element, name, createSimBucket(state)); } );
 }
 
-Figure buildEdit(str element, str name, B:simBucketNumber(int n), void(str, str, SimBucket) updateSimContext) {
+Figure buildEdit(str element, str name, B:simBucketNumber(int n), SimContextUpdate updateSimContext) {
 	int current = n;
 	return scaleSlider(int() { return 0; }
 					  ,int() { return 100; }
@@ -69,7 +90,7 @@ Figure buildEdit(str element, str name, B:simBucketNumber(int n), void(str, str,
 					  ,void(int input) { current = input; updateSimContext(element, name, createSimBucket(current)); });
 }
 
-Figure buildEdit(str element, str name, B:simBucketList(list[SimBucket] l), void(str, str, SimBucket) updateSimContext) {
+Figure buildEdit(str element, str name, B:simBucketList(list[SimBucket] l), SimContextUpdate updateSimContext) {
 	list[Figure] checkBoxes = [];
 	for(bucket <- l) {
 		checkBoxes += buildEdit(element, name, bucket, l, updateSimContext);
@@ -77,6 +98,6 @@ Figure buildEdit(str element, str name, B:simBucketList(list[SimBucket] l), void
 	return hcat(checkBoxes);
 }
 
-Figure buildEdit(str element, str name, B:simBucketVariable(str s), list[SimBucket] l, void(str, str, SimBucket) updateSimContext) {
+Figure buildEdit(str element, str name, B:simBucketVariable(str s), list[SimBucket] l, SimContextUpdate updateSimContext) {
 	return ellipse(fillColor(arbColor()));
 }

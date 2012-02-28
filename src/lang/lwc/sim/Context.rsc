@@ -91,8 +91,8 @@ public SimContext initSimContext(Structure sAst, Controller cAst)
 }
 
 @doc{Collect all properties of the given element}
-public list[SimProperty] getSimContextProperties(SimContext ctx, str element) 
-	= [ p | state(element, _, P:props) <- ctx.\data.elements, p <- P ];
+public list[SimProperty] getSimContextProperties(SimData \data, str element) 
+	= [ p | state(element, _, P:props) <- \data.elements, p <- P ];
 
 public SimBucket getSimContextBucket(str element, str property, SimContext ctx)
 {

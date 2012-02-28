@@ -38,6 +38,6 @@ public void simulate(loc baseName)
 	
 	render(hcat([
 		box(buildRunnableControllerGraph(controllerAst, simCtx), gap(10)),
-		box(buildInteractiveStructureGraphWithSidebar(structureAst, simCtx, updateSimContext), gap(10))
+		box(buildInteractiveStructureGraphWithSidebar(structureAst, simCtx.\data, updateSimContext), gap(10))
 	]));	
 }

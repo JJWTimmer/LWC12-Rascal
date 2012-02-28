@@ -119,23 +119,25 @@ Figure buildEdit(Structure ast, str element, str name, B:simBucketNumber(int n),
 }
 
 Figure buildEdit(Structure ast, str element, str name, B:simBucketList(list[SimBucket] bucketList), UpdateContextValue updateContextValue) {
-	Figure buildListElem(str v) = checkbox(v, void (bool state) { updateContextValue(element, name, newBucketList(v, state)); });
+	Figure buildCheckBox(str v) = checkbox(v, void (bool state) { updateContextValue(element, name, newBucketList(v, state)); });
 	
 	SimBucket newBucketList(str s, bool b) = createSimBucket(
 			[ B | B:simBucketVariable(str var) <- bucketList, (var==s && b) || var!=s ]);
 	
-	list[str] possiblePositions = [];
-	if(/element(_,_, element, list[Attribute] attributes) := ast) {
-		possiblePositions = [ v
+	set[str] variables = {};
+	if(/element(_,elementname("Valve"), element, list[Attribute] attributes) := ast) {
+		variables = { v
 				| attribute("connections", valuelist(list[Value] values)) <- attributes,
 				variable(str v) <- values
-				]; 
+				}; 
 	}
-	iprint(possiblePositions);
+	for(simBucketVariable(str b) <- B) {
+		variables += b;
+	}
 	
 	list[Figure] checkBoxes = [];
-	for(p <- possiblePositions) {
-		checkBoxes += buildListElem(p);
+	for(var <- variables) {
+		checkBoxes += buildCheckBox(var);
 	}
 	return hcat(checkBoxes);
 }

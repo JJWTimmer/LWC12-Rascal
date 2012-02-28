@@ -49,7 +49,7 @@ public SimBucket createSimBucket(\false()) 					= simBucketBoolean(false);
 public SimBucket createSimBucket(\true()) 					= simBucketBoolean(true);
 public SimBucket createSimBucket(metric(integer(N), _)) 	= simBucketNumber(N);
 public SimBucket createSimBucket(variable(str N)) 			= simBucketVariable(N);
-public SimBucket createSimBucket([]) 						= simBucketNothing();
+public SimBucket createSimBucket([]) 						= simBucketList([]);
 public SimBucket createSimBucket(list[Value] L) 			= simBucketList([ createSimBucket(v) | v <- L]);
 public SimBucket createSimBucket(bool B)					= simBucketBoolean(B);
 public SimBucket createSimBucket(int N)						= simBucketNumber(N);
@@ -159,8 +159,10 @@ public list[value] getSimContextBucketList(str element, str property, SimContext
 public list[value] getSimContextBucketList(SimBucket bucket) {
 	if (simBucketList(V) := bucket)
 		return [bucketToValue(x) | x <- V];
+	else if (simBucketNothing() := bucket)
+		return [];
 	else
-		throw "Bucket not a list";
+		throw "Bucket not a list: <bucket>";
 }
 
 public SimContext setSimContextBucket(str element, str property, SimBucket val, SimContext ctx) {

@@ -11,8 +11,8 @@ import vis::Render;
 import vis::KeySym;
 
 import List;
-import IO;
 import ParseTree;
+import IO;
 import util::Math;
 
 alias StructureMouseHandler = bool(int butnr, str \type, str name);
@@ -288,7 +288,6 @@ private Figure valveSymbolTwoWay(list[str] position)
 
 private Figure valveSymbolThreeWay(list[str] position)
 {
-	iprintln(position);
 	FProperty determineColor(bool active) = fillColor(active ? color("red") : color("white"));
 	
 	return 
@@ -343,7 +342,7 @@ Figure chuFigure(str name, StructureMouseHandler mouseHandler, SimContext contex
 		grow(1.5), 
 		id(name),
 		
-		determineColor(ignited), 
+		determineColor(ignited == true), 
 		onMouseDown(bool (int butnr, map[KeyModifier,bool] modifiers) {
 			return mouseHandler(butnr, "CentralHeatingUnit", name);
 		})

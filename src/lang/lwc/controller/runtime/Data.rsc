@@ -11,6 +11,15 @@ data RuntimeContext = createRuntimeContext(
 	rel[str, list[Statement]] states 
 );
 
+public RuntimeContext createEmptyRuntimeContext() = createRuntimeContext(
+	true,
+	"", 
+	"",
+	
+	{},
+	{}
+);
+
 public RuntimeContext initRuntimeContext(Controller ast)
 {
 	// Collect states

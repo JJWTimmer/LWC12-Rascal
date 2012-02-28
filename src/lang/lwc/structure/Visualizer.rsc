@@ -58,6 +58,10 @@ private Figure buildGraph(Structure ast, StructureMouseHandler mouseHandler, Sim
 		case element(M, elementname("Valve"), N, _): 	
 			nodes += valveFigure(N, M, mouseHandler, context); 
 		
+		// Handle Central Heating Units
+		case element(M, elementname("CentralHeatingUnit"), N, _):
+			nodes += chuFigure(N, mouseHandler, context);
+			
 		// Handle radiators
 		case E:element(M, elementname("Radiator"), N, _): {
 			edges += radiatorEdges(E, N);
@@ -284,6 +288,7 @@ private Figure valveSymbolTwoWay(list[str] position)
 
 private Figure valveSymbolThreeWay(list[str] position)
 {
+	iprintln(position);
 	FProperty determineColor(bool active) = fillColor(active ? color("red") : color("white"));
 	
 	return 
@@ -295,7 +300,7 @@ private Figure valveSymbolThreeWay(list[str] position)
 				point(0.5, 0.33),
 				point(0, 0.66)],
 				shapeConnected(true), shapeClosed(true), width(40), height(32),
-				determineColor("a" in position)
+				determineColor(":a" in position)
 			),
 				
 			// Right
@@ -304,7 +309,7 @@ private Figure valveSymbolThreeWay(list[str] position)
 				point(1, 0.66), 
 				point(0.5, 0.33)],
 				shapeConnected(true), shapeClosed(true), width(40), height(32),
-				determineColor("b" in position)	
+				determineColor(":b" in position)	
 			),
 				
 			// Middle
@@ -313,10 +318,35 @@ private Figure valveSymbolThreeWay(list[str] position)
 				point(0.2, 1),
 				point(0.5, 0.33)],
 				shapeConnected(true), shapeClosed(true), width(40), height(32),
-				determineColor("c" in position)
+				determineColor(":c" in position)
 			)
 			
 		], width(40), height(32)
+	);
+}
+
+//
+// Render Central Heating units
+//
+
+Figure chuFigure(str name, StructureMouseHandler mouseHandler, SimContext context)
+{
+	value ignited = getSimContextBucketValue(name, "ignite", context);
+	
+	FProperty determineColor(bool active) = fillColor(active ? color("red") : color("white"));
+	 
+	return box(
+		vcat([
+			text("Central Heating Unit", fontSize(9)),
+			text(name)
+		]), 
+		grow(1.5), 
+		id(name),
+		
+		determineColor(ignited), 
+		onMouseDown(bool (int butnr, map[KeyModifier,bool] modifiers) {
+			return mouseHandler(butnr, "CentralHeatingUnit", name);
+		})
 	);
 }
 

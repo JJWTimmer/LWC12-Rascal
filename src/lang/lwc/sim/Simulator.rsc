@@ -29,15 +29,15 @@ public void simulate(loc baseName)
 	
 	Structure structureAst = loadStructure(structureName);
 	Controller controllerAst = loadController(controllerName);
+
+	// Callbacks
+	SimContext context = initSimContext(structureAst, controllerAst);
 	
-	SimContext simCtx = initSimContext(structureAst, controllerAst);
-	
-	updateSimContext = void(str element, str property, SimBucket val) {
-		simCtx = setSimContextBucket(element, property, val, simCtx);
-	}; 
+	void simContextUpdate(SimContext ctx) { context = ctx; };
+	SimContext simContextLookup() = { return context; };
 	
 	render(hcat([
-		box(buildRunnableControllerGraph(controllerAst, simCtx), gap(10)),
-		box(buildInteractiveStructureGraphWithSidebar(structureAst, simCtx.\data, updateSimContext), gap(10))
+		box(buildRunnableControllerGraph(controllerAst, simContextLookup, simContextUpdate), gap(10)),
+		box(buildInteractiveContextAwareStructureGraphWithSidebar(structureAst, simContextLookup, simContextUpdate), gap(10))
 	]));	
 }

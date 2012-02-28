@@ -32,6 +32,7 @@ condition boilerTempHigh: B1.watertemp > DESIRED_WATER_TEMP
 condition heatNeeded: roomTempLow or boilerTempLow
 
 state OFF: 
+	V1.position = :c
 	if heatNeeded: goto IGNITE
 
 state IGNITE:
@@ -43,6 +44,7 @@ state IGNITE:
 	goto DISPATCH
 	
 state DISPATCH:
+	V1.position = :c
 	if roomTempHigh and boilerTempLow: goto BOILER
 	if roomTempLow and boilerTempHigh: goto RADIATOR
 	if roomTempHigh and boilerTempHigh: goto RUNNING 	

@@ -22,22 +22,26 @@ State contextToGraphState(RuntimeContext ctx) {
 		return Done();
 }
 
-public Figure buildRunnableControllerGraph(Controller ast, SimContext ctx)
+public Figure buildRunnableControllerGraph(Controller ast, SimContextLookup simContextLookup, SimContextUpdate simContextUpdate)
 {
-	State graphState = contextToGraphState(ctx.runtime);
+	State graphState;
 	
 	bool automatic = false;
 	int interval = 300;
+	
+	void stepSimulation() {
+		SimContext ctx = step(simContextLookup());
+		graphState = contextToGraphState(ctx.runtime);
+
+		simContextUpdate(ctx);
+	};
+	
+	stepSimulation();
 	
 	// Visualization of the graph
 	Figure graph = buildStatefulControllerGraph(ast, State() { return graphState; });
 	
 	TimerAction timeAction(TimerInfo t) = (stopped(_) := t && automatic) ? restart(interval) : noChange();
-	
-	void stepSimulation() {
-		ctx = step(ctx);
-		graphState = contextToGraphState(ctx.runtime);
-	};
 	
 	void() executeTimer = stepSimulation;
 	void() clickStep = stepSimulation;

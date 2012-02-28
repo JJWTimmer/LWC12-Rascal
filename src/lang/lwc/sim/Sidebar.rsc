@@ -14,33 +14,44 @@ import vis::KeySym;
 
 alias StructureMouseHandler = bool(int butnr, str \type, str name);
 
+alias UpdateContextValue = void(str property, str element, SimBucket val);
+
 public Figure buildInteractiveContextAwareStructureGraphWithSidebar(
 	Structure ast, 
 	SimContextLookup lookupSimContext,
 	SimContextUpdate updateSimContext
 ) {
+	str currentType = "";
+	str currentName = "";
 	
-	str \type = "";
 	bool recompute = false;
 	Figure sidebar = box();
 	
-	StructureMouseHandler mouseHandler = bool(int butnr, str \T, str name) {
+	UpdateContextValue updateContextValue = void(str element, str property, SimBucket val) {
+		updateSimContext(setSimContextBucket(element, property, val, lookupSimContext));
+	};
+	
+	StructureMouseHandler mouseHandler = bool(int butnr, str \type, str name) {
+	
 		// left click?
-		if (butnr == 1) {
-			recompute = (T != \type);
-			\type = T;
+		if (butnr != 1) 
+			return false;
 			
-			if (recompute)
-				sidebar = buildSidebar(\type, name, lookupSimContext().\data, updateSimContext);
-			
-			return true;
-		}
+		// Has the type of the 
+		recompute = (\type != currentType || name != currentName);
 		
-		return false;
+		currentType = \type;
+		currentName = \name;
+		
+		if (recompute)
+			sidebar = buildSidebar(\type, name, lookupSimContext().\data, updateContextValue);
+		
+		return true;
 	};
 	
 	return hcat([
 		buildContextAwareInteractiveStructureGraph(ast, mouseHandler, lookupSimContext()),
+		
 		computeFigure(
 			bool() { return recompute; }, 
 			Figure () { 
@@ -51,53 +62,49 @@ public Figure buildInteractiveContextAwareStructureGraphWithSidebar(
 	]);
 }
 
-public void visualizeStructureWithSidebar(Structure ast, SimContextUpdate updateSimContext) = render(buildInteractiveStructureWithSidebar(ast, updateSimContext));
-
-public Figure buildSidebar(str etype, str name, SimData simData, SimContextUpdate updateSimContext) {
+public Figure buildSidebar(str etype, str name, SimData simData, UpdateContextValue updateContextValue) {
 
 	list[SimProperty] simProps = getSimContextProperties(simData, name);
 	list[SimProperty] editableSimProps = [];
-	if(EditableProps[etype]?) {
+	
+	if (EditableProps[etype]?)
 		editableSimProps = [ A | A:simProp(str s, _) <- simProps, s in EditableProps[etype] ];
-	}
 	
-	list[Figure] fields = [];
-	for(simProp <- editableSimProps) {
-		fields += buildField(name, simProp, updateSimContext);
-	}
-
-	return box(vcat(text(name, fontSize(20))
-					+ fields					
-					));
-}
-
-Figure buildField(str element, simProp(str name, SimBucket bucket), SimContextUpdate updateSimContext) {	
+	list[Figure] fields = [ buildField(name, simProp, updateContextValue) | simProp <- editableSimProps ];
 	
-	return vcat([text(name, fontSize(14))
-				,buildEdit(element, name, bucket, updateSimContext)
-			]);
+	return box(
+		vcat(
+			[text(name, fontSize(20))] + fields,
+			std(left())		
+		)
+	);
 }
 
-Figure buildEdit(str element, str name, B:simBucketBoolean(bool b), SimContextUpdate updateSimContext) {
-	return checkbox(name, void (bool state) { updateSimContext(element, name, createSimBucket(state)); } );
-}
+Figure buildField(str element, simProp(str name, SimBucket bucket), UpdateContextValue updateContextValue)
+	= vcat(
+		[text(name, fontSize(14)),
+		buildEdit(element, name, bucket, updateContextValue)
+	]);
 
-Figure buildEdit(str element, str name, B:simBucketNumber(int n), SimContextUpdate updateSimContext) {
+Figure buildEdit(str element, str name, B:simBucketBoolean(bool b), UpdateContextValue updateContextValue) 
+	= checkbox(name, void (bool state) { updateContextValue(element, name, createSimBucket(state)); } );
+
+Figure buildEdit(str element, str name, B:simBucketNumber(int n), UpdateContextValue updateContextValue) {
 	int current = n;
 	return scaleSlider(int() { return 0; }
 					  ,int() { return 100; }
 					  ,int() { return current; }
-					  ,void(int input) { current = input; updateSimContext(element, name, createSimBucket(current)); });
+					  ,void(int input) { current = input; updateContextValue(element, name, createSimBucket(current)); });
 }
 
-Figure buildEdit(str element, str name, B:simBucketList(list[SimBucket] l), SimContextUpdate updateSimContext) {
+Figure buildEdit(str element, str name, B:simBucketList(list[SimBucket] l), UpdateContextValue updateContextValue) {
 	list[Figure] checkBoxes = [];
 	for(bucket <- l) {
-		checkBoxes += buildEdit(element, name, bucket, l, updateSimContext);
+		checkBoxes += buildEdit(element, name, bucket, l, updateContextValue);
 	}
 	return hcat(checkBoxes);
 }
 
-Figure buildEdit(str element, str name, B:simBucketVariable(str s), list[SimBucket] l, SimContextUpdate updateSimContext) {
+Figure buildEdit(str element, str name, B:simBucketVariable(str s), list[SimBucket] l, UpdateContextValue updateContextValue) {
 	return ellipse(fillColor(arbColor()));
 }

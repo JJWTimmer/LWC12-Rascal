@@ -26,7 +26,7 @@ public SimContext createEmptyContext() = createSimContext(
 	createEmptyRuntimeContext()	
 );
 
-alias SimContextUpdate = void(str element, str property, SimBucket bucket);
+alias SimContextUpdate = void(SimContext context);
 alias SimContextLookup = SimContext();
 
 data ElementState = state(str name, str \type, list[SimProperty] props);
@@ -41,14 +41,14 @@ data SimBucket
 	| simBucketList(list[SimBucket] l)
 	| simBucketNothing();
 
-public SimBucket createSimBucket(\false()) 				= simBucketBoolean(false);
+public SimBucket createSimBucket(\false()) 					= simBucketBoolean(false);
 public SimBucket createSimBucket(\true()) 					= simBucketBoolean(true);
 public SimBucket createSimBucket(metric(integer(N), _)) 	= simBucketNumber(N);
 public SimBucket createSimBucket(variable(str N)) 			= simBucketVariable(N);
 public SimBucket createSimBucket([]) 						= simBucketNothing();
 public SimBucket createSimBucket(list[Value] L) 			= simBucketList([ createSimBucket(v) | v <- L]);
 public SimBucket createSimBucket(bool B)					= simBucketBoolean(B);
-public SimBucket createSimBucket(int N)					= simBucketNumber(N);
+public SimBucket createSimBucket(int N)						= simBucketNumber(N);
 public SimBucket createSimBucket(integer(N))				= simBucketNumber(N);
  
 public SimContext initSimContext(Structure sAst, Controller cAst) 

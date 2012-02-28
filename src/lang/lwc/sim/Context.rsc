@@ -21,7 +21,7 @@ public SimData createEmptyData() = simData([], [], []);
 public data SimContext = createSimContext(
 	SimData \data,
 	RuntimeContext runtime,
-	list[StepAction] stepActions
+	list[SimContext (SimContext)] stepActions
 );
 
 public SimContext createEmptyContext() = createSimContext(
@@ -99,10 +99,9 @@ public SimContext initSimContext(Structure sAst, Controller cAst)
 	);
 }
 
-public SimContext registerStepAction(StepAction action, SimContext context)
+public SimContext registerStepAction(SimContext(SimContext) action, SimContext context)
 {
-	iprintln([action]);
-	context.stepActions = context.stepActions + [action];
+	context.stepActions += [action];
 	return context;
 }
 

@@ -69,14 +69,29 @@ Figure buildEdit(str element, str name, B:simBucketNumber(int n), void(str, str,
 					  ,void(int input) { current = input; updateSimContext(element, name, createSimBucket(current)); });
 }
 
-Figure buildEdit(str element, str name, B:simBucketList(list[SimBucket] l), void(str, str, SimBucket) updateSimContext) {
+Figure buildEdit(str element, str name, B:simBucketList(list[SimBucket] bucketList), void(str, str, SimBucket) updateSimContext) {
+	//propagate voegt position attribute toe met variable ipv position constructor
+	println("<element> <name>");
+	iprint(bucketList);
+/*
+	Figure buildListElem(B:simBucketPosition(str p)) {
+		return checkbox(p, void (bool state) { updateSimContext(element, name, bucketList); } );
+	};*/
+	Figure buildListElem(SimBucket b) {
+		str txt = "";
+		switch(b) {
+			case simBucketBoolean	: txt = "bool"; //waar komen bools vandaan?
+			case simBucketNumber	: txt = "num";
+			case simBucketList	 	: txt = "list";
+			case simBucketVariable	: txt = "var";
+			case simBucketPosition	: txt = "pos";
+			case simBucketNothing	: txt = "nothing";
+		}
+		return box(text(txt));
+	}
 	list[Figure] checkBoxes = [];
-	for(bucket <- l) {
-		checkBoxes += buildEdit(element, name, bucket, l, updateSimContext);
+	for(b <- bucketList) {
+		checkBoxes += buildListElem(b);
 	}
 	return hcat(checkBoxes);
-}
-
-Figure buildEdit(str element, str name, B:simBucketVariable(str s), list[SimBucket] l, void(str, str, SimBucket) updateSimContext) {
-	return ellipse(fillColor(arbColor()));
 }

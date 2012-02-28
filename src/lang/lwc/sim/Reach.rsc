@@ -10,6 +10,7 @@ import Set;
 import List;
 import Relation;
 import IO;
+import Type;
 
 data ElementNode = elementNode(str name, Maybe[value] property);
 
@@ -107,29 +108,40 @@ public Graph[ElementNode] buildGraph(Structure ast) {
 
 //is toNode reachable from fromNode, taking in account the position of the valves?
 public bool isReachable(Graph[ElementNode] staticgraph, SimContext context, str fromName, Maybe[str] fromProperty, str toName, Maybe[str] toProperty) {
-	fromNode = elementNode(fromName, fromProperty);
-	toNode = elementNode(toName, toProperty);
+	ElementNode fromNode = elementNode(fromName, fromProperty);
+	ElementNode toNode = elementNode(toName, toProperty);
 	
-	dynamicgraph = staticgraph;
+	Graph[ElementNode] dynamicgraph = staticgraph;
 	
-	for (elem <- context.\data.elements) {
+	for (ElementState elem <- context.\data.elements) {
+
 		if (elem.\type == "Valve") {
+
 			if ([H*,simProp("position", val),T*] := elem.props) {
-				vl = getSimContextBucketList(val);
+
+				list[value] vl = getSimContextBucketList(val);
 				
 				if (size(vl) > 1) {
-					nl = {elementNode(elem.name, just(x)) | x <- vl };
-					dynamicgraph += (nl*nl) - ident(nl);
+
+					set[ElementNode] nodeset = {};
+					for (x <- vl) {
+
+						str prop = "";
+						if (str M := x) {
+							prop = M;
+						}
+						
+						if (prop != "") {
+							nodeset += elementNode(elem.name, just(prop));
+						}
+					}
+					dynamicgraph += (nodeset*nodeset) - ident(nodeset);
 				}
 			}
 		}
 	}
 	
 	reachable = reach(dynamicgraph, {fromNode});
-	iprintln(dynamicgraph);
-	iprintln(fromNode);
-	iprintln(toNode);
-	iprintln(reachable);
 	
 	bool res = false;
 	if (toNode in reachable) {

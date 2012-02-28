@@ -39,7 +39,7 @@ state IGNITE:
 	if C1.ignite: goto DISPATCH
 	
 	C1.ignite = true
-	C1.power = MIN_GAS
+	C1.burnertemp = MIN_GAS
 	P1.enabled = true
 	goto DISPATCH
 	
@@ -53,7 +53,7 @@ state DISPATCH:
 state RAMPUP:
 	
 	C1.ignite = true
-	C1.power = C1.power + BURNER_RAMPUP
+	C1.burnertemp = C1.burnertemp + BURNER_RAMPUP
 	P1.enabled = true
 		
 	goto DISPATCH
@@ -73,7 +73,7 @@ state BOTH:
 state RUNNING:
 	
 	V1.position = :c, :b
-	C1.power = MIN_GAS
+	C1.burnertemp = MIN_GAS
 	
 	# Idle, idle idle
 	goto DISPATCH

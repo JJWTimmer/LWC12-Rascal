@@ -30,14 +30,15 @@ public void simulate(loc baseName)
 	Structure structureAst = loadStructure(structureName);
 	Controller controllerAst = loadController(controllerName);
 
-	// Callbacks
+	// Create context
 	SimContext context = initSimContext(structureAst, controllerAst);
-	
+
+	// Context mutation callbacks
 	void simContextUpdate(SimContext ctx) { context = ctx; };
 	SimContext simContextLookup() = { return context; };
 	
 	render(hcat([
-		box(buildRunnableControllerGraph(controllerAst, simContextLookup, simContextUpdate), gap(10)),
-		box(buildInteractiveContextAwareStructureGraphWithSidebar(structureAst, simContextLookup, simContextUpdate), gap(10))
+		buildRunnableControllerGraph(controllerAst, simContextLookup, simContextUpdate),
+		buildInteractiveContextAwareStructureGraphWithSidebar(structureAst, simContextLookup, simContextUpdate)
 	]));	
 }

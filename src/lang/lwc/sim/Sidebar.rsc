@@ -30,6 +30,7 @@ public Figure buildInteractiveContextAwareStructureGraphWithSidebar(
 	
 	UpdateContextValue updateContextValue = void(str element, str property, SimBucket val) {
 		updateSimContext(setSimContextBucket(element, property, val, lookupSimContext()));
+		recomputeGraph = true;
 	};
 	
 	StructureMouseHandler mouseHandler = bool(int butnr, str \type, str name) {

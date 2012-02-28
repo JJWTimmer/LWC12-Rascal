@@ -11,6 +11,7 @@ import lang::lwc::sim::Context;
 import vis::Figure;
 import vis::Render;
 import vis::KeySym;
+import IO;
 
 alias StructureMouseHandler = bool(int butnr, str \type, str name);
 
@@ -24,8 +25,11 @@ public Figure buildInteractiveContextAwareStructureGraphWithSidebar(
 	str currentType = "";
 	str currentName = "";
 	
-	bool recompute = false;
+	bool recomputeSidebar = false;
+	bool recomputeGraph = false;
+	
 	Figure sidebar = box();
+	Figure graph = box();
 	
 	UpdateContextValue updateContextValue = void(str element, str property, SimBucket val) {
 		updateSimContext(setSimContextBucket(element, property, val, lookupSimContext()));
@@ -38,24 +42,38 @@ public Figure buildInteractiveContextAwareStructureGraphWithSidebar(
 			return false;
 			
 		// Has the type of the 
-		recompute = (\type != currentType || name != currentName);
+		recomputeSidebar = (\type != currentType || name != currentName);
 		
 		currentType = \type;
 		currentName = \name;
 		
-		if (recompute)
+		if (recomputeSidebar)
 			sidebar = buildSidebar(\type, name, lookupSimContext().\data, updateContextValue);
 		
 		return true;
 	};
 	
+	// If a step has been executed, rerender the structure graph
+	updateSimContext(
+		registerStepAction(SimContext(SimContext ctx) {
+			graph = buildContextAwareInteractiveStructureGraph(ast, mouseHandler, ctx);
+			recomputeGraph = true;
+			return ctx;
+		}, lookupSimContext())
+	);
+	
 	return hcat([
-		buildContextAwareInteractiveStructureGraph(ast, mouseHandler, lookupSimContext()),
-		
 		computeFigure(
-			bool() { return recompute; }, 
+			bool() { return recomputeGraph; },
+			Figure() {
+				recomputeGraph = false;
+				return graph;
+			}
+		),
+		computeFigure(
+			bool() { return recomputeSidebar; }, 
 			Figure () { 
-				recompute = false;
+				recomputeSidebar = false;
 				return sidebar;
 			}
 		)
@@ -78,16 +96,22 @@ public Figure buildSidebar(str etype, str name, SimData simData, UpdateContextVa
 }
 
 Figure buildField(str element, simProp(str name, SimBucket bucket), UpdateContextValue updateContextValue)
-	= vcat(
-		[text(name, fontSize(14)),
-		buildEdit(element, name, bucket, updateContextValue)
-	]);
+	= vcat([
+			text(name, fontSize(14)),
+			buildEdit(element, name, bucket, updateContextValue)
+		], 
+		gap(5)
+	);
 
-Figure buildEdit(str element, str name, B:simBucketBoolean(bool b), UpdateContextValue updateContextValue) 
-	= checkbox(name, void (bool state) { updateContextValue(element, name, createSimBucket(state)); } );
-
-Figure buildEdit(str element, str name, B:simBucketNumber(int n), UpdateContextValue updateContextValue) 
+Figure buildEdit(str element, str name, B:simBucketBoolean(bool b), UpdateContextValue updateContextValue)
 {
+	return checkbox(name, void (bool state) { 
+		updateContextValue(element, name, createSimBucket(state),
+		width(100), height(100)); 
+	});
+}
+
+Figure buildEdit(str element, str name, B:simBucketNumber(int n), UpdateContextValue updateContextValue) {
 	int current = n;
 	
 	return scaleSlider(
@@ -104,11 +128,13 @@ Figure buildEdit(str element, str name, B:simBucketNumber(int n), UpdateContextV
 Figure buildEdit(str element, str name, B:simBucketList(list[SimBucket] bucketList), UpdateContextValue updateContextValue) {
 	//propagate voegt position attribute toe met variable ipv position constructor
 	println("<element> <name>");
-	iprint(bucketList);
-/*
+	
+	/*
 	Figure buildListElem(B:simBucketPosition(str p)) {
 		return checkbox(p, void (bool state) { updateSimContext(element, name, bucketList); } );
-	};*/
+	};
+	*/
+	
 	Figure buildListElem(SimBucket b) {
 		str txt = "";
 		switch(b) {

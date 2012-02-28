@@ -56,7 +56,7 @@ private Figure buildGraph(Structure ast, StructureMouseHandler mouseHandler, Sim
 		
 		// Handle Valves
 		case element(M, elementname("Valve"), N, _): 	
-			nodes += valveFigure(N, M, mouseHandler); 
+			nodes += valveFigure(N, M, mouseHandler, context); 
 		
 		// Handle radiators
 		case E:element(M, elementname("Radiator"), N, _): {
@@ -203,12 +203,17 @@ Figure jointFigure(str name) =
 // Render a valve figure
 //
 
-Figure valveFigure(str N, list[Modifier] M, StructureMouseHandler mouseHandler) {
+private list[str] convertToStringList(list[value] L)
+	= [S | V <- L, str S := V];
 
-	Figure symbol = valveSymbol(modifier("ThreeWay") in M  ? 3 : 2);
+Figure valveFigure(str N, list[Modifier] M, StructureMouseHandler mouseHandler, SimContext context) {
+
+	Figure symbol = valveSymbol(
+		modifier("ThreeWay") in M  ? 3 : 2, 
+		convertToStringList(getSimContextBucketList(N, "position", context))
+	);
 	
-	visit (M)
-	{
+	visit (M) {
 		case modifier("Manual"): 
 			symbol = augmentManualValveSymbol(symbol, N);
 			
@@ -263,30 +268,56 @@ Figure augmentControlledValveSymbol(Figure symbol, str name)
 	return overlay([controlSymbol, symbol]);
 }
 				
-Figure valveSymbol(int ways)
+Figure valveSymbol(int ways, list[str] position)
+	= (ways == 2) ? valveSymbolTwoWay(position) : valveSymbolThreeWay(position);
+
+private Figure valveSymbolTwoWay(list[str] position)
 {
-	Figure twoWay =
+	return
 		overlay([
 			point(0,0), 
 			point(1,1), 
 			point(1,0), 
 			point(0, 1)
-		], shapeConnected(true), shapeClosed(true), width(40), height(20));
+		], shapeConnected(true), shapeClosed(true), width(40), height(20));	
+}
+
+private Figure valveSymbolThreeWay(list[str] position)
+{
+	FProperty determineColor(bool active) = fillColor(active ? color("red") : color("white"));
 	
-	Figure threeWay = 
+	return 
 		overlay([
-			point(0, 0),
-			point(0.5, 0.33),
-			point(1, 0),
-			point(1, 0.66),
-			point(0.5, 0.33),
-			point(0.8, 1),
-			point(0.2, 1),
-			point(0.5, 0.33),
-			point(0, 0.66)
-		], shapeConnected(true), shapeClosed(true), width(40), height(32));
 		
-	return ways == 2 ? twoWay : threeWay;
+			// Left
+			overlay([
+				point(0, 0), 		
+				point(0.5, 0.33),
+				point(0, 0.66)],
+				shapeConnected(true), shapeClosed(true), width(40), height(32),
+				determineColor("a" in position)
+			),
+				
+			// Right
+			overlay([
+				point(1, 0),		
+				point(1, 0.66), 
+				point(0.5, 0.33)],
+				shapeConnected(true), shapeClosed(true), width(40), height(32),
+				determineColor("b" in position)	
+			),
+				
+			// Middle
+			overlay([	
+				point(0.8, 1),
+				point(0.2, 1),
+				point(0.5, 0.33)],
+				shapeConnected(true), shapeClosed(true), width(40), height(32),
+				determineColor("c" in position)
+			)
+			
+		], width(40), height(32)
+	);
 }
 
 //

@@ -4,7 +4,7 @@ import lang::lwc::structure::Load;
 import lang::lwc::structure::Propagate;
 import lang::lwc::structure::AST;
 
-import lang::lwc::sim::Sidebar;
+import lang::lwc::sim::Context;
 
 import vis::Figure;
 import vis::Render;
@@ -17,12 +17,22 @@ import util::Math;
 
 alias StructureMouseHandler = bool(int butnr, str \type, str name);
 
-public void visualizeStructure(Tree tree) = render(buildStructureGraph(propagate(implode(tree))));
+public void visualizeStructure(Tree tree) 
+	= render(buildStructureGraph(propagate(implode(tree))));
 
-public Figure buildInteractiveStructureGraph(Structure ast, StructureMouseHandler mouseHandler) = buildGraph(ast, mouseHandler);
-public Figure buildStructureGraph(Structure ast) = buildGraph(ast, bool(int butnr, str \type, str name) { return true; });
+public Figure buildInteractiveStructureGraph(Structure ast, StructureMouseHandler mouseHandler) 
+	= buildGraph(ast, mouseHandler, createEmptyContext());
 
-private Figure buildGraph(Structure ast, StructureMouseHandler mouseHandler)
+public Figure buildStructureGraph(Structure ast) 
+	= buildGraph(ast, bool(int butnr, str \type, str name) { return true; }, createEmptyContext());
+
+public Figure buildContextAwareStructureGraph(Structure ast, SimContext context)
+	= buildGraph(ast, bool(int butnr, str \type, str name) { return true; }, context);
+
+public Figure buildContextAwareInteractiveStructureGraph(Structure ast, StructureMouseHandler mouseHandler, SimContext context)
+	= buildGraph(ast, mouseHandler, context);
+
+private Figure buildGraph(Structure ast, StructureMouseHandler mouseHandler, SimContext context)
 {
 	// Build the graph
 	list[Figure] nodes = [];

@@ -1,7 +1,7 @@
-MIN_GAS 		= 50
-BURNER_RAMPUP 	= 5
+MIN_GAS = 50
+BURNER_RAMPUP = 5
 RADIATOR_MARGIN = 2
-WATER_MARGIN 	= 5
+WATER_MARGIN = 5
 
 # 
 # Controls in diagram

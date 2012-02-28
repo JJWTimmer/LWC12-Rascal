@@ -27,6 +27,8 @@ public SimContext step(SimContext ctx)
 		ctx.runtime.transition = "";
 	}
 	
+	ctx = simContextExecuteActions(ctx);
+	
 	return ctx;
 }
 

@@ -14,16 +14,20 @@ data SimData = simData(
 	list[ManualValue] manuals
 );
 
+public alias StepAction = SimContext (SimContext);
+
 public SimData createEmptyData() = simData([], [], []);
 
 public data SimContext = createSimContext(
 	SimData \data,
-	RuntimeContext runtime
+	RuntimeContext runtime,
+	list[StepAction] stepActions
 );
 
 public SimContext createEmptyContext() = createSimContext(
 	createEmptyData(),
-	createEmptyRuntimeContext()	
+	createEmptyRuntimeContext(),
+	[]
 );
 
 alias SimContextUpdate = void(SimContext context);
@@ -90,8 +94,24 @@ public SimContext initSimContext(Structure sAst, Controller cAst)
 	
 	return createSimContext(
 		simData(elements, sensors, manuals),
-		initRuntimeContext(cAst)
+		initRuntimeContext(cAst),
+		[]
 	);
+}
+
+public SimContext registerStepAction(StepAction action, SimContext context)
+{
+	iprintln([action]);
+	context.stepActions = context.stepActions + [action];
+	return context;
+}
+
+public SimContext simContextExecuteActions(SimContext context)
+{
+	for (action <- context.stepActions)
+		context = action(context);
+		
+	return context;
 }
 
 @doc{Collect all properties of the given element}

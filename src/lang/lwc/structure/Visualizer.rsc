@@ -208,7 +208,7 @@ Figure jointFigure(str name) =
 //
 
 private list[str] convertToStringList(list[value] L)
-	= [S | V <- L, str S := V];
+	= [ S | V <- L, str S := V ];
 
 Figure valveFigure(str N, list[Modifier] M, StructureMouseHandler mouseHandler, SimContext context) {
 

@@ -26,6 +26,9 @@ public SimContext createEmptyContext() = createSimContext(
 	createEmptyRuntimeContext()	
 );
 
+alias SimContextUpdate = void(str element, str property, SimBucket bucket);
+alias SimContextLookup = SimContext();
+
 data ElementState = state(str name, str \type, list[SimProperty] props);
 data SimProperty = simProp(str name, SimBucket bucket);
 data SensorValue = sensorVal(str name, SimBucket bucket);
@@ -38,16 +41,15 @@ data SimBucket
 	| simBucketList(list[SimBucket] l)
 	| simBucketNothing();
 
-SimBucket createSimBucket(\false()) 				= simBucketBoolean(false);
-SimBucket createSimBucket(\true()) 					= simBucketBoolean(true);
-SimBucket createSimBucket(metric(integer(N), _)) 	= simBucketNumber(N);
-SimBucket createSimBucket(variable(str N)) 			= simBucketVariable(N);
-SimBucket createSimBucket([]) 						= simBucketNothing();
-SimBucket createSimBucket(list[Value] L) 			= simBucketList([ createSimBucket(v) | v <- L]);
-
-SimBucket createSimBucket(bool B)					= simBucketBoolean(B);
-SimBucket createSimBucket(int N)					= simBucketNumber(N);
-SimBucket createSimBucket(integer(N))				= simBucketNumber(N);
+public SimBucket createSimBucket(\false()) 				= simBucketBoolean(false);
+public SimBucket createSimBucket(\true()) 					= simBucketBoolean(true);
+public SimBucket createSimBucket(metric(integer(N), _)) 	= simBucketNumber(N);
+public SimBucket createSimBucket(variable(str N)) 			= simBucketVariable(N);
+public SimBucket createSimBucket([]) 						= simBucketNothing();
+public SimBucket createSimBucket(list[Value] L) 			= simBucketList([ createSimBucket(v) | v <- L]);
+public SimBucket createSimBucket(bool B)					= simBucketBoolean(B);
+public SimBucket createSimBucket(int N)					= simBucketNumber(N);
+public SimBucket createSimBucket(integer(N))				= simBucketNumber(N);
  
 public SimContext initSimContext(Structure sAst, Controller cAst) 
 {
@@ -132,6 +134,9 @@ public value getSimContextBucketValue(str element, SimContext ctx)
 public value getSimContextBucketValue(str element, str property, SimContext ctx)
 	= bucketToValue(getSimContextBucket(element, property, ctx));
 
+public list[value] getSimContextBucketList(str element, str property, SimContext ctx)
+	= getSimContextBucketList(getSimContextBucket(element, property, ctx));
+
 public list[value] getSimContextBucketList(SimBucket bucket) {
 	if (simBucketList(V) := bucket)
 		return [bucketToValue(x) | x <- V];
@@ -185,7 +190,7 @@ private SimBucket valueToBucket(value v)
 	} 
 }
 
-private value bucketToValue(SimBucket bucket) 
+private value bucketToValue(SimBucket bucket)
 {
 	switch (bucket)
 	{

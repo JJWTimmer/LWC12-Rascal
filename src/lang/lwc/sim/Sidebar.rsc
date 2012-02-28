@@ -102,12 +102,11 @@ Figure buildEdit(str element, str name, B:simBucketNumber(int n), UpdateContextV
 }
 
 Figure buildEdit(str element, str name, B:simBucketList(list[SimBucket] bucketList), UpdateContextValue updateContextValue) {
-	//propagate voegt position attribute toe met variable ipv position constructor
 	println("<element> <name>");
 	iprint(bucketList);
 /*
 	Figure buildListElem(B:simBucketPosition(str p)) {
-		return checkbox(p, void (bool state) { updateSimContext(element, name, bucketList); } );
+		return checkbox(p, void (bool state) { updateContextValue(element, name, bucketList); } );
 	};*/
 	Figure buildListElem(SimBucket b) {
 		str txt = "";
@@ -121,6 +120,7 @@ Figure buildEdit(str element, str name, B:simBucketList(list[SimBucket] bucketLi
 		}
 		return box(text(txt));
 	}
+	
 	list[Figure] checkBoxes = [];
 	for(b <- bucketList) {
 		checkBoxes += buildListElem(b);

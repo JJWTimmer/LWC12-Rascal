@@ -165,7 +165,8 @@ public map[str, ElementDefinition] Elements = (
 		[],	//modifiers
 		[	//attributes
 			requiredAttrib("heatcapacity", [PowerUnits], false),
-			requiredAttrib("room", [], false)
+			requiredAttrib("room", [], false),
+			hiddenProperty("temperature", [], numValue(15, ["Celsius"]))
 		],
 		[	//connectionpoints
 			{

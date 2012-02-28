@@ -6,11 +6,15 @@ import lang::lwc::structure::AST;
 import lang::lwc::structure::Visualizer;
 
 import lang::lwc::Constants;
+import lang::lwc::structure::Extern;
 import lang::lwc::sim::Context;
 
 import vis::Figure;
 import vis::Render;
 import vis::KeySym;
+import IO;
+
+import IO;
 
 alias StructureMouseHandler = bool(int butnr, str \type, str name);
 
@@ -24,8 +28,8 @@ public Figure buildInteractiveContextAwareStructureGraphWithSidebar(
 	str currentType = "";
 	str currentName = "";
 	
-	bool recompute = false;
-	Figure sidebar = box();
+	bool recomputeSidebar = true;
+	bool recomputeGraph = true;
 	
 	UpdateContextValue updateContextValue = void(str element, str property, SimBucket val) {
 		updateSimContext(setSimContextBucket(element, property, val, lookupSimContext()));
@@ -38,56 +42,69 @@ public Figure buildInteractiveContextAwareStructureGraphWithSidebar(
 			return false;
 			
 		// Has the type of the 
-		recompute = (\type != currentType || name != currentName);
+		recomputeSidebar = (\type != currentType || name != currentName);
 		
 		currentType = \type;
-		currentName = \name;
-		
-		if (recompute)
-			sidebar = buildSidebar(\type, name, lookupSimContext().\data, updateContextValue);
+		currentName = name;
 		
 		return true;
 	};
 	
+	// If a step has been executed, rerender the structure graph
+	updateSimContext(
+		registerStepAction(SimContext(SimContext ctx) {
+			recomputeGraph = true;
+			return ctx;
+		}, lookupSimContext())
+	);
+	
 	return hcat([
-		buildContextAwareInteractiveStructureGraph(ast, mouseHandler, lookupSimContext()),
-		
 		computeFigure(
-			bool() { return recompute; }, 
+			bool() { return recomputeGraph; },
+			Figure() {
+				recomputeGraph = false;
+				return buildContextAwareInteractiveStructureGraph(ast, mouseHandler, lookupSimContext());
+			}
+		),
+		computeFigure(
+			bool() { return recomputeSidebar; }, 
 			Figure () { 
-				recompute = false;
-				return sidebar;
+				recomputeSidebar = false;
+				return buildSidebar(currentType, currentName, lookupSimContext().\data, updateContextValue);
 			}
 		)
 	]);
 }
 
-public Figure buildSidebar(str etype, str name, SimData simData, UpdateContextValue updateContextValue) {
-
+public Figure buildSidebar(Structure ast, str etype, str name, SimData simData, UpdateContextValue updateContextValue) {
 	list[SimProperty] simProps = getSimContextProperties(simData, name);
 	list[SimProperty] editableSimProps = [];
 	
 	if (EditableProps[etype]?)
 		editableSimProps = [ A | A:simProp(str s, _) <- simProps, s in EditableProps[etype] ];
 	
-	list[Figure] fields = [ buildField(name, simProp, updateContextValue) | simProp <- editableSimProps ];
+	list[Figure] fields = [ buildField(ast, name, simProp, updateContextValue) | simProp <- editableSimProps ];
 	
 	return box(
-		vcat([text(name, fontSize(20))] + fields)
+		vcat([text(name, fontSize(20))] + fields, gap(5))
 	);
 }
 
-Figure buildField(str element, simProp(str name, SimBucket bucket), UpdateContextValue updateContextValue)
-	= vcat(
-		[text(name, fontSize(14)),
-		buildEdit(element, name, bucket, updateContextValue)
-	]);
+Figure buildField(Structure ast, str element, simProp(str name, SimBucket bucket), UpdateContextValue updateContextValue)
+	= vcat([
+			text(name, fontSize(14)),
+			buildEdit(astelement, name, bucket, updateContextValue)
+		], 
+		gap(5)
+	);
 
-Figure buildEdit(str element, str name, B:simBucketBoolean(bool b), UpdateContextValue updateContextValue) 
-	= checkbox(name, void (bool state) { updateContextValue(element, name, createSimBucket(state)); } );
+Figure buildEdit(Structure ast, str element, str name, B:simBucketBoolean(bool b), UpdateContextValue updateContextValue) = 
+	checkbox(name, void (bool state) { 
+			updateContextValue(element, name, createSimBucket(state));
+		} 
+	);
 
-Figure buildEdit(str element, str name, B:simBucketNumber(int n), UpdateContextValue updateContextValue) 
-{
+Figure buildEdit(Structure ast, str element, str name, B:simBucketNumber(int n), UpdateContextValue updateContextValue) {
 	int current = n;
 	
 	return scaleSlider(
@@ -101,29 +118,24 @@ Figure buildEdit(str element, str name, B:simBucketNumber(int n), UpdateContextV
 	);
 }
 
-Figure buildEdit(str element, str name, B:simBucketList(list[SimBucket] bucketList), UpdateContextValue updateContextValue) {
-	//propagate voegt position attribute toe met variable ipv position constructor
-	println("<element> <name>");
-	iprint(bucketList);
-/*
-	Figure buildListElem(B:simBucketPosition(str p)) {
-		return checkbox(p, void (bool state) { updateSimContext(element, name, bucketList); } );
-	};*/
-	Figure buildListElem(SimBucket b) {
-		str txt = "";
-		switch(b) {
-			case simBucketBoolean	: txt = "bool"; //waar komen bools vandaan?
-			case simBucketNumber	: txt = "num";
-			case simBucketList	 	: txt = "list";
-			case simBucketVariable	: txt = "var";
-			case simBucketPosition	: txt = "pos";
-			case simBucketNothing	: txt = "nothing";
-		}
-		return box(text(txt));
+Figure buildEdit(Structure ast, str element, str name, B:simBucketList(list[SimBucket] bucketList), UpdateContextValue updateContextValue) {
+	Figure buildListElem(str v) = checkbox(v, void (bool state) { updateContextValue(element, name, newBucketList(v, state)); });
+	
+	SimBucket newBucketList(str s, bool b) = createSimBucket(
+			[ B | B:simBucketVariable(str var) <- bucketList, (var==s && b) || var!=s ]);
+	
+	list[str] possiblePositions = [];
+	if(/element(_,_, element, list[Attribute] attributes) := ast) {
+		possiblePositions = [ v
+				| attribute("connections", valuelist(list[Value] values)) <- attributes,
+				variable(str v) <- values
+				]; 
 	}
+	iprint(possiblePositions);
+	
 	list[Figure] checkBoxes = [];
-	for(b <- bucketList) {
-		checkBoxes += buildListElem(b);
+	for(p <- possiblePositions) {
+		checkBoxes += buildListElem(p);
 	}
 	return hcat(checkBoxes);
 }

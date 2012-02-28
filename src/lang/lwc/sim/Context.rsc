@@ -24,7 +24,7 @@ public SimData createEmptyData() = simData([], [], []);
 public data SimContext = createSimContext(
 	SimData \data,
 	RuntimeContext runtime,
-	list[StepAction] stepActions,
+	list[SimContext (SimContext)] stepActions,
 	Graph[ElementNode] reachGraph
 );
 
@@ -49,7 +49,6 @@ data SimBucket
 	| simBucketNumber(num n)
 	| simBucketVariable(str v)
 	| simBucketList(list[SimBucket] l)
-	| simBucketPosition(str p)
 	| simBucketNothing();
 
 public SimBucket createSimBucket(\false()) 					= simBucketBoolean(false);
@@ -57,7 +56,6 @@ public SimBucket createSimBucket(\true()) 					= simBucketBoolean(true);
 public SimBucket createSimBucket(metric(integer(N), _)) 	= simBucketNumber(N);
 public SimBucket createSimBucket(metric(realnum(N), _)) 	= simBucketNumber(N);
 public SimBucket createSimBucket(variable(str N)) 			= simBucketVariable(N);
-public SimBucket createSimBucket(position(str N))			= simBucketPosition(N);
 public SimBucket createSimBucket([]) 						= simBucketNothing();
 public SimBucket createSimBucket(list[Value] L) 			= simBucketList([ createSimBucket(v) | v <- L]);
 public SimBucket createSimBucket(bool B)					= simBucketBoolean(B);
@@ -116,10 +114,9 @@ public SimContext initSimContext(Structure sAst, Controller cAst)
 	);
 }
 
-public SimContext registerStepAction(StepAction action, SimContext context)
+public SimContext registerStepAction(SimContext(SimContext) action, SimContext context)
 {
-	iprintln([action]);
-	context.stepActions = context.stepActions + [action];
+	context.stepActions += [action];
 	return context;
 }
 

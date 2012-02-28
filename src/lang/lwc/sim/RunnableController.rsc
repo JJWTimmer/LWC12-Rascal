@@ -24,7 +24,8 @@ State contextToGraphState(RuntimeContext ctx) {
 
 public Figure buildRunnableControllerGraph(Controller ast, SimContextLookup simContextLookup, SimContextUpdate simContextUpdate)
 {
-	State graphState;
+	// Initial state
+	State graphState = contextToGraphState(simContextLookup().runtime);
 	
 	bool automatic = false;
 	int interval = 300;
@@ -32,11 +33,8 @@ public Figure buildRunnableControllerGraph(Controller ast, SimContextLookup simC
 	void stepSimulation() {
 		SimContext ctx = step(simContextLookup());
 		graphState = contextToGraphState(ctx.runtime);
-
 		simContextUpdate(ctx);
 	};
-	
-	stepSimulation();
 	
 	// Visualization of the graph
 	Figure graph = buildStatefulControllerGraph(ast, State() { return graphState; });
@@ -49,7 +47,7 @@ public Figure buildRunnableControllerGraph(Controller ast, SimContextLookup simC
 	void(bool) checkAuto = void(bool checked) {
 		automatic = checked;
 	};
-	 
+	
 	Figure pane = hcat([
 		box(
 			vcat([
@@ -72,7 +70,7 @@ public Figure buildRunnableControllerGraph(Controller ast, SimContextLookup simC
 			], gap(10)),
 		gap(10), fillColor(color("lightblue")), lineWidth(0), width(200), resizable(false), top()),
 		
-		overlay([ 
+		vcat([ 
 			graph            
 		], timer(timeAction, executeTimer))
 	]);

@@ -23,12 +23,14 @@ public Figure buildStatefulControllerGraph(Controller ast, State() runState)
 	
 	return computeFigure(
 		bool () {
-			bool recompute = runState() != current;
-			current = runState();
+			State state = runState();
+			bool recompute = state != current;
+			current = state;
+			
 			return recompute;
 		},
 		Figure () {
-			return buildControllerGraph(ast, current); 
+			return buildControllerGraph(ast, current);
 		}
 	);
 }
@@ -73,7 +75,9 @@ private Figure stateFigure(str state, bool active) = ellipse(
 private Edge directedEdge(str from, str to, bool active)
 {
 	Color c = color(active ? "red" : "black");
-	return edge(from, to, toArrow(coloredArrow(c)), lineColor(c));	
+	
+	/* The toArrow() function is commented, because it leads to an extremely annoying bug, it hides inputs like checkboxes etc. */
+	return edge(from, to /*, toArrow(coloredArrow(c)) */ , lineColor(c));	
 }
 
 private Figure point(num x, num y) = 

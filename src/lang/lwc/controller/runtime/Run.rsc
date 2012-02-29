@@ -179,6 +179,7 @@ public bool boolValueOf(value v)
 	{
 		case int V:_: return V > 0;
 		case bool V:_: return V;
+		case []: return false;
 		default: throw "Could not convert to boolean <v>";
 	}
 }
@@ -189,7 +190,7 @@ public num numValueOf(value v)
 	{
 		case num V:_: return V;
 		case bool V:_: return V ? 1 : 0;
-		
+		case []: return 0;
 		default: throw "Could not convert to numeric <v>";
 	}
 }

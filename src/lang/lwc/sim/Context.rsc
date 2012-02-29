@@ -235,7 +235,7 @@ private value bucketToValue(SimBucket bucket)
 		case simBucketBoolean(V): 	return V;
 		case simBucketNumber(V): 	return V;
 		case simBucketVariable(V): 	return V;
-		case simBucketList(V): 		throw "For the bucketlist use getSimContextBucketList()";
+		case L:simBucketList(_): 		return getSimContextBucketList(L);
 		case simBucketNothing(): 	return nothing();
 		
 		default: throw "Unknown bucket type";

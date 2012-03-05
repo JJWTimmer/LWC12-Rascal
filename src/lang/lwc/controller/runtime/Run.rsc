@@ -17,9 +17,8 @@ data Action = actionNoop()
 
 public SimContext step(SimContext ctx)
 {
-	if (inState(ctx.runtime)) {
+	if (inState(ctx.runtime)) 
 		ctx = evaluateState(ctx);
-	}
 	
 	else if (inTransition(ctx.runtime))
 	{
@@ -50,7 +49,7 @@ private SimContext evaluateState(SimContext ctx)
 				// do nothing
 				
 				
-			default: throw "Unsupported action!";
+			default: throw "Unsupported controller action!";
 		}
 	}
 	
@@ -68,9 +67,8 @@ private Action evaluateStatement(Statement statement, SimContext ctx)
 		case goto(statename(str T)):
 			return actionTransition(T);
 		
-		case assign(Assignable left, Value right): {
+		case assign(Assignable left, Value right):
 			return assignStatement(left, right, ctx);
-		}
 		
 		default: throw "Unsupported AST node <statement>";
 	}
@@ -82,7 +80,6 @@ private Action assignStatement(left, right, ctx)
 {
 	str elementName= "";
 	str propName = "";
-	
 	
 	if (/property(str E, str P) := left)
 	{
@@ -161,11 +158,7 @@ public value lookup(str symbol, SimContext ctx)
 	if (symbol in domain(ctx.runtime.conditions))
 	{
 		Expression E = getOneFrom(ctx.runtime.conditions[symbol]);
-		value V = evaluateExpression(E, ctx);
-		
-		println("Condition <symbol> = <V>");
-		
-		return V;
+		return evaluateExpression(E, ctx);
 	}
 	
 	return getSimContextBucketValue(symbol, ctx);

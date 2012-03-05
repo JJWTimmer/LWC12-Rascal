@@ -35,8 +35,8 @@ public data ValueDefinition
 	| none();
 				  	   
 public data SensorPointDefinition 
-	= sensorPoint(str name, list[list[Unit]] unit, ValueDefinition defaultvalue)
-	| selfPoint(list[list[Unit]] unit, ValueDefinition defaultvalue);	//elementname == sensorpoint
+	= sensorPoint(str name, str property)
+	| selfPoint(str property); //elementname == sensorpoint
 				 			 
 public data ConnectionPointDefinition 
 	= gasConnection(str name)
@@ -55,7 +55,7 @@ public map[str, ElementDefinition] Elements = (
 		[],	//modifiers
 		[	//attributes
 			optionalAttrib("capacity", [VolumeUnits], numValue(50, ["liter"]), false),
-			optionalAttrib("watertemp", [TemperatureUnits], numValue(80, ["Celsius"]), true)
+			hiddenProperty("watertemp", [TemperatureUnits], numValue(80, ["Celsius"]))
 		],
 		[	//connectionpoints
 			{
@@ -68,7 +68,7 @@ public map[str, ElementDefinition] Elements = (
 			}
 		],
 		[	//sensorpoints
-			selfPoint([TemperatureUnits], numValue(15, ["Celcius"]))
+			selfPoint("watertemp")
 		]
 	),
 	
@@ -90,8 +90,8 @@ public map[str, ElementDefinition] Elements = (
 			}
 		],
 		[	//sensorpoints
-			sensorPoint("ignitiondetect", [TemperatureUnits], boolValue(false)),
-			sensorPoint("internaltemp", [TemperatureUnits], numValue(15, ["Celcius"]))
+			sensorPoint("ignite"),
+			sensorPoint("burnertemp")
 		]
 	),
 	
@@ -128,12 +128,14 @@ public map[str, ElementDefinition] Elements = (
 		[],	//modifiers
 		[	//attributes
 			optionalAttrib("diameter", [LengthUnits], numValue(15, ["mm"]), false),
-			requiredAttrib("length", [LengthUnits], false)
+			requiredAttrib("length", [LengthUnits], false),
+			hiddenProperty("flow", [VolumeUnits, TimeUnits], numValue(1, ["km", "hour"])),
+			hiddenProperty("temperature", [TemperatureUnits], numValue(15, ["Celcius"]))
 		],
 		[],	//connectionpoints
 		[	//sensorpoints
-			sensorPoint("flow", [VolumeUnits, TimeUnits], numValue(1, ["km", "hour"])),
-			sensorPoint("temperature", [TemperatureUnits], numValue(15, ["Celcius"]))
+			sensorPoint("flow", "flow"),
+			sensorPoint("temperature", "temperature")
 		]
 	),
 	
@@ -144,6 +146,7 @@ public map[str, ElementDefinition] Elements = (
 		],
 		[	//attributes
 			requiredAttrib("capacity", [VolumeUnits, TimeUnits], false),
+			hiddenProperty("throughput", [VolumeUnits, TimeUnits], numValue(0, ["liter", "hour"])),
 			hiddenProperty("enabled", [], boolValue(false))
 		],
 		[	//connectionpoints
@@ -156,7 +159,7 @@ public map[str, ElementDefinition] Elements = (
 			}
 		],
 		[	//sensorpoints
-			selfPoint([SpeedUnits], numValue(1, ["km", "hour"]))
+			selfPoint("throughput")
 		]
 	),
 	
@@ -166,7 +169,7 @@ public map[str, ElementDefinition] Elements = (
 		[	//attributes
 			requiredAttrib("heatcapacity", [PowerUnits], false),
 			requiredAttrib("room", [], false),
-			hiddenProperty("temperature", [], numValue(15, ["Celsius"]))
+			hiddenProperty("temperature", [TemperatureUnits], numValue(15, ["Celsius"]))
 		],
 		[	//connectionpoints
 			{
@@ -175,7 +178,7 @@ public map[str, ElementDefinition] Elements = (
 			}
 		],
 		[	//sensorpoints
-			selfPoint([TemperatureUnits], numValue(15, ["Celcius"]))
+			selfPoint("temperature")
 		]
 	),
 	
@@ -240,11 +243,13 @@ public map[str, ElementDefinition] Elements = (
 	"Room" : element(
 		[],	//modifiers
 		[	//attributes
-			requiredAttrib("volume", [VolumeUnits], false)
+			requiredAttrib("volume", [VolumeUnits], false),
+			hiddenProperty("temperature", [TemperatureUnits], numValue(15, ["Celcius"]))
+			
 		],
 		[],	//connectionpoints
 		[	//sensorpoints
-			selfPoint([TemperatureUnits], numValue(15, ["Celcius"]))
+			selfPoint("temperature")
 		]
 	)
 );

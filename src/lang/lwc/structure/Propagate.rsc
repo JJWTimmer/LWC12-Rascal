@@ -3,6 +3,7 @@ module lang::lwc::structure::Propagate
 import lang::lwc::structure::AST;
 import lang::lwc::Definition;
 import lang::lwc::Constants;
+import IO;
 
 data AliasInfo = ai(list[Modifier] modifiers, str elemname, list[Attribute] attributes);
 
@@ -79,8 +80,8 @@ public Structure propagateProps(Structure ast) {
 			insert E;
 		}
 		
-		case P:pipe(_, _, _,  _, _) : {
-			P.attributes += [ realproperty(name, defaultvalue) | hiddenProperty(name, _, defaultvalue) <- HiddenProps["Pipe"]];;	
+		case P:pipe(_*): {
+			P.attributes += [ realproperty(name, getValue(defaultValue)) | hiddenProperty(name, _, defaultvalue) <- HiddenProps["Pipe"]];	
 			insert P;
 		}
 	}
@@ -118,7 +119,7 @@ public Structure propagateConnectionPoints(Structure ast) {
 	return ast;
 }
 
-//add sensorpoints from definition to the ast
+// Add sensorpoints from definition to the ast
 public Structure propagateSensorPoints(Structure ast) {
 	return top-down-break visit(ast) {
 		case E:element(_, elementname(str ElemName), _, list[Attribute] Attributes) : {
@@ -171,9 +172,11 @@ private list[Attribute] getSensorPoints(list[Attribute] attributes, list[SensorP
 		case [A*, attribute(attributename("sensorpoints"), _), B*] => A+B
 	}
 	
-	if (points != []) {
-		list[Value] definedPoints = [ variable(name) | sensorPoint(str name, _) <- points ];
-		if (/selfPoint(_) := points)
+	if (points != []) 
+	{
+		list[Value] definedPoints = [ variable(name) | sensorPoint(str name) <- points ];
+		
+		if (/selfPoint(str property) := points)
 			definedPoints += [variable("[self]")];
 		
 		attributes += [attribute(attributename("sensorpoints"), valuelist(definedPoints))];

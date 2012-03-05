@@ -92,15 +92,12 @@ public map[str, list[AttributeDefinition]] RequiredAttribs = {
 	pmap;
 };
 
-public map[str, list[AttributeDefinition]] HiddenProps     = {
+public map[str, list[AttributeDefinition]] HiddenProps = {
 	map[str, list[AttributeDefinition]] pmap = ();
+	
 	for (key <- Elements) {
-		list[AttributeDefinition] plist = [];
-		for (H:hiddenProperty(_,_,_)   <- Elements[key].attributes) {
-			plist += H;
-		}
-		pmap[key] = plist;
-
+		pmap[key] = for (H:hiddenProperty(_,_,_) <- Elements[key].attributes)
+			append(H);
 	}
 	
 	pmap;

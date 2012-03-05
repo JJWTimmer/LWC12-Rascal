@@ -35,7 +35,7 @@ public data ValueDefinition
 	| none();
 				  	   
 public data SensorPointDefinition 
-	= sensorPoint(str name, str property)
+	= sensorPoint(str property)
 	| selfPoint(str property); //elementname == sensorpoint
 				 			 
 public data ConnectionPointDefinition 
@@ -96,7 +96,6 @@ public map[str, ElementDefinition] Elements = (
 		]
 	),
 	
-	
 	"Exhaust" : element(
 		[	//modifiers
 			{"Gas", "Liquid"}
@@ -135,8 +134,8 @@ public map[str, ElementDefinition] Elements = (
 		],
 		[],	//connectionpoints
 		[	//sensorpoints
-			sensorPoint("flow", "flow"),
-			sensorPoint("temperature", "temperature")
+			sensorPoint("flow"),
+			sensorPoint("temperature")
 		]
 	),
 	

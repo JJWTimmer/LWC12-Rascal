@@ -13,9 +13,44 @@ public Structure propagate(Structure ast) {
 	ast = propagateDefaults(ast);
 	ast = propagateConnectionPoints(ast);
 	ast = propagateSensorPoints(ast);
+	ast = propagateSensorConnections(ast);
 	ast = propagateProps(ast);
 	
 	return ast;
+}
+
+ 
+public Structure propagateSensorConnections(Structure ast)
+{
+	return visit(ast)
+	{
+		case E:element(_, elementname("Sensor"), N, attributes): 
+		{
+			E.attributes = for (A <- attributes) 
+			{
+				// Check if this sensor is connected on a self point 
+				if (attribute(attributename("on"), valuelist([variable(V)])) := A)
+				{
+					// Lookup the target element in the ast
+					if (/T:element(_, elementname(targetType), V, _) := ast)
+					{
+						// Lookup the self referencing property of the target's self-sensor in the definition
+						if (/selfPoint(propertyName) := DefinedSensorPoints[targetType]) 
+						{
+							A.val = valuelist([property(V, propname(propertyName))]);
+						} 
+						else throw("The <V> sensor <N> is connected to, has not self-sensor");  	
+					} 
+					else throw("Sensor target <T> not found");
+					
+				}
+				
+				append(A);
+			}
+			
+			insert E; 
+		}
+	}
 }
 
 //fill in all alias info in the ast

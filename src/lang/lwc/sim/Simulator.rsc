@@ -33,7 +33,7 @@ public void simulate(loc baseName)
 
 	// Create context
 	SimContext context = initSimContext(structureAst, controllerAst);
-	
+	iprint(context);
 	context = registerStepAction(physicsAction, context);	
 	
 	// Context mutation callbacks

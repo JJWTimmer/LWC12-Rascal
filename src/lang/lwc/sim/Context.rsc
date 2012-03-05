@@ -48,8 +48,7 @@ data SimBucket
 	= simBucketBoolean(bool b)
 	| simBucketNumber(num n)
 	| simBucketVariable(str v)
-	| simBucketList(list[SimBucket] l)
-	| simBucketNothing();
+	| simBucketList(list[SimBucket] l);
 
 public SimBucket createSimBucket(\false()) 					= simBucketBoolean(false);
 public SimBucket createSimBucket(\true()) 					= simBucketBoolean(true);
@@ -176,8 +175,6 @@ public list[value] getSimContextBucketList(str element, str property, SimContext
 public list[value] getSimContextBucketList(SimBucket bucket) {
 	if (simBucketList(V) := bucket)
 		return [bucketToValue(x) | x <- V];
-	else if (simBucketNothing() := bucket)
-		return [];
 	else
 		throw "Bucket not a list: <bucket>";
 }
@@ -236,7 +233,6 @@ private value bucketToValue(SimBucket bucket)
 		case simBucketNumber(V): 	return V;
 		case simBucketVariable(V): 	return V;
 		case L:simBucketList(_): 		return getSimContextBucketList(L);
-		case simBucketNothing(): 	return nothing();
 		
 		default: throw "Unknown bucket type";
 	}

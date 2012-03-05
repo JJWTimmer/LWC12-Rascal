@@ -14,8 +14,6 @@ import vis::Render;
 import vis::KeySym;
 import IO;
 
-import IO;
-
 alias StructureMouseHandler = bool(int butnr, str \type, str name);
 
 alias UpdateContextValue = void(str property, str element, SimBucket val);
@@ -78,26 +76,34 @@ public Figure buildInteractiveContextAwareStructureGraphWithSidebar(
 }
 
 public Figure buildSidebar(Structure ast, str etype, str name, SimData simData, UpdateContextValue updateContextValue) {
+	list[Figure] fields = [];
+	
 	list[SimProperty] simProps = getSimContextProperties(simData, name);
 	list[SimProperty] editableSimProps = [];
-	
+		
 	if (EditableProps[etype]?)
 		editableSimProps = [ A | A:simProp(str s, _) <- simProps, s in EditableProps[etype] ];
 	
-	list[Figure] fields = [ buildField(ast, name, simProp, updateContextValue) | simProp <- editableSimProps ];
+	fields = [ buildField(ast, etype, name, simProp, updateContextValue) | simProp <- editableSimProps ];
 	
 	return box(
 		vcat([text(name, fontSize(20))] + fields, gap(5))
 	);
 }
 
-Figure buildField(Structure ast, str element, simProp(str name, SimBucket bucket), UpdateContextValue updateContextValue)
-	= vcat([
-			text(name, fontSize(14)),
-			buildEdit(ast, element, name, bucket, updateContextValue)
-		], 
-		gap(5)
-	);
+Figure buildField(Structure ast, str etype, str element, simProp(str name, SimBucket bucket), UpdateContextValue updateContextValue) {
+	Figure f;
+	println("etype <etype>, element <element>, simProp <name>, bucket <bucket>");
+	if(etype == "Sensor") {
+		f = buildEditSensor(element, name, bucket, updateContextValue);
+	}
+	else {
+		f = buildEdit(ast, element, name, bucket, updateContextValue);
+	}
+	return vcat([
+				text(name, fontSize(14)),
+				f], gap(5));
+}
 
 Figure buildEdit(Structure ast, str element, str name, B:simBucketBoolean(bool b), UpdateContextValue updateContextValue) = 
 	checkbox(name, void (bool state) { 
@@ -120,31 +126,18 @@ Figure buildEdit(Structure ast, str element, str name, B:simBucketNumber(int n),
 }
 
 Figure buildEdit(Structure ast, str elementName, str name, B:simBucketList(list[SimBucket] bucketList), UpdateContextValue updateContextValue) {	
-	if(/element(_, elementname("Valve"), elementName, list[Attribute] attributes) := ast) {
-		buildValveEdit(elementName, name, attributes, B, updateContextValue);
-	}
-	
-	if(/element(_, elementname("Sensor"), elementName, list[Attribute] attributes) := ast) {
-		buildSensorEdit(elementName, name, attributes, B, updateContextValue);
-	}
-}
-
-default Figure buildEdit(Structure ast, str element, str name, B:SimBucket bucket, UpdateContextValue updateContextValue) {
-	println("Could not match <bucket>");
-}
-
-Figure buildValveEdit(str elementName, str name, list[Attribute] attributes, B:simBucketList(list[SimBucket] bucketList), UpdateContextValue updateContextValue) {
 	SimBucket newBucketList(str s, bool b) = createSimBucket(
 		[ B | B:simBucketVariable(str var) <- bucketList, (var==s && b) || var!=s ]);
 
-	
 	Figure buildCheckBox(str v) = checkbox(v, void (bool state) { updateContextValue(elementName, name, newBucketList(v, state)); });
-		
+	
 	set[str] variables = {};
-	variables = { v
-			| attribute(attributename("connections"), valuelist(list[Value] values)) <- attributes,
-			variable(str v) <- values
-			};
+	if(/element(_, elementname("Valve"), elementName, list[Attribute] attributes) := ast) {
+		variables = { v
+					| attribute(attributename("connections"), valuelist(list[Value] values)) <- attributes,
+					  variable(str v) <- values
+					};
+	}
 	for(simBucketVariable(str b) <- B) {
 		variables += b;
 	}
@@ -156,6 +149,11 @@ Figure buildValveEdit(str elementName, str name, list[Attribute] attributes, B:s
 	return hcat(checkBoxes); 
 }
 
-Figure buildSensorEdit(str elementName, str name, list[Attribute] attributes, B:simBucketList(list[SimBucket] bucketList), UpdateContextValue updateContextValue) {
-	
+default Figure buildEdit(Structure ast, str element, str name, B:SimBucket bucket, UpdateContextValue updateContextValue) {
+	println("Could not match <bucket>");
+}
+
+Figure buildEditSensor(str elementName, str name, B:simBucketNumber(int n), UpdateContextValue updateContextValue) {
+	println("sensor <elementName>, bucket <B>");
+	return vcat([text(name, fontSize(14)), text(n, fontSize(14))]);
 }

@@ -42,10 +42,8 @@ alias SimContextLookup = SimContext();
 data ElementState = state(str name, str \type, list[SimProperty] props);
 
 data SimProperty = simProp(str name, SimBucket bucket);
-data SensorRef = sensorRef(str name, ElementRef ref);
+data SensorRef = sensorRef(str name, str element, str property);
 data ManualValue = manualVal(str name, SimBucket bucket);
-
-data ElementRef = directRef(str element) | propRef(str element, str property);
 
 data SimBucket 
 	= simBucketBoolean(bool b)
@@ -71,66 +69,51 @@ public SimContext initSimContext(Structure sAst, Controller cAst)
 	list[SensorRef] sensors = [];
 	list[ManualValue] manuals = [];
 	
-	//
-	// HIER GEBLEVEN - De sensor points referen naar properties. Deze moeten hier opgehaald worden
-	//
-	
-	list[str] ignoredAttributes = ["sensorpoints", "connections", "position"];	
+	list[str] ignoredAttributes = [
+		"sensorpoints", 
+		"connections", 
+		"position"
+	];	
 	
 	list[SimProperty] getProps(list[Attribute] attributes) =
-					// Single attributes 
-					[ simProp(N, createSimBucket(V)) | attribute(attributename(N), valuelist([V, _*])) <- attributes, N notin ignoredAttributes ]
-					
-					// Real properties
-				  + [ simProp(N, createSimBucket(V)) | realproperty(N, valuelist([V, _*]))  <- attributes]
-				  
-				  	// Multiple properties
-				  + [ simProp(N, createSimBucket(V)) | attribute(attributename(N), valuelist(V)) <- attributes, N in ignoredAttributes ];
+		// Single attributes 
+		[ simProp(N, createSimBucket(V)) | attribute(attributename(N), valuelist([V, _*])) <- attributes, N notin ignoredAttributes ]
+		
+		// Real properties
+	  + [ simProp(N, createSimBucket(V)) | realproperty(N, valuelist([V, _*]))  <- attributes]
+	  
+	  	// Multiple properties
+	  + [ simProp(N, createSimBucket(V)) | attribute(attributename(N), valuelist(V)) <- attributes, N in ignoredAttributes ];
 	
 	SimBucket getPropByName(str name, list[Attribute] attributes)
-	{
-		if (/simProp(name, B) := getProps(attributes))
-			return B;
-		
-		return createSimBucket(_);
-	}
+		= (/simProp(name, B) := getProps(attributes)) 
+			? B 
+			: createSimBucket(_);
 	
 	// Visit the structure AST
 	visit(sAst) 
 	{
-		case E:element(modifiers, elementname(\type), name, attributes): {
+		case E:element(modifiers, elementname(\type), name, attributes): 
+		{
 			if (\type != "Sensor") 
-			{
 				elements += state(name, \type, getProps(attributes));
-			} 
+			
 			else 
 			{
-				println("Finding sensors for <\type> <name>");
-				
-				ElementRef ref;
-				
 				// Find the connection point
 				if (/attribute(attributename("on"), valuelist([variable(V)])) := attributes)
-				{
-					ref = directRef(V);
-				} 
-				else if (/attribute(attributename("on"), valuelist([property(V, propname(P))])) := attributes)
-				{
-					ref = propRef(V, P);
-				}
-				else
-				{
-					throw "Did not find or recongnize connection point for sensor <name>";
-				}
+					throw "This attribute should have been propagated ...";
 				
-				println(ref);
-				sensors += sensorRef(name, ref);
+				else if (/attribute(attributename("on"), valuelist([property(V, propname(P))])) := attributes)
+					sensors += sensorRef(name, V, P);
+				
+				else
+					throw "Did not find or recongnize connection point for sensor <name>";
 			}
 		}
 		
-		case pipe(_, str name, _, _, list[Attribute] attributes): {
+		case pipe(_, str name, _, _, list[Attribute] attributes): 
 			elements += state(name, "Pipe", getProps(attributes));
-		}
 	}
 	
 	// Visit the controller AST
@@ -165,46 +148,29 @@ public SimContext simContextExecuteActions(SimContext context)
 public list[SimProperty] getSimContextProperties(SimData \data, str element) 
 	= [ p | state(element, _, P:props) <- \data.elements, p <- P ];
 
-public SimBucket getSimContextBucket(directRef(str element), SimContext ctx) = getSimContextBucket(element, "", ctx);
-public SimBucket getSimContextBucket(propRef(str element, str prop), SimContext ctx) = getSimContextBucket(element, prop, ctx);
-
 public SimBucket getSimContextBucket(str element, str property, SimContext ctx)
 {
-	println("SimContext: getSimContextBucket(<element>, <property>)");
-	
 	// Check if there's a regular element with the given element name
 	if (/state(element, T, L) := ctx.\data.elements)
 	{	
 		if (/simProp(property, V) := L)
-		{
-			println("Element: <V>");
 			return V;
-		}
 			
-		str message = "Property <element>.<property> not found in simulation context.\n"
+		throw "Property <element>.<property> not found in simulation context.\n"
 			+ "The following properties are available:\n"
-			+ " - " + intercalate("\n - ", [ P | /simProp(P, _) <- L]); 
-			
-		throw message;
+			+ " - " + intercalate("\n - ", [ P | /simProp(P, _) <- L]);
 	}
 	
 	// Check if there's a sensor with the given element name
-	else if (/sensorRef(element, ref) := ctx.\data.sensors)
-	{
-		println("Lookup sensor\'s <element> value by reference <ref>"); 
-		return getSimContextBucket(ref, ctx); 
-	}
+	else if (/sensorRef(element, V, P) := ctx.\data.sensors)
+		return getSimContextBucket(V, P, ctx); 
 	
 	// Check if there's a manual value with the given element name
 	else if (/manualVal(element, B) := ctx.\data.manuals)
-	{
-		println(B);
 		return B;
-	}
+	
 	else
-	{
 		throw "Property <element>.<property> not found in simulation context. The element is not defined in the structure.";
-	}
 }
 
 public value getSimContextBucketValue(str element, SimContext ctx)
@@ -223,13 +189,13 @@ public list[value] getSimContextBucketList(SimBucket bucket) {
 		throw "Bucket not a list: <bucket>";
 }
 
-public SimContext setSimContextBucket(str element, str property, SimBucket val, SimContext ctx) {
-
+public SimContext setSimContextBucket(str element, str property, SimBucket val, SimContext ctx) 
+{
 	println("Setting <element>.<property> to <val>");
 	
 	bool done = false;
 	
-	\data = top-down-break visit (ctx.\data)
+	ctx.\data = top-down-break visit (ctx.\data)
 	{
 		case S:state(element, _, [head*, P:simProp(property, _), tail*]):
 		{
@@ -242,10 +208,8 @@ public SimContext setSimContextBucket(str element, str property, SimBucket val, 
 	}
 
 	if (! done)
-		throw "Could not set value";
+		throw "Could not set the given value <val> for <element>.<property>";
 
-	ctx.\data = \data;
-	
 	return ctx;
 }
 

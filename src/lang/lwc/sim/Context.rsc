@@ -160,6 +160,9 @@ public SimContext simContextExecuteActions(SimContext context)
 public list[SimProperty] getSimContextProperties(SimData \data, str element) 
 	= [ p | state(element, _, P:props) <- \data.elements, p <- P ];
 
+public SimBucket getSimContextBucket(directRef(str element), SimContext ctx) = getSimContextBucket(element, "", ctx);
+public SimBucket getSimContextBucket(propRef(str element, str prop), SimContext ctx) = getSimContextBucket(element, prop, ctx);
+
 public SimBucket getSimContextBucket(str element, str property, SimContext ctx)
 {
 	println("SimContext: getSimContextBucket(<element>, <property>)");
@@ -181,10 +184,10 @@ public SimBucket getSimContextBucket(str element, str property, SimContext ctx)
 	}
 	
 	// Check if there's a sensor with the given element name
-	else if (/sensorVal(element, B) := ctx.\data.sensors)
+	else if (/sensorRef(element, ref) := ctx.\data.sensors)
 	{
-		println("Sensor: <B>");
-		return B;
+		println("Lookup sensor\'s <element> value by reference <ref>"); 
+		return getSimContextBucket(ref); 
 	}
 	
 	// Check if there's a manual value with the given element name

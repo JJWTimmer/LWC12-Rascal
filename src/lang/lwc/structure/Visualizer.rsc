@@ -43,7 +43,7 @@ private Figure buildGraph(Structure ast, StructureMouseHandler mouseHandler, Sim
 		// Match sensors
 		case E:element(M, elementname("Sensor"), N, _): {
 			edges += sensorEdges(E, N);
-			nodes += sensorFigure(N, M);
+			nodes += sensorFigure(N, M, mouseHandler);
 		}
 		
 		// Handle Joints
@@ -101,7 +101,7 @@ private Figure buildGraph(Structure ast, StructureMouseHandler mouseHandler, Sim
 
 list[Edge] sensorEdges(Statement E, str to) = [ edge(name, to, lineColor("blue")) | str name <- collectSensorConnections(E) ];
 
-Figure sensorFigure(str N, list[Modifier] modifiers) 
+Figure sensorFigure(str N, list[Modifier] modifiers, StructureMouseHandler mouseHandler) 
 { 
 	str name = intercalate(" ", [ m.id | m <- modifiers]);
 	 

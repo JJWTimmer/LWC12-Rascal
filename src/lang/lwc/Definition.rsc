@@ -35,8 +35,8 @@ public data ValueDefinition
 	| none();
 				  	   
 public data SensorPointDefinition 
-	= sensorPoint(str name, list[list[Unit]] unit)
-	| selfPoint(list[list[Unit]] unit);	//elementname == sensorpoint
+	= sensorPoint(str name, list[list[Unit]] unit, ValueDefinition defaultvalue)
+	| selfPoint(list[list[Unit]] unit, ValueDefinition defaultvalue);	//elementname == sensorpoint
 				 			 
 public data ConnectionPointDefinition 
 	= gasConnection(str name)
@@ -68,7 +68,7 @@ public map[str, ElementDefinition] Elements = (
 			}
 		],
 		[	//sensorpoints
-			selfPoint([TemperatureUnits])
+			selfPoint([TemperatureUnits], numValue(15, ["Celcius"]))
 		]
 	),
 	
@@ -90,8 +90,8 @@ public map[str, ElementDefinition] Elements = (
 			}
 		],
 		[	//sensorpoints
-			sensorPoint("ignitiondetect", [TemperatureUnits]),
-			sensorPoint("internaltemp", [TemperatureUnits])
+			sensorPoint("ignitiondetect", [TemperatureUnits], boolValue(false)),
+			sensorPoint("internaltemp", [TemperatureUnits], numValue(15, ["Celcius"]))
 		]
 	),
 	
@@ -132,8 +132,8 @@ public map[str, ElementDefinition] Elements = (
 		],
 		[],	//connectionpoints
 		[	//sensorpoints
-			sensorPoint("flow", [VolumeUnits, TimeUnits]),
-			sensorPoint("temperature", [TemperatureUnits])
+			sensorPoint("flow", [VolumeUnits, TimeUnits], numValue(1, ["km", "hour"])),
+			sensorPoint("temperature", [TemperatureUnits], numValue(15, ["Celcius"]))
 		]
 	),
 	
@@ -156,7 +156,7 @@ public map[str, ElementDefinition] Elements = (
 			}
 		],
 		[	//sensorpoints
-			selfPoint([SpeedUnits])
+			selfPoint([SpeedUnits], numValue(1, ["km", "hour"]))
 		]
 	),
 	
@@ -175,7 +175,7 @@ public map[str, ElementDefinition] Elements = (
 			}
 		],
 		[	//sensorpoints
-			selfPoint([TemperatureUnits])
+			selfPoint([TemperatureUnits], numValue(15, ["Celcius"]))
 		]
 	),
 	
@@ -193,7 +193,7 @@ public map[str, ElementDefinition] Elements = (
 		[	//attributes
 			requiredAttrib("on", [], false),   	// sensorpoint
 			requiredAttrib("range", [], false), // depends on modifier
-			hiddenProperty("value", [], none())
+			hiddenProperty("value", [], numValue(14, ["Celsius"]))
 		],
 		[],	//connectionpoints
 		[]	//sensorpoints
@@ -245,7 +245,7 @@ public map[str, ElementDefinition] Elements = (
 		],
 		[],	//connectionpoints
 		[	//sensorpoints
-			selfPoint([TemperatureUnits])
+			selfPoint([TemperatureUnits], numValue(15, ["Celcius"]))
 		]
 	)
 );

@@ -164,7 +164,7 @@ private Attribute getConnectionPoints(str elemName, list[Modifier] mods, list[At
 	return attribute(attributename("connections"), valuelist([variable(var) | var <- elementConnectionPointNames]));
 }
 
-//remove userdefined sensorpoints and add those from the defintion
+// Remove user-defined sensorpoints and add those from the defintion
 private list[Attribute] getSensorPoints(list[Attribute] attributes, list[SensorPointDefinition] points) {
 
 	attributes = visit (attributes) {
@@ -172,10 +172,10 @@ private list[Attribute] getSensorPoints(list[Attribute] attributes, list[SensorP
 	}
 	
 	if (points != []) {
-		list[Value] definedPoints = [variable(name) | sensorPoint(str name, _) <- points];
-		if (/selfPoint(_) := points) {
-			definedPoints += [variable("[self]")];		
-		}
+		list[Value] definedPoints = [ variable(name) | sensorPoint(str name, _) <- points ];
+		if (/selfPoint(_) := points)
+			definedPoints += [variable("[self]")];
+		
 		attributes += [attribute(attributename("sensorpoints"), valuelist(definedPoints))];
 	}
 	

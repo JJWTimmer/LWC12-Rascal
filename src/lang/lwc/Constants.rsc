@@ -56,9 +56,19 @@ set[str] getEditableProps(str elementName) {
 		case requiredAttrib(str name, _, true) : result += name;
 		case optionalAttrib(str name, _, _, true) : result += name;
 		case optionalModifierAttrib(str name, _, _, _, true) : result += name;
-		case sensorPoint(str name, _) : result += name;
-		case selfPoint(_) : result += "self";
 		case hiddenProperty(str name, _, _) : result += name;
+	}
+	
+	return result;
+}
+
+set[str] getReadableProps(str elementName) {
+	set[str] result = {};
+	
+	visit (Elements[elementName]) {
+		case requiredAttrib(str name, _, false) : result += name;
+		case optionalAttrib(str name, _, _, false) : result += name;
+		case optionalModifierAttrib(str name, _, _, _, false) : result += name;
 	}
 	
 	return result;
@@ -111,3 +121,5 @@ public map[str, list[SensorPointDefinition]] DefinedSensorPoints = ( key : Eleme
 public map[str, map[str,str]] ElementProperties = ( key : getProperties(key) | key <- Elements );
 public map[str, list[set[str]]] ElementModifiers = ( key : Elements[key].modifiers | key <- Elements );
 public map[str, set[str]] EditableProps = ( key : getEditableProps(key) | key <- Elements );
+public map[str, set[str]] ReadableProps = ( key : getReadableProps(key) | key <- Elements );
+

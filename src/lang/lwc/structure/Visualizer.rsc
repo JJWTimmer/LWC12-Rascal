@@ -110,7 +110,11 @@ Figure sensorFigure(str N, list[Modifier] modifiers)
 			text(abbreviateSensorType(name), fontSize(9)), 
 			text(N)
 		]), 
-		id(N), lineColor("blue"));
+		id(N), 
+		lineColor("blue"),
+		onMouseDown(bool(int butnr, map[KeyModifier,bool] modifiers) {
+			return mouseHandler(butnr, "Sensor", N);
+		}));
 }
 
 //

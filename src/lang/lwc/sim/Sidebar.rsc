@@ -129,7 +129,7 @@ Figure buildEdit(Structure ast, str elementName, str name, B:simBucketList(list[
 	
 	if(/element(_,elementname("Valve"), elementName, list[Attribute] attributes) := ast) {
 		variables = { v
-				| attribute("connections", valuelist(list[Value] values)) <- attributes,
+				| attribute(attributename("connections"), valuelist(list[Value] values)) <- attributes,
 				variable(str v) <- values
 				}; 
 	}
@@ -143,11 +143,6 @@ Figure buildEdit(Structure ast, str elementName, str name, B:simBucketList(list[
 	}
 	return hcat(checkBoxes);
 }
-
-/*
-Figure buildEdit(Structure ast, str element, str name, B:simBucketNothing(), UpdateContextValue updateContextValue)
-	= buildEdit(ast, element, name, simBucketList([]), updateContextValue);
-*/
 
 default Figure buildEdit(Structure ast, str element, str name, B:SimBucket bucketList, UpdateContextValue updateContextValue) {
 	println("Could not match <bucketList>");

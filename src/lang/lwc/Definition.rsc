@@ -55,7 +55,8 @@ public map[str, ElementDefinition] Elements = (
 		[],	//modifiers
 		[	//attributes
 			optionalAttrib("capacity", [VolumeUnits], numValue(50, ["liter"]), false),
-			hiddenProperty("watertemp", [TemperatureUnits], numValue(80, ["Celsius"]))
+			hiddenProperty("watertemp", [TemperatureUnits], numValue(15, ["Celsius"])),
+			hiddenProperty("requestedtemp", [TemperatureUnits], numValue(80, ["Celsius"]))
 		],
 		[	//connectionpoints
 			{

@@ -2,8 +2,11 @@ module lang::lwc::sim::Physics
 
 import lang::lwc::sim::Context;
 import lang::lwc::sim::Reach;
+import lang::lwc::sim::Graph;
 
 import util::Maybe;
+import util::Math;
+import Graph;
 import List;
 import IO;
 
@@ -12,6 +15,7 @@ public SimContext physicsAction(SimContext ctx) {
 
 	ctx = modifyRadiatorTemp(ctx);
 	ctx = modifyRoomTemp(ctx);
+	ctx = modifyBoilerTemp(ctx);
 	
 	return ctx;
 }
@@ -38,7 +42,6 @@ private SimContext modifyRoomTemp(SimContext ctx) {
 			
 			println("average radiator temp in this room: <waterTemp> Celcius");
 			
-			//find the room temperature and increment it unless >= watertemp
 			if ([H*, simProp("temperature", simBucketNumber(temp)), T*] := props) {
 				println("room temp: <temp> Celcius");
 				
@@ -51,8 +54,6 @@ private SimContext modifyRoomTemp(SimContext ctx) {
 				}
 				
 				S.props = H+T+[simProp("temperature", simBucketNumber(temp+tempDelta))];
-				
-				iprintln(S.props);
 			}
 
 			insert S;
@@ -61,6 +62,40 @@ private SimContext modifyRoomTemp(SimContext ctx) {
 
 	return ctx;
 }
+
+private SimContext modifyBoilerTemp(SimContext ctx) {
+	chus = getCentralHeatingUnits(ctx, true);
+
+	ctx.\data.elements = visit(ctx.\data.elements) {
+		case state(boilername, "Boiler", boilerprops) : {
+			reachable = reach(ctx.reachGraph, elementNode(boilername, just("centralheatingout")));
+			reachablechus = {chu | elementNode(chu, _) <- reachable, chu in chus};
+			reachself = false;
+			if (/elementNode(boilername, just("centralheatingin")) := reachable) {
+				reachself = true;
+			}
+			heatertemp = 0;
+			for (chu in reachablechus) {
+				heatertemp = max(getSimContextBucket(chu, "burnertemp", ctx), heatertemp);
+			}
+			
+			int tempDelta = 0;
+				
+			if (temp < heatertemp) {
+				tempDelta = 1;
+			} else if (temp > heatertemp) {
+				tempDelta = -1;
+			}
+			
+			oldTemp = getSimContextBucket(boilername, "watertemp", ctx);
+			ctx = setSimContextBucket(boilername, "watertemp", SimBucketNumber(oldTemp+tempDelta));
+
+		}
+	}
+	
+	return ctx;
+}
+
 
 private set[str] getRoomRadiators(str roomname, SimContext ctx) {
 	set[str] radiators = {};

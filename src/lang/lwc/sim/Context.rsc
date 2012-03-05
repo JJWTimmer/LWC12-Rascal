@@ -10,6 +10,7 @@ import util::Maybe;
 import String;
 import Graph;
 import Type;
+import List;
 
 data SimData = simData(
 	list[ElementState] elements, 
@@ -70,6 +71,10 @@ public SimContext initSimContext(Structure sAst, Controller cAst)
 	list[SensorRef] sensors = [];
 	list[ManualValue] manuals = [];
 	
+	//
+	// HIER GEBLEVEN - De sensor points referen naar properties. Deze moeten hier opgehaald worden
+	//
+	
 	list[str] ignoredAttributes = ["sensorpoints", "connections", "position"];	
 	
 	list[SimProperty] getProps(list[Attribute] attributes) =
@@ -118,6 +123,7 @@ public SimContext initSimContext(Structure sAst, Controller cAst)
 					throw "Did not find or recongnize connection point for sensor <name>";
 				}
 				
+				println(ref);
 				sensors += sensorRef(name, ref);
 			}
 		}
@@ -186,7 +192,7 @@ public SimBucket getSimContextBucket(str element, str property, SimContext ctx)
 	else if (/sensorRef(element, ref) := ctx.\data.sensors)
 	{
 		println("Lookup sensor\'s <element> value by reference <ref>"); 
-		return getSimContextBucket(ref); 
+		return getSimContextBucket(ref, ctx); 
 	}
 	
 	// Check if there's a manual value with the given element name

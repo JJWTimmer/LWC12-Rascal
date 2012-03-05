@@ -23,7 +23,6 @@ public bool isReachable(Graph[ElementNode] staticgraph, SimContext context, str 
 		if (elem.\type == "Valve") {
 
 			if ([_*,simProp("position", val),_*] := elem.props) {
-				iprintln(val);
 				list[value] vl = getSimContextBucketList(val);
 				
 				if (size(vl) > 1) {

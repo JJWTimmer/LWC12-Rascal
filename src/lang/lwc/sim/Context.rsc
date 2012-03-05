@@ -187,7 +187,7 @@ public SimContext setSimContextBucket(str element, str property, SimBucket val, 
 	
 	\data = top-down-break visit (ctx.\data)
 	{
-		case S:state(E, _, [head*, P:simProp(property, _), tail*]):
+		case S:state(element, _, [head*, P:simProp(property, _), tail*]):
 		{
 			P.bucket = val;
 			S.props = head + P + tail;
@@ -196,7 +196,7 @@ public SimContext setSimContextBucket(str element, str property, SimBucket val, 
 			insert S;
 		}
 	}
-	
+
 	if (! done)
 		throw "Could not set value";
 

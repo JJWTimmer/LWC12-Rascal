@@ -1,7 +1,7 @@
 MIN_GAS = 50
 BURNER_RAMPUP = 5
 RADIATOR_MARGIN = 2
-WATER_MARGIN = 5
+WATER_MARGIN = 1
 
 # 
 # Controls in diagram
@@ -32,7 +32,7 @@ condition boilerTempHigh: B1.watertemp > DESIRED_WATER_TEMP
 condition heatNeeded: roomTempLow or boilerTempLow
 
 state OFF: 
-	V1.position = :c
+	V1.position = :a, :b, :c
 	if heatNeeded: goto IGNITE
 
 state IGNITE:

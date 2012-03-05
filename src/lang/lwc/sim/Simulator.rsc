@@ -34,8 +34,8 @@ public void simulate(loc baseName)
 	// Create context
 	SimContext context = initSimContext(structureAst, controllerAst);
 	
-	context = registerStepAction(physicsAction, context);
-
+	context = registerStepAction(physicsAction, context);	
+	
 	// Context mutation callbacks
 	void simContextUpdate(SimContext ctx) { context = ctx; };
 	SimContext simContextLookup() = { return context; };

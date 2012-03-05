@@ -29,6 +29,8 @@ public SimContext step(SimContext ctx)
 	
 	ctx = simContextExecuteActions(ctx);
 	
+	iprintln(ctx);
+	
 	return ctx;
 }
 

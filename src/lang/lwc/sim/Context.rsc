@@ -124,7 +124,7 @@ public SimContext simContextExecuteActions(SimContext context)
 {
 	for (action <- context.stepActions)
 		context = action(context);
-		
+	
 	return context;
 }
 

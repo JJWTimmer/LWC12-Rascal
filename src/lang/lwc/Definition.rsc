@@ -228,9 +228,9 @@ public map[str, ElementDefinition] Elements = (
 		],
 		[	//connectionpoints
 			{
-				unknownConnection("a"),
-				unknownConnection("b"),
-				unknownConnectionModifier("c", "ThreeWay")
+				unknownConnection(":a"),
+				unknownConnection(":b"),
+				unknownConnectionModifier(":c", "ThreeWay")
 			}
 		],
 		[]	//sensorpoints
@@ -240,7 +240,8 @@ public map[str, ElementDefinition] Elements = (
 	"Room" : element(
 		[],	//modifiers
 		[	//attributes
-			requiredAttrib("volume", [VolumeUnits], false)
+			requiredAttrib("volume", [VolumeUnits], false),
+			hiddenProperty("temperature", [TemperatureUnits], numValue(15, ["Celcius"])) 
 		],
 		[],	//connectionpoints
 		[	//sensorpoints

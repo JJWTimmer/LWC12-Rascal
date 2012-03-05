@@ -47,10 +47,10 @@ Gas Source GasIn
 Controlled Valve V2
 	- connections: gasin, gasout;
 
-GasPipe G1 connects GasIn with V2.a
+GasPipe G1 connects GasIn with V2.:a
 	- length: 2.5 [m];
 
-GasPipe G2 connects V2.b with C1.gasin
+GasPipe G2 connects V2.:b with C1.gasin
 	- length: 0.5 [m];
 
 ##Water
@@ -68,13 +68,13 @@ WaterPipe W2 connects HotWaterOut with B1.hotwaterout
 #Waterpipes
 WaterPipe W3 connects C1.hotwaterout with P1.in
 	- length: 1 [m];
-WaterPipe W4 connects P1.out with V1.a
+WaterPipe W4 connects P1.out with V1.:a
 	- length: 1.5 [m];
-WaterPipe W5 connects V1.b with B1.centralheatingin
+WaterPipe W5 connects V1.:b with B1.centralheatingin
 	- length: 0.8 [m];
 WaterPipe W6 connects B1.centralheatingout with J1.fromboiler
 	- length: 1.2 [m];
-WaterPipe W7 connects V1.c with R1.in
+WaterPipe W7 connects V1.:c with R1.in
 	- length: 3 [m];
 WaterPipe W8 connects R1.out with J1.fromradiator
 	- length: 4 [m];

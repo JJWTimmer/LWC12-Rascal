@@ -181,11 +181,11 @@ public SimBucket getSimContextBucket(str element, str property, SimData \data)
 	}
 	
 	// Check if there's a sensor with the given element name
-	else if (/sensorRef(element, V, P) := ctx.\data.sensors) {
-		return getSimContextBucket(V, P, ctx); 
+	else if (/sensorRef(element, V, P) := \data.sensors) {
+		return getSimContextBucket(V, P, \data); 
 	}
 	// Check if there's a manual value with the given element name
-	else if (/manualVal(element, B) := ctx.\data.manuals) {
+	else if (/manualVal(element, B) := \data.manuals) {
 		return B;
 	}	
 	else

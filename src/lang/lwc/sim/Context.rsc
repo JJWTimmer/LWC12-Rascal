@@ -153,8 +153,9 @@ public SimBucket getSimContextBucket(str element, str property, SimContext ctx)
 	// Check if there's a regular element with the given element name
 	if (/state(element, T, L) := ctx.\data.elements)
 	{	
-		if (/simProp(property, V) := L)
+		if (/simProp(property, V) := L) {
 			return V;
+		}
 			
 		throw "Property <element>.<property> not found in simulation context.\n"
 			+ "The following properties are available:\n"
@@ -162,13 +163,13 @@ public SimBucket getSimContextBucket(str element, str property, SimContext ctx)
 	}
 	
 	// Check if there's a sensor with the given element name
-	else if (/sensorRef(element, V, P) := ctx.\data.sensors)
+	else if (/sensorRef(element, V, P) := ctx.\data.sensors) {
 		return getSimContextBucket(V, P, ctx); 
-	
+	}
 	// Check if there's a manual value with the given element name
-	else if (/manualVal(element, B) := ctx.\data.manuals)
+	else if (/manualVal(element, B) := ctx.\data.manuals) {
 		return B;
-	
+	}	
 	else
 		throw "Property <element>.<property> not found in simulation context. The element is not defined in the structure.";
 }
@@ -194,7 +195,7 @@ public SimContext setSimContextBucket(str element, str property, SimBucket val, 
 	println("Setting <element>.<property> to <val>");
 	
 	bool done = false;
-	
+
 	ctx.\data = top-down-break visit (ctx.\data)
 	{
 		case S:state(element, _, [head*, P:simProp(property, _), tail*]):
@@ -206,7 +207,7 @@ public SimContext setSimContextBucket(str element, str property, SimBucket val, 
 			insert S;
 		}
 	}
-
+		
 	if (! done)
 		throw "Could not set the given value <val> for <element>.<property>";
 
@@ -240,7 +241,7 @@ private value bucketToValue(SimBucket bucket)
 		case simBucketBoolean(V): 	return V;
 		case simBucketNumber(V): 	return V;
 		case simBucketVariable(V): 	return V;
-		case L:simBucketList(_): 		return getSimContextBucketList(L);
+		case L:simBucketList(_): 	return getSimContextBucketList(L);
 		
 		default: throw "Unknown bucket type";
 	}

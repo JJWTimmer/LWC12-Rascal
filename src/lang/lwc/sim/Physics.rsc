@@ -22,11 +22,8 @@ public SimContext physicsAction(SimContext ctx) {
 
 private SimContext modifyRadiatorTemp(SimContext ctx) {
 	visit (ctx.\data.elements) {
-		case S:state(name,"Room",props) : {
-			radiators = getRoomRadiators(name, ctx);
-			if (radiators != {}) {
-				ctx = setRadiatorTemp(radiators, ctx);
-			}
+		case S:state(name,"Radiator",props) : {
+			ctx = setRadiatorTemp(name, ctx);
 		}
 	}
 
@@ -34,7 +31,7 @@ private SimContext modifyRadiatorTemp(SimContext ctx) {
 }
 
 private SimContext modifyRoomTemp(SimContext ctx) {
-	ctx.\data.elements = visit (ctx.\data.elements) {
+	visit (ctx.\data.elements) {
 		case S:state(name, "Room", props) : {
 			println("found room <name> in states");
 			
@@ -42,21 +39,19 @@ private SimContext modifyRoomTemp(SimContext ctx) {
 			
 			println("average radiator temp in this room: <waterTemp> Celcius");
 			
-			if ([H*, simProp("temperature", simBucketNumber(temp)), T*] := props) {
-				println("room temp: <temp> Celcius");
-				
-				int tempDelta = 0;
-				
-				if (temp < waterTemp) {
-					tempDelta = 1;
-				} else if (temp > waterTemp) {
-					tempDelta = -1;
-				}
-				
-				S.props = H+T+[simProp("temperature", simBucketNumber(temp+tempDelta))];
+			simBucketNumber(temp) = getSimContextBucket(name, "temperature", ctx);
+			println("room temp: <temp> Celcius");
+			
+			int tempDelta = 0;
+			
+			if (temp < waterTemp) {
+				tempDelta = 1;
+			} else if (temp >= waterTemp) {
+				tempDelta = -1;
 			}
+			
+			ctx = setSimContextBucket(name, "temperature", simBucketNumber(temp+tempDelta), ctx);
 
-			insert S;
 		}
 	}
 
@@ -65,30 +60,29 @@ private SimContext modifyRoomTemp(SimContext ctx) {
 
 private SimContext modifyBoilerTemp(SimContext ctx) {
 	chus = getCentralHeatingUnits(ctx, true);
-
-	ctx.\data.elements = visit(ctx.\data.elements) {
+	
+	
+	visit(ctx.\data.elements) {
 		case state(boilername, "Boiler", boilerprops) : {
-			reachable = reach(ctx.reachGraph, elementNode(boilername, just("centralheatingout")));
-			reachablechus = {chu | elementNode(chu, _) <- reachable, chu in chus};
-			reachself = false;
-			if (/elementNode(boilername, just("centralheatingin")) := reachable) {
-				reachself = true;
-			}
 			heatertemp = 0;
-			for (chu in reachablechus) {
-				heatertemp = max(getSimContextBucket(chu, "burnertemp", ctx), heatertemp);
+			for (state(chuname, "CentralHeatingUnit", _) <- ctx.\data.elements) {
+				chuOutReachable = isReachable(ctx.reachGraph, ctx, chuname, just("hotwaterout"), boilername, just("centralheatingin"));
+				chuInReachable = isReachable(ctx.reachGraph, ctx, boilername, just("centralheatingout"), chuname, just("coldwaterin"));
+				if (chuOutReachable && chuInReachable)
+					heatertemp = max(getSimContextBucket(chuname, "burnertemp", ctx).n, heatertemp);
 			}
 			
 			int tempDelta = 0;
-				
-			if (temp < heatertemp) {
+			simBucketNumber(oldTemp) = getSimContextBucket(boilername, "watertemp", ctx);
+			
+			if (oldTemp < heatertemp) {
 				tempDelta = 1;
-			} else if (temp > heatertemp) {
+			} else if (oldTemp >= heatertemp) {
 				tempDelta = -1;
 			}
 			
-			oldTemp = getSimContextBucket(boilername, "watertemp", ctx);
-			ctx = setSimContextBucket(boilername, "watertemp", SimBucketNumber(oldTemp+tempDelta));
+			println("new boilertemp: <oldTemp+tempDelta> Celcius");
+			ctx = setSimContextBucket(boilername, "watertemp", simBucketNumber(oldTemp+tempDelta), ctx);
 
 		}
 	}
@@ -119,21 +113,26 @@ private set[str] getCentralHeatingUnits(SimContext ctx, bool heating) {
 	return chus;
 }
 
-private SimContext setRadiatorTemp(set[str] radiators, SimContext ctx) {
+private SimContext setRadiatorTemp(str radiator, SimContext ctx) {
 	chus = getCentralHeatingUnits(ctx, true);
+	reached = false;
 	println("heating CHUs: <chus>");
 	
 	visit(ctx.\data.elements) {
 		case state(chu, _, [_*, simProp("burnertemp",simBucketNumber(temp)), _*]) : {
 			if (chu in chus) {
-				for (radiator <- radiators) {
-					if(isReachable(ctx.reachGraph, ctx, chu, just("hotwaterout"), radiator, just("in")) && isReachable(ctx.reachGraph, ctx, radiator, just("out"), chu, just("coldwaterin"))) {
-						println("radiator <radiator> reachable, CHU temp: <temp>");
-						ctx = setSimContextBucket(radiator, "temperature", simBucketNumber(temp), ctx);
-					}
+				if(isReachable(ctx.reachGraph, ctx, chu, just("hotwaterout"), radiator, just("in")) && isReachable(ctx.reachGraph, ctx, radiator, just("out"), chu, just("coldwaterin"))) {
+					println("radiator <radiator> reachable, CHU temp: <temp>");
+					reached = true;
+					ctx = setSimContextBucket(radiator, "temperature", simBucketNumber(temp), ctx);
 				}
 			}
 		}
+	}
+	
+	if (!reached) {
+		simBucketNumber(oldTemp) = getSimContextBucket(radiator, "temperature", ctx); 
+		ctx = setSimContextBucket(radiator, "temperature", simBucketNumber(15), ctx);
 	}
 	
 	return ctx;

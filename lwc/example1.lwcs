@@ -22,8 +22,7 @@ Room LivingRoom
 Boiler B1
 	- capacity: 50 [liter];
 	
-Controlled ThreeWay Valve V1
-	- connections: pumpin, boilerout, radiatorout;
+Controlled ThreeWay Valve V1;
 
 Radiator R1
 	- power: 600 [watt]
@@ -44,8 +43,7 @@ CentralHeatingUnit C1;
 Gas Source GasIn
 	- flowrate: 10 [m3/hour];
 
-Controlled Valve V2
-	- connections: gasin, gasout;
+Controlled Valve V2;
 
 GasPipe G1 connects GasIn with V2.:a
 	- length: 2.5 [m];

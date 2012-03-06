@@ -1,6 +1,5 @@
 module lang::lwc::controller::runtime::Run
 
-import IO;
 import lang::lwc::controller::Load;
 import lang::lwc::controller::AST;
 import lang::lwc::controller::runtime::Data;
@@ -17,9 +16,9 @@ data Action = actionNoop()
 
 public SimContext step(SimContext ctx)
 {
-	if (inState(ctx.runtime)) 
+	if (inState(ctx.runtime)) {
 		ctx = evaluateState(ctx);
-	
+	}
 	else if (inTransition(ctx.runtime))
 	{
 		ctx.runtime.state = ctx.runtime.transition;
@@ -33,23 +32,26 @@ public SimContext step(SimContext ctx)
 
 private SimContext evaluateState(SimContext ctx)
 {
-	for (statement <- getOneFrom(ctx.runtime.states[ctx.runtime.state]))
+	println("In state: <ctx.runtime.state>");
+	//for (statement <- getOneFrom(ctx.runtime.states[ctx.runtime.state]))
+	for (statements <- ctx.runtime.states[ctx.runtime.state])
 	{
-		switch (evaluateStatement(statement, ctx))
-		{
-			case actionTransition(str T): {
-				ctx.runtime.transition = T; 
-				return ctx;
+		for (statement <- statements) {
+			switch (evaluateStatement(statement, ctx))
+			{
+				case actionTransition(str T): {
+					ctx.runtime.transition = T; 
+					return ctx;
+				}
+				
+				case actionData(D):
+					ctx.\data = D;
+					
+				case actionNoop(): ;
+					// do nothing
+					
+				default: throw "Unsupported controller action!";
 			}
-			
-			case actionData(D):
-				ctx.\data = D;
-				
-			case actionNoop(): ;
-				// do nothing
-				
-				
-			default: throw "Unsupported controller action!";
 		}
 	}
 	
@@ -121,7 +123,7 @@ private value evaluateExpression(Expression expr, SimContext ctx)
         case eq(lhs, rhs):		return eval(lhs) == eval(rhs);
         case neq(lhs, rhs):		return eval(lhs) != eval(rhs);
         
-		case not(lhs, rhs): 	return ! boolEval(lhs);
+		case not(lhs): 			return ! boolEval(lhs);
 		case mul(lhs, rhs): 	return eval(lhs) * eval(rhs);
 		case div(lhs, rhs): 	return numEval(lhs) / numEval(rhs);
 		case mdl(lhs, rhs): 	return numEval(lhs) % numEval(rhs);
@@ -141,6 +143,9 @@ public value valueOf(Primary p, SimContext ctx)
 			
 		case boolean(\true()):
 			return true;
+		
+		case boolean(\false()):
+			return false;
 			
 		case rhsvariable(variable(str N)): 
 			return lookup(N, ctx);

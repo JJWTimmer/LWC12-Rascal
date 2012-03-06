@@ -76,10 +76,11 @@ public map[str, ElementDefinition] Elements = (
 	"CentralHeatingUnit" : element(
 		[],	//modifiers
 		[	//attributes
-			optionalAttrib("burnertemp", [TemperatureUnits], numValue(90, ["Celcius"]), true),
+			optionalAttrib("requestedtemp", [TemperatureUnits], numValue(90, ["Celcius"]), false),
 			optionalAttrib("maxpower", [PowerUnits], numValue(2400, ["watt"]), false),
 			hiddenProperty("ignite", [], boolValue(false)),
-			hiddenProperty("power", [PowerUnits], numValue(2400, ["watt"]))
+			hiddenProperty("power", [PowerUnits], numValue(2400, ["watt"])),
+			hiddenProperty("burnertemp", [TemperatureUnits], numValue(15, ["Celcius"]))
 		],
 		[	//connectionpoints
 			{

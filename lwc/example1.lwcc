@@ -1,7 +1,7 @@
-MIN_GAS = 50
+START_TEMP = 50
 BURNER_RAMPUP = 5
-RADIATOR_MARGIN = 2
-WATER_MARGIN = 1
+RADIATOR_MARGIN = 4
+WATER_MARGIN = 4
 
 # 
 # Controls in diagram
@@ -32,48 +32,48 @@ condition boilerTempHigh: B1.watertemp > DESIRED_WATER_TEMP
 condition heatNeeded: roomTempLow or boilerTempLow
 
 state OFF: 
-	V1.position = :a, :b, :c
+	V1.position = :c
 	if heatNeeded: goto IGNITE
 
 state IGNITE:
-	if C1.ignite: goto DISPATCH
-	
+	if C1.ignite: goto RAMPUP
+	V1.position = :c
 	C1.ignite = true
-	C1.burnertemp = MIN_GAS
-	P1.enabled = true
-	goto DISPATCH
+	C1.burnertemp = START_TEMP
+	P1.enabled = false
+	goto RAMPUP
+	
+state RAMPUP:
+	if C1.ignite == false: goto IGNITE
+	if C1.burnertemp < C1.requestedtemp: C1.burnertemp = C1.burnertemp + BURNER_RAMPUP
+	if C1.burnertemp >= C1.requestedtemp: goto DISPATCH
 	
 state DISPATCH:
 	V1.position = :c
-	if roomTempHigh and boilerTempLow: goto BOILER
-	if roomTempLow and boilerTempHigh: goto RADIATOR
-	if roomTempHigh and boilerTempHigh: goto RUNNING 	
-	goto BOTH
-	
-state RAMPUP:
-	
-	C1.ignite = true
-	C1.burnertemp = C1.burnertemp + BURNER_RAMPUP
-	P1.enabled = true
-		
-	goto DISPATCH
+	if roomTempLow and boilerTempLow: goto BOTH
+	if boilerTempLow and not roomTempLow: goto BOILER
+	if roomTempLow and not boilerTempLow: goto RADIATOR	
+	goto RUNNING
 
 state RADIATOR:
-	V1.position = :a,:b
-	goto RAMPUP
+	if roomTempLow and boilerTempLow: goto BOTH
+	if boilerTempLow and not roomTempLow: goto BOILER
+	if not heatNeeded: goto RUNNING
+	V1.position = :a, :c	
 	
 state BOILER:
-	V1.position = :a
-	goto RAMPUP
-	
+	if roomTempLow and boilerTempLow: goto BOTH
+	if roomTempLow and not boilerTempLow: goto RADIATOR
+	if not heatNeeded: goto RUNNING
+	V1.position = :a, :b
+		
 state BOTH:
-	V1.position = :c, :b
-	goto RAMPUP
-	
+	if roomTempLow and not boilerTempLow: goto RADIATOR
+	if boilerTempLow and not roomTempLow: goto BOILER
+	if not heatNeeded: goto RUNNING
+	V1.position = :c, :b, :a
+		
 state RUNNING:
-	
-	V1.position = :c, :b
-	C1.burnertemp = MIN_GAS
-	
-	# Idle, idle idle
-	goto DISPATCH
+	V1.position = :c
+	C1.burnertemp = START_TEMP
+	if heatNeeded: goto RAMPUP

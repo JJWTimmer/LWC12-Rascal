@@ -251,7 +251,7 @@ set[Message] validateExpression(Context context, Expression e) {
 	switch(e) {
 		case expvalue(_) : return {};
 		case not(inside) : {
-			if(getType(inside) == "bool") {
+			if(getType(context, inside) == "bool") {
 				return validateExpression(context, inside);
 			}
 			return { error("Invalid expression.
@@ -279,26 +279,30 @@ set[Message] validateExpression(Context context, Expression left, Expression rig
 	return {};
 }
 
-Context findUnusedNames(Context context, Controller ast) {
+Context findUnusedNames(Context context, Controller ast) 
+{
 	set[str] usedNames = {};
 	
-	//Create a set of state and variable names that are used
+	// Find first state
+	if (/state(statename(str name), _) := ast)
+		usedNames += { name };
+	
+	// Create a set of state and variable names that are used
 	visit(ast) {
-		case goto(statename(str name)) : usedNames += name;
-		case variable(str name) : usedNames += name;
+		case goto(statename(str name)): usedNames += name;
+		case variable(str name): usedNames += name;
 	}
 	
-	//Look for names that are never used
+	// Look for names that are never used
 	visit(ast) {
-		case state(S:statename(str name), _) : { 
+		case state(S:statename(str name), _): 
 			context = unusedNameError(context, S, name, usedNames);
-		}
-		case C:condition(str name, _) : {
+		
+		case C:condition(str name, _):
 			context = unusedNameError(context, C, name, usedNames);
-		}
-		case D:declaration(str name, _) : {
+		
+		case D:declaration(str name, _):
 			context = unusedNameError(context, D, name, usedNames);
-		}
 	}
 
 	return context;

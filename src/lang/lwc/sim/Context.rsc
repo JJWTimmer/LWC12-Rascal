@@ -60,8 +60,9 @@ public SimBucket createSimBucket([]) 						= simBucketList([]);
 public SimBucket createSimBucket(list[Value] L) 			= simBucketList([ createSimBucket(v) | v <- L]);
 public SimBucket createSimBucket(bool B)					= simBucketBoolean(B);
 public SimBucket createSimBucket(int N)						= simBucketNumber(N);
+public SimBucket createSimBucket(real N)					= simBucketNumber(N);
 public SimBucket createSimBucket(integer(N))				= simBucketNumber(N);
-public default SimBucket createSimBucket(X)					{ println("<X> : <typeOf(X)>"); throw "Unknow type";}
+public default SimBucket createSimBucket(X)					{ println("SimBucket error: <X> : <typeOf(X)>"); throw "Unknow type";}
 
 public SimContext initSimContext(Structure sAst, Controller cAst) 
 {
@@ -181,11 +182,11 @@ public SimBucket getSimContextBucket(str element, str property, SimData \data)
 	}
 	
 	// Check if there's a sensor with the given element name
-	else if (/sensorRef(element, V, P) := ctx.\data.sensors) {
-		return getSimContextBucket(V, P, ctx); 
+	else if (/sensorRef(element, V, P) := \data.sensors) {
+		return getSimContextBucket(V, P, \data); 
 	}
 	// Check if there's a manual value with the given element name
-	else if (/manualVal(element, B) := ctx.\data.manuals) {
+	else if (/manualVal(element, B) := \data.manuals) {
 		return B;
 	}	
 	else
@@ -209,9 +210,7 @@ public list[value] getSimContextBucketList(SimBucket bucket) {
 }
 
 public SimContext setSimContextBucket(str element, str property, SimBucket val, SimContext ctx) 
-{
-	println("Setting <element>.<property> to <val>");
-	
+{	
 	bool done = false;
 
 	ctx.\data = top-down-break visit (ctx.\data)

@@ -105,9 +105,9 @@ private Action assignStatement(left, right, ctx)
 
 private value evaluateExpression(Expression expr, SimContext ctx)
 {
-	eval = value(V) { return evaluateExpression(V, ctx); };
-	boolEval = bool(V) { return boolValueOf(eval(V)); };
-	numEval = num(V) { return numValueOf(eval(V)); };
+	eval = value (V){ return evaluateExpression(V, ctx); };
+	boolEval = bool (V){ return boolValueOf(eval(V)); };
+	numEval = num (V){ return numValueOf(eval(V)); };
 	
 	switch (expr)
 	{
@@ -116,15 +116,15 @@ private value evaluateExpression(Expression expr, SimContext ctx)
 		case \or(lhs, rhs): 	return boolEval(lhs) || boolEval(rhs);
 		case \and(lhs, rhs): 	return boolEval(lhs) && boolEval(rhs);
 		
-		case lt(lhs, rhs): 		return eval(lhs) < eval(rhs);
-		case gt(lhs, rhs): 		return eval(lhs) > eval(rhs);
-		case leq(lhs, rhs):		return eval(lhs) <= eval(rhs);
-        case geq(lhs, rhs):		return eval(lhs) >= eval(rhs);
+		case lt(lhs, rhs): 		return numEval(lhs) < numEval(rhs);
+		case gt(lhs, rhs): 		return numEval(lhs) > numEval(rhs);
+		case leq(lhs, rhs):		return numEval(lhs) <= numEval(rhs);
+        case geq(lhs, rhs):		return numEval(lhs) >= numEval(rhs);
         case eq(lhs, rhs):		return eval(lhs) == eval(rhs);
         case neq(lhs, rhs):		return eval(lhs) != eval(rhs);
         
 		case not(lhs): 			return ! boolEval(lhs);
-		case mul(lhs, rhs): 	return eval(lhs) * eval(rhs);
+		case mul(lhs, rhs): 	return numEval(lhs) * numEval(rhs);
 		case div(lhs, rhs): 	return numEval(lhs) / numEval(rhs);
 		case mdl(lhs, rhs): 	return numEval(lhs) % numEval(rhs);
 		case sub(lhs, rhs): 	return numEval(lhs) - numEval(rhs);

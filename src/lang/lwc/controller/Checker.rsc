@@ -251,7 +251,7 @@ set[Message] validateExpression(Context context, Expression e) {
 	switch(e) {
 		case expvalue(_) : return {};
 		case not(inside) : {
-			if(getType(inside) == "bool") {
+			if(getType(context, inside) == "bool") {
 				return validateExpression(context, inside);
 			}
 			return { error("Invalid expression.

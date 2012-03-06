@@ -42,12 +42,12 @@ private SimContext modifyRoomTemp(SimContext ctx) {
 			simBucketNumber(temp) = getSimContextBucket(name, "temperature", ctx);
 			println("room temp: <temp> Celcius");
 			
-			int tempDelta = 0;
+			tempDelta = 0;
 			
 			if (temp < waterTemp) {
 				tempDelta = 1;
 			} else if (temp >= waterTemp) {
-				tempDelta = -1;
+				tempDelta = -0.5;
 			}
 			
 			ctx = setSimContextBucket(name, "temperature", simBucketNumber(temp+tempDelta), ctx);
@@ -72,13 +72,13 @@ private SimContext modifyBoilerTemp(SimContext ctx) {
 					heatertemp = max(getSimContextBucket(chuname, "burnertemp", ctx).n, heatertemp);
 			}
 			
-			int tempDelta = 0;
+			tempDelta = 0;
 			simBucketNumber(oldTemp) = getSimContextBucket(boilername, "watertemp", ctx);
 			
 			if (oldTemp < heatertemp) {
 				tempDelta = 1;
 			} else if (oldTemp >= heatertemp) {
-				tempDelta = -1;
+				tempDelta = -0.5;
 			}
 			
 			println("new boilertemp: <oldTemp+tempDelta> Celcius");

@@ -60,8 +60,9 @@ public SimBucket createSimBucket([]) 						= simBucketList([]);
 public SimBucket createSimBucket(list[Value] L) 			= simBucketList([ createSimBucket(v) | v <- L]);
 public SimBucket createSimBucket(bool B)					= simBucketBoolean(B);
 public SimBucket createSimBucket(int N)						= simBucketNumber(N);
+public SimBucket createSimBucket(real N)					= simBucketNumber(N);
 public SimBucket createSimBucket(integer(N))				= simBucketNumber(N);
-public default SimBucket createSimBucket(X)					{ println("<X> : <typeOf(X)>"); throw "Unknow type";}
+public default SimBucket createSimBucket(X)					{ println("SimBucket error: <X> : <typeOf(X)>"); throw "Unknow type";}
 
 public SimContext initSimContext(Structure sAst, Controller cAst) 
 {
@@ -209,9 +210,7 @@ public list[value] getSimContextBucketList(SimBucket bucket) {
 }
 
 public SimContext setSimContextBucket(str element, str property, SimBucket val, SimContext ctx) 
-{
-	println("Setting <element>.<property> to <val>");
-	
+{	
 	bool done = false;
 
 	ctx.\data = top-down-break visit (ctx.\data)

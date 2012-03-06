@@ -148,10 +148,28 @@ public SimContext simContextExecuteActions(SimContext context)
 public list[SimProperty] getSimContextProperties(SimData \data, str element) 
 	= [ p | state(element, _, P:props) <- \data.elements, p <- P ];
 
+public SimProperty getSimContextProperty(SimData \data, str E, str P)
+{
+	if (/state(E, _, L) := \data.elements)
+	{	
+		if (/S:simProp(P, _) := L)
+			return S;
+			
+		throw "Property <E>.<P> not found in simulation context.\n"
+			+ "The following properties are available:\n"
+			+ " - " + intercalate("\n - ", [ P | /simProp(P, _) <- L]);
+	}
+	
+	throw "Element <E> not found in simulation context.";
+}
+
 public SimBucket getSimContextBucket(str element, str property, SimContext ctx)
+	= getSimContextBucket(element, property, ctx.\data);
+	
+public SimBucket getSimContextBucket(str element, str property, SimData \data)
 {
 	// Check if there's a regular element with the given element name
-	if (/state(element, T, L) := ctx.\data.elements)
+	if (/state(element, T, L) := \data.elements)
 	{	
 		if (/simProp(property, V) := L) {
 			return V;

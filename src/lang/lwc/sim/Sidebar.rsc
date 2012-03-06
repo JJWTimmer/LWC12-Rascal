@@ -75,38 +75,78 @@ public Figure buildInteractiveContextAwareStructureGraphWithSidebar(
 	]);
 }
 
-public Figure buildSidebar(Structure ast, str etype, str name, SimData simData, UpdateContextValue updateContextValue) {
+public Figure buildSidebar(Structure ast, str etype, str name, SimData simData, UpdateContextValue updateContextValue) 
+{	
 	list[Figure] fields = [];
 	
-	list[SimProperty] simProps = getSimContextProperties(simData, name);
-	list[SimProperty] editableSimProps = [];
-		
-	if (EditableProps[etype]?)
-		editableSimProps = [ A | A:simProp(str s, _) <- simProps, s in EditableProps[etype] ];
-	
-	fields = [ buildField(ast, etype, name, simProp, updateContextValue) | simProp <- editableSimProps ];
+	// Sensors deserve special treatment
+	if (etype == "Sensor")
+	{
+		tuple[str,str] C = getSensorConnection(name, ast);
+		fields = [ buildReadableField(ast, "Sensor", C[1], getSimContextProperty(simData, C[0], C[1])) ];
+	}
+	else
+	{
+		fields = buildFields(ast, etype, name, simData, updateContextValue);
+	}
 	
 	return box(
 		vcat([text(name, fontSize(20))] + fields, gap(5))
 	);
 }
 
-Figure buildField(Structure ast, str etype, str element, simProp(str name, SimBucket bucket), UpdateContextValue updateContextValue) {
-	Figure f;
-	println("etype <etype>, element <element>, simProp <name>, bucket <bucket>");
-	if(etype == "Sensor") {
-		f = buildEditSensor(element, name, bucket, updateContextValue);
-	}
-	else {
-		f = buildEdit(ast, element, name, bucket, updateContextValue);
-	}
-	return vcat([
-				text(name, fontSize(14)),
-				f], gap(5));
+tuple[str,str] getSensorConnection(name, Structure ast) {
+	if (/element(_, elementname("Sensor"), name, [_*, attribute(attributename("on"), valuelist([_*, property(E, propname(P)), _*])), _*]) := ast)
+		return <E, P>;
+	
+	throw "Sensor connection not found";
 }
 
+list[Figure] buildFields(Structure ast, str etype, str name, SimData simData, UpdateContextValue updateContextValue)
+{
+	simProps = getSimContextProperties(simData, name);
+	
+	list[SimProperty] editableSimProps = (EditableProps[etype]?)
+		? [ A | A:simProp(str s, _) <- simProps, s in EditableProps[etype] ]
+		: [];
+	
+	list[SimProperty] readableSimProps = (ReadableProps[etype]?)
+		? [ A | A:simProp(str s, _) <- simProps, s in ReadableProps[etype] ]
+		: [];
+		
+	return
+		[ buildReadableField(ast, etype, name, simProp) | simProp <- readableSimProps ]
+		+ [ buildEditableField(ast, etype, name, simProp, updateContextValue) | simProp <- editableSimProps ];
+}
+
+Figure buildReadableField(Structure ast, str etype, str element, simProp(str name, SimBucket bucket)) =
+	vcat([
+			text(name, fontSize(14)),
+			buildReadable(element, name, bucket)
+		], 
+		gap(5)
+	);
+	
+Figure buildReadable(str element, str name, B:simBucketNumber(int n)) {
+	return text("<n>");
+}
+
+default Figure buildReadable(Structure ast, str element, str name, B:SimBucket bucket) {
+	throw "Could not match <bucket>";
+}
+
+Figure buildEditableField(Structure ast, str etype, str element, simProp(str name, SimBucket bucket), UpdateContextValue updateContextValue) =
+	vcat([
+			text(name, fontSize(14)),
+			buildEdit(ast, element, name, bucket, updateContextValue)
+		], 
+		gap(5)
+	);
+
 Figure buildEdit(Structure ast, str element, str name, B:simBucketBoolean(bool b), UpdateContextValue updateContextValue) = 
-	checkbox(name, void (bool state) { 
+	checkbox(
+		name, 
+		void (bool state) { 
 			updateContextValue(element, name, createSimBucket(state));
 		} 
 	);
@@ -132,15 +172,15 @@ Figure buildEdit(Structure ast, str elementName, str name, B:simBucketList(list[
 	Figure buildCheckBox(str v) = checkbox(v, void (bool state) { updateContextValue(elementName, name, newBucketList(v, state)); });
 	
 	set[str] variables = {};
+	
 	if(/element(_, elementname("Valve"), elementName, list[Attribute] attributes) := ast) {
 		variables = { v
 					| attribute(attributename("connections"), valuelist(list[Value] values)) <- attributes,
 					  variable(str v) <- values
 					};
 	}
-	for(simBucketVariable(str b) <- B) {
-		variables += b;
-	}
+	
+	variables += { b | simBucketVariable(str b) <- B };
 	
 	list[Figure] checkBoxes = [];
 	for(var <- variables) {

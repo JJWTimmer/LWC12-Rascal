@@ -15,9 +15,6 @@ lexical Identifier 	= ([a-zA-Z_][a-zA-Z0-9_]* !>> [a-zA-Z0-9_]) \ Keyword;
 lexical ValveConnection = @category="Identifier" ":" Identifier;
 lexical Int 		= @category="Constant" "-"? [0-9]+ !>> [0-9];
 
-syntax Boolean 	= @category="Identifier" \true: "true" 
-					  | \false: "false";
-
 syntax Primary 
 	= integer: Int
 	| boolean: Boolean

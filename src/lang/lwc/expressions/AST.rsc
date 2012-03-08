@@ -1,5 +1,7 @@
 module lang::lwc::expressions::AST
 
+data Boolean = \true() | \false();
+
 data Expression = not(Expression e)
                 | mul(Expression left, Expression right)
                 | div(Expression left, Expression right)

@@ -1,0 +1,54 @@
+#Aliases
+rad is Radiator
+	- heatcapacity: 2400 [watt];	#not used
+
+chu is CentralHeatingUnit;
+
+room is Room
+	- volume: 666 [m3];				#not used
+
+pipe is Pipe
+	- diameter: 777 [mm]			#not used
+	- lenght: 1 [m];				#not used
+
+tsensor is Temperature Sensor
+	- range: 0 [celsius], 100 [celsius];
+
+#Rooms
+room LivingRoom;
+room BathRoom;
+room BedRoom;
+
+#Elements
+rad R1
+	- room: LivingRoom;
+	
+rad R2
+	- room: LivingRoom;
+
+#Elements
+rad R3
+	- room: BathRoom;
+	
+rad R4
+	- room: BedRoom;
+
+CentralHeatingUnit C1;
+
+CentralHeatingUnit C2;
+
+#Pipes!
+pipe P1 connects C1.hotwaterout with R1.in;
+pipe P2 connects R1.out with R2.in;
+pipe P3 connects R2.out with C1.coldwaterin;
+pipe P4 connects C2.hotwaterout with R3.in;
+pipe P4 connects R3.out with R4.in;
+pipe P5 connects R4.out with C2.coldwaterin;
+
+#Sensors...
+tsensor tLiving
+	- on: LivingRoom;
+tsensor tBath
+	- on: BathRoom;
+tsensor tBed
+	- on: BedRoom;

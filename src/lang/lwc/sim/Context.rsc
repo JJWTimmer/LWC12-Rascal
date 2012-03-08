@@ -51,6 +51,7 @@ data SimBucket
 	| simBucketVariable(str v)
 	| simBucketList(list[SimBucket] l);
 
+public SimBucket createSimBucket(boolean(B)) 				= createSimBucket(B);
 public SimBucket createSimBucket(\false()) 					= simBucketBoolean(false);
 public SimBucket createSimBucket(\true()) 					= simBucketBoolean(true);
 public SimBucket createSimBucket(metric(integer(N), _)) 	= simBucketNumber(N);
@@ -62,7 +63,7 @@ public SimBucket createSimBucket(bool B)					= simBucketBoolean(B);
 public SimBucket createSimBucket(int N)						= simBucketNumber(N);
 public SimBucket createSimBucket(real N)					= simBucketNumber(N);
 public SimBucket createSimBucket(integer(N))				= simBucketNumber(N);
-public default SimBucket createSimBucket(X)					{ println("SimBucket error: <X> : <typeOf(X)>"); throw "Unknow type";}
+public default SimBucket createSimBucket(X)					{ throw "Unknown type: <X> := <typeOf(X)>"; }
 
 public SimContext initSimContext(Structure sAst, Controller cAst) 
 {
@@ -87,9 +88,7 @@ public SimContext initSimContext(Structure sAst, Controller cAst)
 	  + [ simProp(N, createSimBucket(V)) | attribute(attributename(N), valuelist(V)) <- attributes, N in ignoredAttributes ];
 	
 	SimBucket getPropByName(str name, list[Attribute] attributes)
-		= (/simProp(name, B) := getProps(attributes)) 
-			? B 
-			: createSimBucket(_);
+		= (/simProp(name, B) := getProps(attributes)) ? B : createSimBucket([]);
 	
 	// Visit the structure AST
 	visit(sAst) 

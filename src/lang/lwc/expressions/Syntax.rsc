@@ -1,5 +1,10 @@
 module lang::lwc::expressions::Syntax
 
+syntax Boolean = @category="Constant" \true: "true"
+			   | @category="Constant" \false: "false"
+			   ;
+
+
 syntax Expression = bracket "(" Expression ")"
 				  | not: "not" Expression
 				  > left (

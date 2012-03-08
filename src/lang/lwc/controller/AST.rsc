@@ -41,5 +41,3 @@ data Expression = expvalue(Primary p); // extension of the imported one
 
 data Variable = variable(str name); 
 data Property = property(str element, str attribute);
-
-data Boolean = \true() | \false();

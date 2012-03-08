@@ -177,8 +177,8 @@ private list[Attribute] getDefaults(list[AttributeDefinition] optionalAttribs, l
 //transforms definition ADT's to AST ADT's
 private ValueList getValue(numValue(int val, list[Unit] un)) = valuelist([metric(integer(val),unit(un))]);
 private ValueList getValue(numValue(real val, list[Unit] un)) = valuelist([metric(realnum(val),unit(un))]);
-private ValueList getValue(boolValue(true)) = valuelist([\true()]);
-private ValueList getValue(boolValue(false)) = valuelist([\false()]);
+private ValueList getValue(boolValue(true)) = valuelist([boolean(\true())]);
+private ValueList getValue(boolValue(false)) = valuelist([boolean(\false())]);
 private ValueList getValue(listValue(list[str] lst)) = valuelist([variable(var) | var <- lst]);
 private ValueList getValue(none()) = valuelist([]);
 

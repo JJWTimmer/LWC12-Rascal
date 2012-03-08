@@ -84,10 +84,10 @@ TempMeter TM6
 	- on: LivingRoom; 
 
 TempMeter TM5
-	- on: C1.internaltemp;
+	- on: C1.burnertemp;
 
 TempMeter TM4
-	- on: C1.ignitiondetect;
+	- on: C1.ignite; #correct error: ignite is a boolean
 
 TempMeter TM2
 	- on: B1;
@@ -95,8 +95,8 @@ TempMeter TM2
 FlowMeter FM1
 	- on: W2.flow;
 
-SpeedMeter SM3
-	- on: P1;
+SpeedMeter SM3 
+	- on: P1; #correct error: units of sensor are not compatible with units of element: speed is rpm, but it gives volume/time
 
 #Constraints
 constraint cs1:

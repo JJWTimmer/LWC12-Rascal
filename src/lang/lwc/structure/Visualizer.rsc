@@ -59,7 +59,7 @@ private Figure buildGraph(Structure ast, StructureMouseHandler mouseHandler, Sim
 			nodes += valveFigure(N, M, mouseHandler, context); 
 		
 		// Handle Central Heating Units
-		case element(M, elementname("CentralHeatingUnit"), N, _):
+		case element(_, elementname("CentralHeatingUnit"), N, _):
 			nodes += chuFigure(N, mouseHandler, context);
 			
 		// Handle radiators
@@ -67,7 +67,15 @@ private Figure buildGraph(Structure ast, StructureMouseHandler mouseHandler, Sim
 			edges += radiatorEdges(E, N);
 			nodes += radiatorFigure(N, mouseHandler, context);
 		}
+		
+		// Handle Central Heating Units
+		case element(_, elementname("Boiler"), N, _):
+			nodes += boilerFigure(N, mouseHandler, context);
 			
+		// Handle Central Heating Units
+		case element(_, elementname("Room"), N, _):
+			nodes += roomFigure(N, mouseHandler, context);
+		
 		// Other elements
 		case element(_, elementname(T), N, _): 			
 			nodes += elementFigure(T, N, mouseHandler);
@@ -109,7 +117,7 @@ Figure sensorFigure(str N, list[Modifier] modifiers, StructureMouseHandler mouse
 		vcat([
 			text(abbreviateSensorType(name), fontSize(9)), 
 			text(N)
-		]), 
+		]),
 		id(N), 
 		lineColor("blue"),
 		onMouseDown(bool(int butnr, map[KeyModifier,bool] modifiers) {
@@ -363,6 +371,60 @@ Figure chuFigure(str name, StructureMouseHandler mouseHandler, SimContext contex
 		determineColor(ignited == true), 
 		onMouseDown(bool (int butnr, map[KeyModifier,bool] modifiers) {
 			return mouseHandler(butnr, "CentralHeatingUnit", name);
+		})
+	);
+}
+
+//
+// Render Boilers
+//
+
+Figure boilerFigure(str name, StructureMouseHandler mouseHandler, SimContext context)
+{
+	num temperature = getSimContextBucketValueNum(name, "watertemp", context);
+	list[Color] colors = colorSteps(color("blue"), color("red"), 100);
+	Color color = colors[max(0, min(99, temperature))];
+	
+	FProperty determineColor(bool active) = fillColor(active ? ignitedColor : color("white"));
+	 
+	return box(
+		vcat([
+			text("Boiler", fontSize(9)),
+			text(name)
+		]), 
+		grow(1.5), 
+		id(name),
+		
+		fillColor(color), 
+		onMouseDown(bool (int butnr, map[KeyModifier,bool] modifiers) {
+			return mouseHandler(butnr, "Boiler", name);
+		})
+	);
+}
+
+//
+// Render Rooms
+//
+
+Figure roomFigure(str name, StructureMouseHandler mouseHandler, SimContext context)
+{
+	num temperature = getSimContextBucketValueNum(name, "temperature", context);
+	list[Color] colors = colorSteps(color("blue"), color("red"), 100);
+	Color color = colors[max(0, min(99, temperature))];
+	
+	FProperty determineColor(bool active) = fillColor(active ? ignitedColor : color("white"));
+	 
+	return box(
+		vcat([
+			text("Room", fontSize(9)),
+			text(name)
+		]), 
+		grow(1.5), 
+		id(name),
+		
+		fillColor(color), 
+		onMouseDown(bool (int butnr, map[KeyModifier,bool] modifiers) {
+			return mouseHandler(butnr, "Room", name);
 		})
 	);
 }

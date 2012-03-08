@@ -55,7 +55,7 @@ Context runChecks(Context context, Controller ast) {
 	context = validateTypes(context, ast);
 	context = findUnusedNames(context, ast);
 	context = findUnreachableCode(context, ast);
-		
+
 	return context;
 }
 
@@ -80,11 +80,11 @@ Context collectNamesAndTypes(Context context, Controller ast) {
 		case state(S:statename(str name), _) : context.stateNames += checkDuplicate(name, S);
 		case C:condition(str name, Expression expression) : {
 			context.variableNames += checkDuplicate(name, C);
-			context.variableTypes += (name : getType(context, expression));
+			context.variableTypes[name] = getType(context, expression);
 		}
 		case D:declaration(str name, Primary primary) : {
 			context.variableNames += checkDuplicate(name, D);
-			context.variableTypes += (name : getType(context, primary));
+			context.variableTypes[name] = getType(context, primary);
 		}
 	}
 	
@@ -139,7 +139,7 @@ Context validateNames(Context context, Controller ast) {
 		
 		//Validate variable names
 		case V:variable(str name) :
-			context.messages += invalidNameError(V, name, context.variableNames, "variable");
+			context.messages += invalidNameError(V, name, context.variableNames + {key | key <- context.elementMap}, "variable");
 		
 		//Validate property names
 		case P:property(str element, str attribute) : {
@@ -228,7 +228,6 @@ set[Message] validateValvePositions(Context context, Statement S, str element, c
 	set[Message] result = {};
 	list[str] allowedPositions = context.valvePositions[element];
 	for(conn <- connections) {
-		conn = substring(conn, 1); //to remove leading colon
 		if(conn notin allowedPositions) {
 			str msg = "Invalid position <conn>. 
 					  'Valve <element> can have positions <intercalate(", ", allowedPositions)>";

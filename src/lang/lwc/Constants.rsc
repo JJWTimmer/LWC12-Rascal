@@ -10,11 +10,24 @@ map[str,str] getProperties(str elementName) {
 	ElementDefinition elemDef = Elements[elementName];
 	
 	visit(elemDef) {
-		case requiredAttrib(str name, list[list[Unit]] unitList, _) : result += (name : getValueType(unitList));
-	 	case optionalAttrib(str name, list[list[Unit]] unitList, ValueDefinition defaultValue, _) : result += (name : getValueType(unitList, defaultValue));
-	 	case optionalModifierAttrib(str name, _, list[list[Unit]] unitList, ValueDefinition defaultValue, _) : result += (name : getValueType(unitList, defaultValue));
-	 	case sensorPoint(str name, list[list[Unit]] unitList) : result += (name : getValueType(unitList));
-	 	case selfPoint(list[list[Unit]] unitList) : result += ("self" : getValueType(unitList));
+		case requiredAttrib(name, unitList, _) : result[name] = getValueType(unitList);
+	 	case optionalAttrib(name, unitList, defaultValue, _) : result[name] = getValueType(unitList, defaultValue);
+	 	case optionalModifierAttrib(name, _, unitList, defaultValue, _) : result[name] = getValueType(unitList, defaultValue);
+	 	case hiddenProperty(name, unitList, defaultValue) : result[name] = getValueType(unitList, defaultValue);
+	}
+	
+	return result;
+}
+
+map[str, list[list[Unit]] ] getPropertiesUnits(str elementName) {
+	map[str, list[list[Unit]] ] result = ();
+	ElementDefinition elemDef = Elements[elementName];
+	
+	visit(elemDef) {
+		case requiredAttrib(name, unitList, _) : result[name] = unitList;
+	 	case optionalAttrib(name, unitList, defaultValue, _) : result[name] = unitList;
+	 	case optionalModifierAttrib(name, _, unitList, defaultValue, _) : result[name] = unitList;
+	 	case hiddenProperty(name, unitList, defaultValue) : result[name] = unitList;
 	}
 	
 	return result;
@@ -119,6 +132,7 @@ public map[str, list[ConnectionPointDefinition]] DefinedConnectionPoints = ( key
 	} | key <- Elements);
 public map[str, list[SensorPointDefinition]] DefinedSensorPoints = ( key : Elements[key].sensorpoints | key <- Elements);
 public map[str, map[str,str]] ElementProperties = ( key : getProperties(key) | key <- Elements );
+public map[str, map[str, list[list[Unit]] ]] ElementPropertiesUnits = ( key : getPropertiesUnits(key) | key <- Elements );
 public map[str, list[set[str]]] ElementModifiers = ( key : Elements[key].modifiers | key <- Elements );
 public map[str, set[str]] EditableProps = ( key : getEditableProps(key) | key <- Elements );
 public map[str, set[str]] ReadableProps = ( key : getReadableProps(key) | key <- Elements );

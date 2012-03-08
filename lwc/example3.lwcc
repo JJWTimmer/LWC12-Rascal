@@ -1,0 +1,182 @@
+#it is possible but hard to handle multiple systems with one controller
+#it requires all possible permuations of state of the systems
+#no 'functioncalls' makes you rewrite every statecontent a lot of times
+
+T_BEDROOM = 17
+T_BATHROOM = 24
+T_LIVINGROOM = 21
+T_MARGIN = 4
+
+T_CHU_START = 50
+T_CHU_DELTA = 10
+
+condition TempBedRoomLow: tBed < T_BEDROOM - T_MARGIN
+condition TempBedRoomOk: tBed >= T_BEDROOM
+condition TempBathRoomLow: tBath < T_BATHROOM - T_MARGIN
+condition TempBathRoomOk: tBath >= T_BATHROOM
+condition TempLivingRoomLow: tLiving < T_LIVINGROOM - T_MARGIN
+condition TempLivingRoomOk: tLiving >= T_LIVINGROOM
+condition heatNeeded1: TempLivingRoomLow
+condition heatNeeded2: TempBedRoomLow or TempBathRoomLow
+condition noHeatNeeded1: TempLivingRoomOk
+condition noHeatNeeded2: TempBedRoomOk and TempBathRoomOk
+
+state OFF12: 
+	if heatNeeded1 and heatNeeded2: goto IGNITE12
+	if heatNeeded1: goto IGNITE1_OFF2
+	if heatNeeded2: goto IGNITE2_OFF1
+
+state IGNITE1_OFF2:
+	C1.ignite = true
+	C1.burnertemp = T_CHU_START
+	if heatNeeded1 and heatNeeded2: goto RAMPUP1_IGNITE2
+	if heatNeeded1: goto RAMPUP1_OFF2
+	if heatNeeded2: goto RAMPUP1_IGNITE2
+	goto RUNNING1_OFF2
+	
+state IGNITE2_OFF1:
+	C2.ignite = true
+	C2.burnertemp = T_CHU_START
+	if heatNeeded1 and heatNeeded2: goto RAMPUP2_IGNITE1
+	if heatNeeded2: goto RAMPUP2_OFF1
+	if heatNeeded1: goto RAMPUP2_IGNITE1
+	goto RUNNING2_OFF1
+
+state IGNITE12:
+	C2.ignite = true
+	C2.burnertemp = T_CHU_START
+	C1.ignite = true
+	C1.burnertemp = T_CHU_START
+	if heatNeeded1 and heatNeeded2: goto RAMPUP12
+	if heatNeeded2: goto RAMPUP2_RUNNING1
+	if heatNeeded1: goto RAMPUP1_RUNNING2
+	goto RAMPUP12
+
+state IGNITE1_HEATING2:
+	C1.ignite = true
+	C1.burnertemp = T_CHU_START
+	
+	if heatNeeded1 and not noheatNeeded2: goto RAMPUP1_HEATING2
+	if heatNeeded1 and noheatNeeded2: goto RAMPUP1_RUNNING2
+	goto RUNNING12
+	
+state IGNITE2_HEATING1:
+	C2.ignite = true
+	C2.burnertemp = T_CHU_START
+	
+	if heatNeeded2 and not noheatNeeded1: goto RAMPUP2_HEATING1
+	if heatNeeded2 and noheatNeeded1: goto RAMPUP2_RUNNING1
+	goto RUNNING12
+
+state IGNITE1_RUNNING2:
+	C1.ignite = true
+	C1.burnertemp = T_CHU_START
+	
+	C2.burnertemp = T_CHU_START
+	
+	if heatNeeded2 and not heatNeeded1: goto RAMPUP2_RUNNING1
+	if heatNeeded1 and not heatNeeded2: goto RAMPUP1_RUNNING2
+	if heatNeeded2 and heatNeeded1: goto RAMPUP1_HEATING2
+	goto RUNNING12
+	
+state IGNITE2_RUNNING1:
+	C2.ignite = true
+	C2.burnertemp = T_CHU_START
+	
+	C1.burnertemp = T_CHU_START
+	
+	if heatNeeded1 and not heatNeeded2: goto RAMPUP1_RUNNING2
+	if heatNeeded2 and not heatNeeded1: goto RAMPUP2_RUNNING1
+	if heatNeeded1 and heatNeeded2: goto RAMPUP2_HEATING1
+	goto RUNNING12
+
+state RAMPUP1_OFF2:
+	if C1.burnertemp >= C1.requestedtemp and heatNeeded1 and noHeatNeeded2: goto HEATING1_OFF2
+	if C1.burnertemp >= C1.requestedtemp and heatNeeded1 and heatNeeded2: goto IGNITE2_HEATING1
+	if not heatNeeded1 and heatNeeded2: goto IGNITE2_RUNNING1
+	if not heatNeeded1 and not heatNeeded2: goto RUNNING1_OFF2
+	
+	C1.burnertemp = C1.burnertemp + T_CHU_DELTA
+	
+state RAMPUP2_OFF1:
+	if C2.burnertemp >= C2.requestedtemp and heatNeeded2 and not heatNeeded1: goto HEATING2_OFF1
+	if C2.burnertemp >= C2.requestedtemp and heatNeeded2 and heatNeeded1: goto IGNITE1_HEATING2
+	if not heatNeeded2 and heatNeeded1: goto IGNITE1_RUNNING2
+	if not heatNeeded2 and not heatNeeded1: goto RUNNING2_OFF1
+	
+	C2.burnertemp = C2.burnertemp + T_CHU_DELTA
+
+state RAMPUP1_IGNITE2:
+	C2.ignite = true
+	C2.burnertemp = T_CHU_START
+	
+	if C1.burnertemp >= C1.requestedtemp and heatNeeded1 and not heatNeeded2: goto HEATING1_RUNNING2
+	if C1.burnertemp < C1.requestedtemp and heatNeeded1 and not heatNeeded2: goto RAMPUP1_RUNNING2
+	if C1.burnertemp >= C1.requestedtemp and heatNeeded1 and heatNeeded2: goto RAMPUP2_HEATING1
+	if not heatNeeded1 and heatNeeded2: goto RAMPUP2_RUNNING1
+	if not heatNeeded1 and not heatNeeded2: goto RUNNING12
+	
+	C1.burnertemp = C1.burnertemp + T_CHU_DELTA
+
+state RAMPUP2_IGNITE1:
+	C1.ignite = true
+	C1.burnertemp = T_CHU_START
+	
+	if C2.burnertemp >= C2.requestedtemp and heatNeeded2 and not heatNeeded1: goto HEATING2_RUNNING1
+	if C2.burnertemp < C2.requestedtemp and heatNeeded2 and not heatNeeded1: goto RAMPUP2_RUNNING1
+	if C2.burnertemp >= C2.requestedtemp and heatNeeded2 and heatNeeded1: goto RAMPUP1_HEATING2
+	if not heatNeeded2 and heatNeeded1: goto RAMPUP1_RUNNING2
+	if not heatNeeded2 and not heatNeeded1: goto RUNNING12
+	
+	C2.burnertemp = C2.burnertemp + T_CHU_DELTA
+
+#so far
+
+state RAMPUP1_HEATING2:
+	if C1.burnertemp >= C1.requestedtemp and not noHeatNeeded2 and not heatNeeded1: goto HEATING2_RUNNING1
+	if noHeatNeeded2 and not heatNeeded1: goto RUNNING12
+	if C1.burnertemp >= C1.requestedtemp and not noHeatNeeded2 and not heatNeeded1: goto HEATING2_RUNNING1
+	
+	C1.burnertemp = C1.burnertemp + T_CHU_DELTA
+	
+state RAMPUP2_HEATING1:
+	goto OFF12
+
+state RAMPUP1_RUNNING2:
+	goto OFF12
+	
+state RAMPUP2_RUNNING1:
+	goto OFF12
+
+state RAMPUP12:
+	goto OFF12
+
+state HEATING1_RUNNING2:
+goto OFF12
+
+state HEATING2_RUNNING1:
+goto OFF12
+
+state HEATING1_OFF2:
+goto OFF12
+
+state HEATING2_OFF1:
+goto OFF12
+
+state HEATING12:
+goto OFF12
+
+state RUNNING1_HEATING2:
+goto OFF12
+	
+state RUNNING2_HEATING1:
+goto OFF12
+	
+state RUNNING1_OFF2:
+goto OFF12
+	
+state  RUNNING2_OFF1:
+goto OFF12
+
+state RUNNING12:
+	goto OFF12

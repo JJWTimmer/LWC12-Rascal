@@ -23,8 +23,7 @@ data AttributeName = attributename(str name);
 data Value = integer(int val)
 		   | realnum(real number)
 		   | metric(Value size, Unit unit)
-		   | \true()
-		   | \false()
+		   | boolean(Boolean boolVal)
 		   | property(str var, PropName property)
 		   | variable(str var)
 		   ;
@@ -49,4 +48,5 @@ anno loc Value@location;
 anno loc ValueList@location;
 anno loc ElementName@location;
 anno loc Unit@location;
+anno loc PropName@location;
 anno loc Expression@location;

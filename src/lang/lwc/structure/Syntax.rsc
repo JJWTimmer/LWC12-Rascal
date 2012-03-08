@@ -28,9 +28,6 @@ lexical ValveConnection = ":" Identifier;
 lexical Real = "-"? [0-9]+ "." [0-9]+;
 lexical Int = "-"? [0-9]+ !>> [.0-9];
 
-syntax Boolean = @category="Constant" \true: "true"
-			   | @category="Constant" \false: "false"
-			   ;
 
 syntax Num = @category="Constant" integer: Int
 		   | @category="Constant" realnum: Real

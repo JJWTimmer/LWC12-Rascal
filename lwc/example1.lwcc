@@ -31,7 +31,7 @@ condition boilerTempLow: B1.watertemp < DESIRED_WATER_TEMP - WATER_MARGIN
 condition boilerTempOk: B1.watertemp >= DESIRED_WATER_TEMP
 condition heatNeeded: roomTempLow or boilerTempLow
 
-state OFF: 
+state OFF: #error correct: never referenced, but used as start state since it is state #1 in the file
 	V1.position = :c
 	if heatNeeded: goto IGNITE
 

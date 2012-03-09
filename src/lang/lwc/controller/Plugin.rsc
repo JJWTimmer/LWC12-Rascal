@@ -25,7 +25,7 @@ public void registerController() {
 	};
 	
 	registerLanguage(CONTROLLER_LANG, CONTROLLER_EXT, parse);
-	registerOutliner(CONTROLLER_LANG, outliner);	
+	registerOutliner(CONTROLLER_LANG, controllerOutliner);	
 	registerAnnotator(CONTROLLER_LANG, check);
 	registerContributions(CONTROLLER_LANG, contribution);
 }

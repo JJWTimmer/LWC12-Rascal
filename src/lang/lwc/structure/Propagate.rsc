@@ -4,6 +4,7 @@ import lang::lwc::structure::AST;
 import lang::lwc::Definition;
 import lang::lwc::Constants;
 import IO;
+import Type;
 
 data AliasInfo = ai(list[Modifier] modifiers, str elemname, list[Attribute] attributes);
 
@@ -178,9 +179,11 @@ private list[Attribute] getDefaults(list[AttributeDefinition] optionalAttribs, l
 private ValueList getValue(numValue(int val, list[Unit] un)) = valuelist([metric(integer(val),unit(un))]);
 private ValueList getValue(numValue(real val, list[Unit] un)) = valuelist([metric(realnum(val),unit(un))]);
 private ValueList getValue(boolValue(true)) = valuelist([boolean(\true())]);
+private ValueList getValue(boolValue(true)) = valuelist([boolean(\true())]);
 private ValueList getValue(boolValue(false)) = valuelist([boolean(\false())]);
 private ValueList getValue(listValue(list[str] lst)) = valuelist([variable(var) | var <- lst]);
 private ValueList getValue(none()) = valuelist([]);
+private default ValueList getValue(X) {throw "cant convert value <X> of type <typeOf(X)>";}
 
 
 //retrieve the connectionpoints that are defined to replace them in the tree

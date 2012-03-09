@@ -8,6 +8,7 @@ import util::Maybe;
 import util::Math;
 import Graph;
 import List;
+import Type;
 import IO;
 
 public SimContext physicsAction(SimContext ctx) {
@@ -16,7 +17,7 @@ public SimContext physicsAction(SimContext ctx) {
 	ctx = modifyRadiatorTemp(ctx);
 	ctx = modifyRoomTemp(ctx);
 	ctx = modifyBoilerTemp(ctx);
-	
+		
 	return ctx;
 }
 
@@ -42,10 +43,10 @@ private SimContext modifyRoomTemp(SimContext ctx) {
 			simBucketNumber(temp) = getSimContextBucket(name, "temperature", ctx);
 			println("room temp: <temp> Celcius");
 			
-			tempDelta = 0;
+			tempDelta = 0.0;
 			
 			if (temp < waterTemp) {
-				tempDelta = 1;
+				tempDelta = 1.0;
 			} else if (temp >= waterTemp) {
 				tempDelta = -0.5;
 			}
@@ -64,7 +65,7 @@ private SimContext modifyBoilerTemp(SimContext ctx) {
 	
 	visit(ctx.\data.elements) {
 		case state(boilername, "Boiler", boilerprops) : {
-			heatertemp = 0;
+			heatertemp = 0.0;
 			for (state(chuname, "CentralHeatingUnit", _) <- ctx.\data.elements) {
 				chuOutReachable = isReachable(ctx.reachGraph, ctx, chuname, just("hotwaterout"), boilername, just("centralheatingin"));
 				chuInReachable = isReachable(ctx.reachGraph, ctx, boilername, just("centralheatingout"), chuname, just("coldwaterin"));
@@ -72,11 +73,11 @@ private SimContext modifyBoilerTemp(SimContext ctx) {
 					heatertemp = max(getSimContextBucket(chuname, "burnertemp", ctx).n, heatertemp);
 			}
 			
-			tempDelta = 0;
+			tempDelta = 0.0;
 			simBucketNumber(oldTemp) = getSimContextBucket(boilername, "watertemp", ctx);
 			
 			if (oldTemp < heatertemp) {
-				tempDelta = 1;
+				tempDelta = 1.0;
 			} else if (oldTemp >= heatertemp) {
 				tempDelta = -0.5;
 			}
@@ -131,20 +132,19 @@ private SimContext setRadiatorTemp(str radiator, SimContext ctx) {
 	}
 	
 	if (!reached) {
-		simBucketNumber(oldTemp) = getSimContextBucket(radiator, "temperature", ctx); 
 		ctx = setSimContextBucket(radiator, "temperature", simBucketNumber(15), ctx);
 	}
 	
 	return ctx;
 }
 
-private int averageRadiatorTemp(str room, SimContext ctx) {
-	list[tuple[int, int]] temperatureList = [];
+private num averageRadiatorTemp(str room, SimContext ctx) {
+	list[tuple[num, num]] temperatureList = [];
 
 	visit(ctx.\data.elements) {
 		case state(_, "Radiator", props:[_*, simProp("room",simBucketVariable(room)), _*]) : {
-			int power = -1;
-			int temp = -1;
+			num power = -1.0;
+			num temp = -1.0;
 			
 			for(prop <- props) {				
 				if (simProp("heatcapacity", simBucketNumber(hc)) := prop) {
@@ -155,8 +155,7 @@ private int averageRadiatorTemp(str room, SimContext ctx) {
 				}
 			}
 
-			if (power > -1 && temp > -1) {
-				
+			if (power > -1.0 && temp > -1.0) {
 				temperatureList += <power, temp>;
 			}
 		}
@@ -164,8 +163,8 @@ private int averageRadiatorTemp(str room, SimContext ctx) {
 	
 	if (size(temperatureList) == 0) return 0;
 	
-	int cumulativeTemp = (0 | it + (hc*tp)  | <hc, tp> <- temperatureList);
-	int averageTemp = cumulativeTemp / (0 | it + hc | <hc, _> <- temperatureList);
+	num cumulativeTemp = (0.0 | it + (hc*tp)  | <hc, tp> <- temperatureList);
+	num averageTemp = cumulativeTemp / (0.0 | it + hc | <hc, _> <- temperatureList);
 	
 	return averageTemp;
 }

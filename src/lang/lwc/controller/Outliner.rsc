@@ -2,17 +2,17 @@ module lang::lwc::controller::Outliner
 
 import lang::lwc::controller::Syntax;
 import lang::lwc::controller::AST;
-
 import lang::lwc::controller::Load;
 import lang::lwc::util::Outline;
 
-import util::IDE;
+//import util::IDE;
 
 anno loc node@location;
+anno str node@label;
 
 data ControllerOutline = colOutline(OutlineNode variables, OutlineNode conditions, OutlineNode states);
 
-public node outliner(start[Controller] tree) {
+public node controllerOutliner(start[Controller] tree) {
 	
 	list[OutlineNode] initLeaf(str name, node N) = [olLeaf()[@label=name][@\loc=N@location]];
 	

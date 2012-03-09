@@ -279,7 +279,7 @@ private set[Message] checkModifiers(Statement S, list[Modifier] modifiers, str e
 	set[Message] result = {};
 	bool flag = false;
 	list[set[str]] allowedModifiers = ElementModifiers[elementType];
-	map[set[str], int] usedModSets = ( modSet : 0 | modSet <- allowedModifiers );
+	map[set[str], num] usedModSets = ( modSet : 0 | modSet <- allowedModifiers );
 	for(M:modifier(str id) <- modifiers) {
 		for(modSet <- allowedModifiers) {
 			if(id in modSet) {

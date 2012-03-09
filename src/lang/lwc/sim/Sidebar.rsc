@@ -12,6 +12,7 @@ import lang::lwc::sim::Context;
 import vis::Figure;
 import vis::Render;
 import vis::KeySym;
+import util::Math;
 import IO;
 
 alias StructureMouseHandler = bool(int butnr, str \type, str name);
@@ -83,6 +84,7 @@ public Figure buildSidebar(Structure ast, str etype, str name, SimData simData, 
 	if (etype == "Sensor")
 	{
 		tuple[str,str] C = getSensorConnection(name, ast);
+
 		fields = [ buildReadableField(ast, "Sensor", C[1], getSimContextProperty(simData, C[0], C[1])) ];
 	}
 	else
@@ -127,7 +129,7 @@ Figure buildReadableField(Structure ast, str etype, str element, simProp(str nam
 		gap(5)
 	);
 	
-Figure buildReadable(str element, str name, B:simBucketNumber(int n)) {
+Figure buildReadable(str element, str name, B:simBucketNumber(n)) {
 	return text("<n>");
 }
 
@@ -151,14 +153,14 @@ Figure buildEdit(Structure ast, str element, str name, B:simBucketBoolean(bool b
 		} 
 	);
 
-Figure buildEdit(Structure ast, str element, str name, B:simBucketNumber(int n), UpdateContextValue updateContextValue) {
-	int current = n;
-	
+Figure buildEdit(Structure ast, str element, str name, B:simBucketNumber(n), UpdateContextValue updateContextValue) {
+	current = toInt(n);
+
 	return scaleSlider(
 		int() { return 0; },
 		int() { return 100; },
 		int() { return current; },
-		void(int input) { 
+		void(int input) {
 		  	current = input; 
 		  	updateContextValue(element, name, createSimBucket(current)); 
 		}
@@ -193,7 +195,7 @@ default Figure buildEdit(Structure ast, str element, str name, B:SimBucket bucke
 	println("Could not match <bucket>");
 }
 
-Figure buildEditSensor(str elementName, str name, B:simBucketNumber(int n), UpdateContextValue updateContextValue) {
+Figure buildEditSensor(str elementName, str name, B:simBucketNumber(n), UpdateContextValue updateContextValue) {
 	println("sensor <elementName>, bucket <B>");
-	return vcat([text(name, fontSize(14)), text(n, fontSize(14))]);
+	return vcat([text(name, fontSize(14)), text(toInt(n), fontSize(14))]);
 }

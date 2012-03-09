@@ -25,7 +25,7 @@ keyword Reserved = "is"
 
 lexical Identifier = ([a-zA-Z_][a-zA-Z0-9_]* !>> [a-zA-Z0-9_]) \ Reserved;
 lexical ValveConnection = ":" Identifier;
-lexical Real = "-"? [0-9]+ "." [0-9]+;
+lexical Real = "-"? [0-9]+ "." [0-9]+ !>> [0-9];
 lexical Int = "-"? [0-9]+ !>> [.0-9];
 
 

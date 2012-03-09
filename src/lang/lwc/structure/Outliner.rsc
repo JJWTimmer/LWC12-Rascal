@@ -5,14 +5,18 @@ module lang::lwc::structure::Outliner
 	
 	todo: fix imports
 */
+import lang::lwc::structure::Syntax;
 import lang::lwc::structure::AST;
 import lang::lwc::structure::Load;
 import lang::lwc::structure::Propagate;
 import lang::lwc::util::Outline;
 
-import ParseTree;
-import util::IDE;
-import Node;
+//import ParseTree;
+//import util::IDE;
+//import Node;
+
+anno loc node@location;
+anno str node@label;
 
 // Data structures
 data StructureOutline = solOutline(
@@ -25,7 +29,7 @@ data StructureOutline = solOutline(
 data ElementNode = solElement(node modifiers, node attributes);
 data AliasNode = solAlias(OutlineNode modifiers, OutlineNode attributes);
 
-public node outliner(Tree tree) {
+public node structureOutliner(start[Structure] tree) {
 
 	// Setup the basic outline
 	StructureOutline outline = solOutline(
@@ -75,7 +79,8 @@ public node outliner(Tree tree) {
 	);
 	
 	// Return the outline in an empty node
-	return olSimpleNode(outline);
+	//return olSimpleNode(outline);
+	return outline;
 }
 
 // Helper method to construct a list of modifier nodes

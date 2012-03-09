@@ -60,8 +60,7 @@ public SimBucket createSimBucket(variable(str N)) 			= simBucketVariable(N);
 public SimBucket createSimBucket([]) 						= simBucketList([]);
 public SimBucket createSimBucket(list[Value] L) 			= simBucketList([ createSimBucket(v) | v <- L]);
 public SimBucket createSimBucket(bool B)					= simBucketBoolean(B);
-public SimBucket createSimBucket(int N)						= simBucketNumber(N);
-public SimBucket createSimBucket(real N)					= simBucketNumber(N);
+public SimBucket createSimBucket(num N)						= simBucketNumber(N);
 public SimBucket createSimBucket(integer(N))				= simBucketNumber(N);
 public default SimBucket createSimBucket(X)					{ throw "Unknown type: <X> := <typeOf(X)>"; }
 
@@ -138,8 +137,9 @@ public SimContext registerStepAction(SimContext(SimContext) action, SimContext c
 
 public SimContext simContextExecuteActions(SimContext context)
 {
-	for (action <- context.stepActions)
+	for (action <- context.stepActions) {
 		context = action(context);
+	}
 	
 	return context;
 }

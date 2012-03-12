@@ -63,7 +63,7 @@ public Figure buildControllerGraph(Controller ast, State runState)
 			from, to, (ActiveEdge(tuple[str,str] N) := runState && N == <from, to>)
 		);
 	
-	return graph(nodes, edges, gap(40));
+	return graph(nodes, edges, hint("layered"), gap(40));
 }
 
 private Figure stateFigure(str state, bool active) = ellipse(
@@ -77,7 +77,7 @@ private Edge directedEdge(str from, str to, bool active)
 	Color c = color(active ? "red" : "black");
 	
 	/* The toArrow() function is commented, because it leads to an extremely annoying bug, it hides inputs like checkboxes etc. */
-	return edge(from, to /*, toArrow(coloredArrow(c)) */ , lineColor(c));	
+	return edge(from, to , toArrow(coloredArrow(c)) , lineColor(c));	
 }
 
 private Figure point(num x, num y) = 

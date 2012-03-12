@@ -31,9 +31,13 @@ public Figure buildRunnableControllerGraph(Controller ast, SimContextLookup simC
 	int interval = 300;
 	
 	void stepSimulation() {
+		println("test1");
 		SimContext ctx = step(simContextLookup());
+		println("test2");
 		graphState = contextToGraphState(ctx.runtime);
+		println("test3");
 		simContextUpdate(ctx);
+		println("test4");
 	};
 	
 	// Visualization of the graph

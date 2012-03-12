@@ -25,7 +25,7 @@ data StructureOutline = solOutline(
 data ElementNode = solElement(node modifiers, node attributes);
 data AliasNode = solAlias(OutlineNode modifiers, OutlineNode attributes);
 
-public node outliner(Tree tree) {
+public node structureOutliner(Tree tree) {
 
 	// Setup the basic outline
 	StructureOutline outline = solOutline(

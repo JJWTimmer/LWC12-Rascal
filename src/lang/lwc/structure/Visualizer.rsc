@@ -68,11 +68,11 @@ private Figure buildGraph(Structure ast, StructureMouseHandler mouseHandler, Sim
 			nodes += radiatorFigure(N, mouseHandler, context);
 		}
 		
-		// Handle Central Heating Units
+		// Handle Boilers
 		case element(_, elementname("Boiler"), N, _):
 			nodes += boilerFigure(N, mouseHandler, context);
 			
-		// Handle Central Heating Units
+		// Handle Rooms
 		case element(_, elementname("Room"), N, _):
 			nodes += roomFigure(N, mouseHandler, context);
 		
@@ -100,7 +100,7 @@ private Figure buildGraph(Structure ast, StructureMouseHandler mouseHandler, Sim
 		}
 	}
 	
-	return graph(nodes, edges, gap(40));
+	return graph(nodes, edges, hint("layered"), gap(40));
 }
  
 //

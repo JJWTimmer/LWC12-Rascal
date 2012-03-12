@@ -7,12 +7,13 @@ import lang::lwc::controller::Load;
 import lang::lwc::util::Outline;
 
 import util::IDE;
+import ParseTree;
 
 anno loc node@location;
 
 data ControllerOutline = colOutline(OutlineNode variables, OutlineNode conditions, OutlineNode states);
 
-public node outliner(start[Controller] tree) {
+public node controllerOutliner(Tree tree) {
 	
 	list[OutlineNode] initLeaf(str name, node N) = [olLeaf()[@label=name][@\loc=N@location]];
 	

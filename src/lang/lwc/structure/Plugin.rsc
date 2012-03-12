@@ -32,7 +32,7 @@ public void registerStructure() {
 	start[Structure] language(str input, loc origin) = parse(input, origin);
 
 	registerLanguage(STRUCTURE_LANG, STRUCTURE_EXT, language);
-	registerOutliner(STRUCTURE_LANG, outliner);
+	registerOutliner(STRUCTURE_LANG, structureOutliner);
 	registerAnnotator(STRUCTURE_LANG, check);
 	registerContributions(STRUCTURE_LANG, contribution);	
 }

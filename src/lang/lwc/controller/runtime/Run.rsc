@@ -138,7 +138,7 @@ public value valueOf(Primary p, SimContext ctx)
 {
 	switch (p)
 	{
-		case integer(int I): 
+		case integer(I): 
 			return I;
 			
 		case boolean(\true()):
@@ -175,7 +175,7 @@ public bool boolValueOf(value v)
 {
 	switch (v)
 	{
-		case int V:_: return V > 0;
+		case num V:_: return V > 0;
 		case bool V:_: return V;
 		case []: return false;
 		default: throw "Could not convert to boolean <v>";

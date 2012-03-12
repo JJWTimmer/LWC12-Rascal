@@ -138,13 +138,13 @@ private SimContext setRadiatorTemp(str radiator, SimContext ctx) {
 	return ctx;
 }
 
-private int averageRadiatorTemp(str room, SimContext ctx) {
-	list[tuple[int, int]] temperatureList = [];
+private num averageRadiatorTemp(str room, SimContext ctx) {
+	list[tuple[num, num]] temperatureList = [];
 
 	visit(ctx.\data.elements) {
 		case state(_, "Radiator", props:[_*, simProp("room",simBucketVariable(room)), _*]) : {
-			int power = -1;
-			int temp = -1;
+			power = -1;
+			temp = -1;
 			
 			for(prop <- props) {				
 				if (simProp("heatcapacity", simBucketNumber(hc)) := prop) {
@@ -164,8 +164,8 @@ private int averageRadiatorTemp(str room, SimContext ctx) {
 	
 	if (size(temperatureList) == 0) return 0;
 	
-	int cumulativeTemp = (0 | it + (hc*tp)  | <hc, tp> <- temperatureList);
-	int averageTemp = cumulativeTemp / (0 | it + hc | <hc, _> <- temperatureList);
+	cumulativeTemp = (0 | it + (hc*tp)  | <hc, tp> <- temperatureList);
+	averageTemp = cumulativeTemp / (0 | it + hc | <hc, _> <- temperatureList);
 	
 	return averageTemp;
 }

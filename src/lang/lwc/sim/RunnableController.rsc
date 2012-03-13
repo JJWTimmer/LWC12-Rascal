@@ -61,7 +61,7 @@ public Figure buildRunnableControllerGraph(Controller ast, SimContextLookup simC
 				hcat([
 					scaleSlider(int() { return 300; },     
 	                    int () { return 1000; },  
-	                    int () { return toInt(interval); },    
+	                    int () { return interval; },    
 	                    void (int s) { interval = s; },
 	                    fillColor("lightblue")),
 	                text(str() { return "<interval>"; }, fontBold(true), fontSize(9))

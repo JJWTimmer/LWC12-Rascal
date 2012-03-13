@@ -381,11 +381,9 @@ Figure chuFigure(str name, StructureMouseHandler mouseHandler, SimContext contex
 
 Figure boilerFigure(str name, StructureMouseHandler mouseHandler, SimContext context)
 {
-	num temperature = getSimContextBucketValueNum(name, "watertemp", context);
+	int temperature = toInt(getSimContextBucketValueNum(name, "watertemp", context));
 	list[Color] colors = colorSteps(color("blue"), color("red"), 100);
 	Color color = colors[max(0, min(99, temperature))];
-	
-	FProperty determineColor(bool active) = fillColor(active ? ignitedColor : color("white"));
 	 
 	return box(
 		vcat([
@@ -403,16 +401,14 @@ Figure boilerFigure(str name, StructureMouseHandler mouseHandler, SimContext con
 }
 
 //
-// Render Rooms
+// Render Rooms, max 30 degrees
 //
 
 Figure roomFigure(str name, StructureMouseHandler mouseHandler, SimContext context)
 {
-	num temperature = getSimContextBucketValueNum(name, "temperature", context);
-	list[Color] colors = colorSteps(color("blue"), color("red"), 100);
-	Color color = colors[max(0, min(99, temperature))];
-	
-	FProperty determineColor(bool active) = fillColor(active ? ignitedColor : color("white"));
+	int temperature = toInt(getSimContextBucketValueNum(name, "temperature", context));
+	list[Color] colors = colorSteps(color("blue"), color("red"), 30);
+	Color color = colors[max(0, min(39, temperature))];
 	 
 	return box(
 		vcat([

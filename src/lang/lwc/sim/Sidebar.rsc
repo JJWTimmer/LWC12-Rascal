@@ -153,7 +153,7 @@ Figure buildEdit(Structure ast, str element, str name, B:simBucketBoolean(bool b
 	);
 
 Figure buildEdit(Structure ast, str element, str name, B:simBucketNumber(n), UpdateContextValue updateContextValue) {
-	current = toInt(n);
+	int current = toInt(n);
 	
 	return scaleSlider(
 		int() { return 0; },

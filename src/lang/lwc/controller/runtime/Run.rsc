@@ -159,7 +159,7 @@ public value valueOf(Primary p, SimContext ctx)
 
 public value lookup(str symbol, SimContext ctx)
 {
-	// Is the give symbol a condition?
+	// Is the given symbol a condition?
 	if (symbol in domain(ctx.runtime.conditions))
 	{
 		Expression E = getOneFrom(ctx.runtime.conditions[symbol]);

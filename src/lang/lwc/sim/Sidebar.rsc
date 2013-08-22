@@ -120,20 +120,25 @@ list[Figure] buildFields(Structure ast, str etype, str name, SimData simData, Up
 		+ [ buildEditableField(ast, etype, name, simProp, updateContextValue) | simProp <- editableSimProps ];
 }
 
-Figure buildReadableField(Structure ast, str etype, str element, simProp(str name, SimBucket bucket)) =
-	vcat([
+Figure buildReadableField(Structure ast, str etype, str element, simProp(str name, SimBucket bucket)) {
+	return vcat([
 			text(name, fontSize(14)),
 			buildReadable(element, name, bucket)
 		], 
 		gap(5)
 	);
-	
+}
+
 Figure buildReadable(str element, str name, B:simBucketNumber(n)) {
 	return text("<n>");
 }
 
-default Figure buildReadable(Structure ast, str element, str name, B:SimBucket bucket) {
-	throw "Could not match <bucket>";
+Figure buildReadable(str element, str name, B:simBucketVariable(v)) {
+	return text(v);
+}
+
+default Figure buildReadable(str element, str name, SimBucket B) {
+	throw "Could not match <B>";
 }
 
 Figure buildEditableField(Structure ast, str etype, str element, simProp(str name, SimBucket bucket), UpdateContextValue updateContextValue) =
@@ -191,10 +196,10 @@ Figure buildEdit(Structure ast, str elementName, str name, B:simBucketList(list[
 }
 
 default Figure buildEdit(Structure ast, str element, str name, B:SimBucket bucket, UpdateContextValue updateContextValue) {
-	println("Could not match <bucket>");
+	throw "Could not match <bucket>";
 }
 
 Figure buildEditSensor(str elementName, str name, B:simBucketNumber(n), UpdateContextValue updateContextValue) {
 	println("sensor <elementName>, bucket <B>");
-	return vcat([text(name, fontSize(14)), text(n, fontSize(14))]);
+	return vcat([text(name, fontSize(14)), text("<n>", fontSize(14))]);
 }

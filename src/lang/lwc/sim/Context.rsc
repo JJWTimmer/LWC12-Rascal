@@ -8,7 +8,7 @@ import lang::lwc::sim::Graph;
 import IO;
 import util::Maybe;
 import String;
-import Graph;
+import analysis::graphs::Graph;
 import Type;
 import List;
 

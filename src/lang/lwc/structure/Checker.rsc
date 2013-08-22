@@ -243,9 +243,6 @@ private loc getLoc(node optimal, str ename, Structure ast) {
 
 private list[list[Unit]] getPropUnits(str targetName, str propName, Context ctx) {
 	etype = (ctx.namemap[targetName]?) ? ctx.namemap[targetName] : "Pipe";
-iprintln(ElementPropertiesUnits[etype]);
-iprintln(ElementPropertiesUnits[etype][propName]);
-iprintln(typeOf(ElementPropertiesUnits[etype][propName]));
 	return ElementPropertiesUnits[etype][propName];
 }
 

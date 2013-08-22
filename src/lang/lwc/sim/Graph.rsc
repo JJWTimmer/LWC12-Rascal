@@ -4,7 +4,7 @@ import lang::lwc::structure::AST;
 import lang::lwc::Definition;
 
 import util::Maybe;
-import Graph;
+import analysis::graphs::Graph;
 import Relation;
 import Set;
 

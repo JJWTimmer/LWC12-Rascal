@@ -4,7 +4,7 @@ import lang::lwc::sim::Context;
 import lang::lwc::Definition;
 import lang::lwc::sim::Graph;
 
-import Graph;
+import analysis::graphs::Graph;
 import util::Maybe;
 import Set;
 import List;

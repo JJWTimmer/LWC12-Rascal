@@ -11,6 +11,8 @@ import String;
 import analysis::graphs::Graph;
 import Type;
 import List;
+import util::ValueUI;
+
 
 data SimData = simData(
 	list[ElementState] elements, 
@@ -51,17 +53,17 @@ data SimBucket
 	| simBucketVariable(str v)
 	| simBucketList(list[SimBucket] l);
 
-public SimBucket createSimBucket(boolean(B)) 				= createSimBucket(B);
+public SimBucket createSimBucket(Value::boolean(B)) 				= createSimBucket(B);
 public SimBucket createSimBucket(\false()) 					= simBucketBoolean(false);
 public SimBucket createSimBucket(\true()) 					= simBucketBoolean(true);
 public SimBucket createSimBucket(metric(integer(N), _)) 	= simBucketNumber(N);
 public SimBucket createSimBucket(metric(realnum(N), _)) 	= simBucketNumber(N);
-public SimBucket createSimBucket(variable(str N)) 			= simBucketVariable(N);
+public SimBucket createSimBucket(Value::variable(str N)) 			= simBucketVariable(N);
 public SimBucket createSimBucket([]) 						= simBucketList([]);
 public SimBucket createSimBucket(list[Value] L) 			= simBucketList([ createSimBucket(v) | v <- L]);
 public SimBucket createSimBucket(bool B)					= simBucketBoolean(B);
 public SimBucket createSimBucket(num N)						= simBucketNumber(N);
-public SimBucket createSimBucket(integer(N))				= simBucketNumber(N);
+public SimBucket createSimBucket(Value::integer(N))				= simBucketNumber(N);
 public default SimBucket createSimBucket(X)					{ throw "Unknown type: <X> := <typeOf(X)>"; }
 
 public SimContext initSimContext(Structure sAst, Controller cAst) 
@@ -213,10 +215,9 @@ public SimContext setSimContextBucket(str element, str property, SimBucket val, 
 
 	ctx.\data = top-down-break visit (ctx.\data)
 	{
-		case S:state(element, _, [head*, P:simProp(property, _), tail*]):
+		case S:state(element, _, [*a, simProp(property, _), *b]):
 		{
-			P.bucket = val;
-			S.props = head + P + tail;
+			S.props = a + simProp(property, val) + b;
 			
 			done = true;
 			insert S;

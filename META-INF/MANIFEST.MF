@@ -1,7 +1,8 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: lwc-uva
-Bundle-SymbolicName: lwc_uva
-Bundle-Version: 1.0.0.qualifier
+Bundle-Name: LWC2012_Rascal
+Bundle-SymbolicName: LWC2012_Rascal
+Bundle-Version: 1.0.0
 Require-Bundle: org.eclipse.imp.pdb.values,
  rascal
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6

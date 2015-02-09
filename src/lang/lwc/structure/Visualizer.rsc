@@ -146,7 +146,15 @@ Figure radiatorFigure(str name, StructureMouseHandler mouseHandler, SimContext c
 {
 	num temperature = getSimContextBucketValueNum(name, "temperature", context);
 	list[Color] colors = colorSteps(color("blue"), color("red"), 100);
-	Color color = colors[max(0, min(99, temperature))];
+	Color color;
+	if (int i := temperature) {
+		color = colors[max(0, min(99, i))];
+	} elseif (real r := temperature) {
+		color = colors[max(0.0, min(99.0, r))];
+	} else {
+		throw "Unknown num type";
+	}
+	//color = colors[max(0, min(99, temperature))];
 	
 	Figure symbol = overlay([
 			ellipse(size(40), fillColor(color)),
@@ -356,7 +364,15 @@ Figure chuFigure(str name, StructureMouseHandler mouseHandler, SimContext contex
 	num temperature = getSimContextBucketValueNum(name, "burnertemp", context);
 	
 	list[Color] colors = colorSteps(color("blue"), color("red"), 100);
-	Color ignitedColor = colors[max(0, min(99, temperature))];
+	
+	Color ignitedColor;
+	if (int i := temperature) {
+		ignitedColor = colors[max(0, min(99, i))];
+	} elseif (real r := temperature) {
+		ignitedColor = colors[max(0.0, min(99.0, r))];
+	} else {
+		throw "Unknown num type";
+	}
 	
 	FProperty determineColor(bool active) = fillColor(active ? ignitedColor : color("white"));
 	 

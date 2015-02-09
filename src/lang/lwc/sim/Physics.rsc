@@ -6,7 +6,7 @@ import lang::lwc::sim::Graph;
 
 import util::Maybe;
 import util::Math;
-import Graph;
+import analysis::graphs::Graph;
 import List;
 import IO;
 
